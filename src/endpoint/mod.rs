@@ -3,7 +3,9 @@ The endpoints of the [Square API](https://developer.squareup.com).
 
 To ensure the crate remains as extensible as possible, we are using
 the Display trait for the URL of all of the endpoints
-*/
+ */
+
+pub mod payment;
 
 use crate::client::ClientMode;
 use crate::client::SquareClient;

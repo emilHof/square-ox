@@ -20,5 +20,4 @@ pub mod client;
 pub mod endpoint;
 pub mod error;
 pub mod money;
-pub mod payment;
 pub mod response;
