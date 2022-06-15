@@ -14,6 +14,7 @@ use std::fmt;
 #[non_exhaustive]
 pub enum SquareEndpoint {
     Payments,
+    Bookings
 }
 
 /// Implement the Display trait for all of the endpoints we need this allows
@@ -23,6 +24,7 @@ impl fmt::Display for SquareEndpoint {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             SquareEndpoint::Payments => write!(f, "payments"),
+            SquareEndpoint::Bookings => write!(f, "bookings")
         }
     }
 }
