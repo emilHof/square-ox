@@ -45,3 +45,9 @@ pub enum PaymentErrorCategory {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PaymentBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LocationsBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SearchQueryBuildError;
