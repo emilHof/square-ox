@@ -1,7 +1,7 @@
 use square_rs::client::SquareClient;
 use square_rs::error::PaymentBuildError;
 use square_rs::money::Currency;
-use square_rs::payment::PaymentBuilder;
+use square_rs::endpoint::payment::PaymentBuilder;
 
 use actix_web::{middleware::Logger, post, web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
