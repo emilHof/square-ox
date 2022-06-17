@@ -1,11 +1,12 @@
 use square_rs::client::SquareClient;
 use square_rs::error::PaymentBuildError;
 use square_rs::money::Currency;
-use square_rs::payment::PaymentBuilder;
+use square_rs::endpoint::payment::PaymentBuilder;
 
 use actix_web::{middleware::Logger, post, web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
 use std::env;
+use dotenv::dotenv;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -36,7 +37,9 @@ struct AppState {
 
 impl AppState {
     fn init() -> Self {
+        dotenv().ok();
         let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
+        // let access_token = "EAAAEIQAdp294a9PHkqjSlWhi3qWBHnUwposv1n-TZrn0XW6xHGg810-72UrNr6U".to_string();
         let client = SquareClient::new(&access_token);
 
         Self { client }
