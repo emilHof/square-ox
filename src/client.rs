@@ -14,7 +14,7 @@ let client = SquareClient::new(ACCESS_TOKEN);
 After creating a client you will be able to use all of the clients methods.
 
 */
-use crate::endpoint::SquareEndpoint;
+use crate::endpoint::{SquareEndpoint, EndpointVerb};
 use crate::error::SquareError;
 use crate::response::SquareResponse;
 
@@ -89,13 +89,15 @@ impl SquareClient {
     /// ```
     pub async fn request<T>(
         &self,
+        verb: EndpointVerb,
         endpoint: SquareEndpoint,
-        json: &T,
+        json: Option<&T>,
     ) -> Result<SquareResponse, SquareError>
     where
         T: Serialize + ?Sized,
     {
         let url = &self.endpoint(endpoint);
+        println!("{}", url);
         let authorization_header = format!("Bearer {}", &self.access_token);
 
         // Add the headers to the request
@@ -105,11 +107,22 @@ impl SquareClient {
             header::HeaderValue::from_str(&authorization_header)?,
         );
 
-        // Create a client with the appropiate headers
+        // Create a client with the appropriate headers
         let client = Client::builder().default_headers(headers).build()?;
 
         // Send the request to the Square API, and get the response
-        let response = client.post(url).json(json).send().await?.text().await?;
+        let mut builder = match verb {
+            EndpointVerb::GET => client.get(url),
+            EndpointVerb::POST => client.post(url),
+            EndpointVerb::PUT => client.put(url),
+            EndpointVerb::PATCH => client.patch(url),
+            EndpointVerb::DELETE => client.delete(url),
+        };
+
+        if !json.is_none() {
+            builder = builder.json(json.unwrap())
+        }
+        let response = builder.send().await?.text().await?;
 
         // Deserialize the response into a SquareResponse
         Ok(serde_json::from_str(&response)?)
