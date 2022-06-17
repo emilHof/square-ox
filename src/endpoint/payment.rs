@@ -3,7 +3,7 @@ Payment functionality of the [Square API](https://developer.squareup.com).
 */
 
 use crate::client::SquareClient;
-use crate::endpoint::SquareEndpoint;
+use crate::endpoint::{EndpointVerb, SquareEndpoint};
 use crate::error::PaymentBuildError;
 use crate::error::SquareError;
 use crate::money::{Currency, Money};
@@ -19,7 +19,7 @@ impl SquareClient {
     /// # Arguments
     /// * `payment` - A [Payment](Payment) created from the [PaymentBuilder](PaymentBuilder)
     pub async fn create_payment(&self, payment: Payment) -> Result<SquareResponse, SquareError> {
-        self.request(SquareEndpoint::Payments, &payment).await
+        self.request(EndpointVerb::POST ,SquareEndpoint::Payments, Some(&payment)).await
     }
 }
 
