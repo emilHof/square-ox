@@ -21,6 +21,10 @@ use crate::response::SquareResponse;
 use reqwest::{header, Client};
 use serde::Serialize;
 use std::default::Default;
+use std::iter::Map;
+use std::ops::Deref;
+use std::rc::Rc;
+use serde_json::ser::Formatter;
 
 #[derive(Copy, Clone)]
 pub enum ClientMode {
@@ -52,6 +56,8 @@ impl SquareClient {
     ///
     /// # Example: Create a new client
     /// ```
+    /// use square_rs::client::SquareClient;
+    ///
     /// let client = SquareClient::new(ACCESS_TOKEN);
     /// ```
     pub fn new(access_token: &str) -> Self {
@@ -68,6 +74,7 @@ impl SquareClient {
     ///
     /// # Example
     /// ```
+    /// use square_rs::client::SquareClient;
     /// let client = SquareClient::new(ACCESS_TOKEN).production();
     /// ```
     pub fn production(self) -> Self {
@@ -85,19 +92,22 @@ impl SquareClient {
     ///
     /// # Example:
     /// ```
-    /// self.request(SquareEndpoint::Payments, &payment).await
+    /// use square_rs::{endpoint::SquareEndpoint, client};
+    ///
+    /// let client = client::SquareClient;
+    /// client.request(SquareEndpoint::Payments, &payment).await
     /// ```
     pub async fn request<T>(
         &self,
         verb: EndpointVerb,
         endpoint: SquareEndpoint,
         json: Option<&T>,
+        parameters: Option<Vec<(String, String)>>,
     ) -> Result<SquareResponse, SquareError>
     where
         T: Serialize + ?Sized,
     {
-        let url = &self.endpoint(endpoint);
-        println!("{}", url);
+        let mut url = self.endpoint(endpoint).clone();
         let authorization_header = format!("Bearer {}", &self.access_token);
 
         // Add the headers to the request
@@ -112,19 +122,33 @@ impl SquareClient {
 
         // Send the request to the Square API, and get the response
         let mut builder = match verb {
-            EndpointVerb::GET => client.get(url),
-            EndpointVerb::POST => client.post(url),
-            EndpointVerb::PUT => client.put(url),
-            EndpointVerb::PATCH => client.patch(url),
-            EndpointVerb::DELETE => client.delete(url),
+            EndpointVerb::GET => client.get(&url),
+            EndpointVerb::POST => client.post(&url),
+            EndpointVerb::PUT => client.put(&url),
+            EndpointVerb::PATCH => client.patch(&url),
+            EndpointVerb::DELETE => client.delete(&url),
         };
 
-        if !json.is_none() {
-            builder = builder.json(json.unwrap())
+        // Add query parameters if there are any
+        if let Some(parameters) = parameters {
+            builder = builder.query(&parameters);
         }
-        let response = builder.send().await?.text().await?;
+
+        // Add a json body if there is one
+        if let Some(json) = json {
+            builder = builder.json(json)
+        }
 
         // Deserialize the response into a SquareResponse
-        Ok(serde_json::from_str(&response)?)
+        let response = builder.send().await?.json().await?;
+
+        // TODO remove the debug code!
+        // let response = builder.send().await?.text().await?;
+        //
+        // println!("{}", response);
+        //
+        // let response = serde_json::from_str(&response)?;
+
+        Ok(response)
     }
 }
