@@ -2,14 +2,11 @@
 Bookings functionality of the [Square API](https://developer.squareup.com).
  */
 
-use std::iter::Filter;
-use std::ops::Deref;
 use crate::client::SquareClient;
 use crate::endpoint::{EndpointVerb, SquareEndpoint};
 use crate::error::SearchQueryBuildError;
 use crate::error::SquareError;
-use crate::money::{Currency, Money};
-use crate::response::SquareResponse;
+use crate::response::{SquareResponse, FilterValue};
 
 use serde::{Deserialize, Serialize};
 
@@ -20,10 +17,13 @@ impl SquareClient {
     /// # Arguments
     /// * `create_booking` - A [Bookings](Bookings) created from the [BookingsBuilder](BookingsBuilder)
     pub async fn create_booking(&self, booking: Bookings) -> Result<SquareResponse, SquareError> {
-        self.request(EndpointVerb::POST ,SquareEndpoint::Bookings, Some(&booking)).await
+        self.request(
+            EndpointVerb::POST,
+            SquareEndpoint::Bookings,
+            Some(&booking),
+            None,
+        ).await
     }
-
-
 
     /// Search for availability with the given [SearchQuery](SearchQuery) to the Square API
     /// and get the response back.
@@ -31,7 +31,12 @@ impl SquareClient {
     /// # Arguments
     /// * `search_availability` - A [SearchQuery](SearchQuery) created from the [SearchQueryBuilder](SearchQueryBuilder)
     pub async fn search_availability(&self, search_query: SearchQuery) -> Result<SquareResponse, SquareError> {
-        self.request(EndpointVerb::POST ,SquareEndpoint::BookingsAvailabilitySearch, Some(&search_query)).await
+        self.request(
+            EndpointVerb::POST,
+            SquareEndpoint::BookingsAvailabilitySearch,
+            Some(&search_query),
+            None,
+        ).await
     }
 }
 
@@ -50,13 +55,24 @@ pub struct BookingsBuilder {
 /// The [SearchQuery](SearchQuery)
 #[derive(Serialize, Debug, Deserialize)]
 pub struct SearchQuery {
+    query: QQuery,
+}
+
+#[derive(Serialize, Debug, Deserialize)]
+pub struct QQuery {
+    filter: QueryFilter,
+}
+
+
+#[derive(Serialize, Debug, Deserialize)]
+pub struct QueryFilter {
     start_at_range: StartAtRange,
     #[serde(skip_serializing_if = "Option::is_none")]
     booking_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     location_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    segment_filters: Option<Vec<SegmentFilers>>
+    segment_filters: Option<Vec<SegmentFilter>>
 }
 
 /// The [SearchQueryBuilder](SearchQueryBuilder)
@@ -65,7 +81,7 @@ pub struct SearchQueryBuilder {
     start_at_range: Option<StartAtRange>,
     booking_id: Option<String>,
     location_id: Option<String>,
-    segment_filters: Option<Vec<SegmentFilers>>
+    segment_filters: Option<Vec<SegmentFilter>>
 }
 
 impl SearchQueryBuilder {
@@ -88,6 +104,27 @@ impl SearchQueryBuilder {
         self
     }
 
+    fn segment_filters(mut self, service_variation_id: String) -> Self {
+        let new_filter = SegmentFilter {
+            service_variation_id: service_variation_id.clone(),
+            team_member_id_filter: None
+        };
+
+        match self.segment_filters.take() {
+            Some(mut filters) => {
+                filters.push(new_filter);
+                self.segment_filters = Some(filters)
+            },
+            None => {
+                let mut filters = Vec::new();
+                filters.push(new_filter);
+                self.segment_filters = Some(filters)
+            }
+        };
+
+        self
+    }
+
     async fn build(&self) -> Result<SearchQuery, SearchQueryBuildError> {
         let start_at_range = match &self.start_at_range {
             Some(sar) => sar.clone(),
@@ -99,10 +136,14 @@ impl SearchQueryBuilder {
         let segment_filters = self.segment_filters.clone();
 
         Ok(SearchQuery {
-            start_at_range,
-            booking_id,
-            location_id,
-            segment_filters,
+            query: QQuery {
+                filter: QueryFilter {
+                    start_at_range,
+                    booking_id,
+                    location_id,
+                    segment_filters,
+                }
+            }
         })
     }
 }
@@ -114,20 +155,10 @@ pub struct StartAtRange {
 }
 
 #[derive(Clone, Serialize, Debug, Deserialize)]
-pub struct SegmentFilers {
+pub struct SegmentFilter {
     service_variation_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     team_member_id_filter: Option<FilterValue>,
-}
-
-#[derive(Clone, Serialize, Debug, Deserialize)]
-pub struct FilterValue {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    all: Option<Vec<String>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    any: Option<Vec<String>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    none: Option<Vec<String>>,
 }
 
 #[cfg(test)]
@@ -142,13 +173,17 @@ mod test_bookings {
                 "2023-10-12T07:20:50.52Z".to_string())
             .location_id("LPNXWH14W6S47".to_string());
         let expected = SearchQuery {
-            start_at_range: StartAtRange {
-                end_at: "2023-10-12T07:20:50.52Z".to_string(),
-                start_at: "2022-10-12T07:20:50.52Z".to_string(),
-            },
-            booking_id: None,
-            location_id: Some("LPNXWH14W6S47".to_string()),
-            segment_filters: None
+            query: QQuery {
+                filter: QueryFilter {
+                    start_at_range: StartAtRange {
+                        end_at: "2023-10-12T07:20:50.52Z".to_string(),
+                        start_at: "2022-10-12T07:20:50.52Z".to_string(),
+                    },
+                    booking_id: None,
+                    location_id: Some("LPNXWH14W6S47".to_string()),
+                    segment_filters: None
+                }
+            }
         };
         let actual = sut.build().await;
 
@@ -158,8 +193,28 @@ mod test_bookings {
 
 
     #[actix_rt::test]
-    fn test_search_availability() {
-        // TODO test the booking availability search function
+    async fn test_search_availability() {
+        use dotenv::dotenv;
+        use std::env;
+
+        dotenv().ok();
+        let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
+        let sut = SquareClient::new(&access_token);
+
+        let input = SearchQueryBuilder::new()
+            .start_at_range(
+                "2022-09-12T07:20:50.52Z".to_string(),
+                "2022-10-12T07:20:50.52Z".to_string())
+            .location_id("L1JC53TYHS40Z".to_string())
+            .segment_filters("BSOL4BB6RCMX6SH4KQIFWZDP".to_string())
+            .build().await.unwrap();
+
+        println!("{:?}", input);
+        println!("{:?}", serde_json::to_string(&input).unwrap());
+
+        let result = sut.search_availability(input).await;
+
+        assert!(result.is_ok())
     }
 }
 
