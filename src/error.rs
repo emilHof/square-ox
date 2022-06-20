@@ -51,3 +51,15 @@ pub struct LocationsBuildError;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SearchQueryBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CustomersListBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ListParametersBuilderError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CustomerBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CustomerSearchQueryBuildError;
