@@ -19,7 +19,12 @@ impl SquareClient {
     /// # Arguments
     /// * `payment` - A [Payment](Payment) created from the [PaymentBuilder](PaymentBuilder)
     pub async fn create_payment(&self, payment: Payment) -> Result<SquareResponse, SquareError> {
-        self.request(EndpointVerb::POST ,SquareEndpoint::Payments, Some(&payment)).await
+        self.request(
+            EndpointVerb::POST,
+            SquareEndpoint::Payments,
+            Some(&payment),
+            None,
+        ).await
     }
 }
 
