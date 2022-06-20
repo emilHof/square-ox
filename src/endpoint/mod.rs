@@ -23,8 +23,9 @@ pub enum SquareEndpoint {
     Bookings,
     BookingsAvailabilitySearch,
     Locations,
-    Catalog,
-    Customers
+    CatalogObject,
+    Customers,
+    CustomersSearch,
 }
 
 /// All of the HTTP verbs that have been implemented and are accepted by the different
@@ -47,8 +48,9 @@ impl fmt::Display for SquareEndpoint {
             SquareEndpoint::Bookings => write!(f, "bookings"),  // TODO Implement Bookings
             SquareEndpoint::BookingsAvailabilitySearch => write!(f, "bookings/availability/search"),  // TODO Implement Bookings
             SquareEndpoint::Locations => write!(f, "locations"),  // TODO Implement Locations
-            SquareEndpoint::Catalog => write!(f, "catalog"),  // TODO Implement Catalog
+            SquareEndpoint::CatalogObject => write!(f, "catalog/object"),  // TODO Implement Catalog
             SquareEndpoint::Customers => write!(f, "customers"),  // TODO Implement Customers
+            SquareEndpoint::CustomersSearch => write!(f, "customers/search")
         }
     }
 }
