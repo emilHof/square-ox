@@ -8,6 +8,8 @@ in the [Developer Apps](https://developer.squareup.com/apps) page for the specif
 application you are wanting to use.
 
 ```rust
+ const ACCESS_TOKEN:&str = "your_square_access_token";
+
 use square_rs::client::SquareClient;
 let client = SquareClient::new(ACCESS_TOKEN);
 ```
@@ -21,10 +23,6 @@ use crate::response::SquareResponse;
 use reqwest::{header, Client};
 use serde::Serialize;
 use std::default::Default;
-use std::iter::Map;
-use std::ops::Deref;
-use std::rc::Rc;
-use serde_json::ser::Formatter;
 
 #[derive(Copy, Clone)]
 pub enum ClientMode {
@@ -56,6 +54,7 @@ impl SquareClient {
     ///
     /// # Example: Create a new client
     /// ```
+    /// const ACCESS_TOKEN:&str = "your_square_access_token";
     /// use square_rs::client::SquareClient;
     ///
     /// let client = SquareClient::new(ACCESS_TOKEN);
@@ -74,6 +73,8 @@ impl SquareClient {
     ///
     /// # Example
     /// ```
+    /// const ACCESS_TOKEN:&str = "your_square_access_token";
+    ///
     /// use square_rs::client::SquareClient;
     /// let client = SquareClient::new(ACCESS_TOKEN).production();
     /// ```
@@ -92,10 +93,15 @@ impl SquareClient {
     ///
     /// # Example:
     /// ```
-    /// use square_rs::{endpoint::SquareEndpoint, client};
+    /// async {
+    ///     use square_rs::{endpoint::{EndpointVerb, SquareEndpoint, payment}, client};
+    ///     const ACCESS_TOKEN:&str = "your_square_access_token";
+    ///     let payment = payment::PaymentBuilder::new().build().await;
     ///
-    /// let client = client::SquareClient;
-    /// client.request(SquareEndpoint::Payments, &payment).await
+    ///     let client = client::SquareClient::new(ACCESS_TOKEN);
+    ///     client.request( EndpointVerb::POST, SquareEndpoint::Payments, Some(&payment), None).await;
+    /// };
+    ///
     /// ```
     pub async fn request<T>(
         &self,
@@ -107,7 +113,7 @@ impl SquareClient {
     where
         T: Serialize + ?Sized,
     {
-        let mut url = self.endpoint(endpoint).clone();
+        let url = self.endpoint(endpoint).clone();
         let authorization_header = format!("Bearer {}", &self.access_token);
 
         // Add the headers to the request
@@ -140,14 +146,14 @@ impl SquareClient {
         }
 
         // Deserialize the response into a SquareResponse
-        let response = builder.send().await?.json().await?;
+        // let response = builder.send().await?.json().await?;
 
         // TODO remove the debug code!
-        // let response = builder.send().await?.text().await?;
-        //
-        // println!("{}", response);
-        //
-        // let response = serde_json::from_str(&response)?;
+        let response = builder.send().await?.text().await?;
+
+        println!("{}", response);
+
+        let response = serde_json::from_str(&response)?;
 
         Ok(response)
     }
