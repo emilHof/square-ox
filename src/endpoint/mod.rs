@@ -20,12 +20,10 @@ use std::fmt;
 #[non_exhaustive]
 pub enum SquareEndpoint {
     Payments,
-    Bookings,
-    BookingsAvailabilitySearch,
+    Bookings(String),
     Locations,
-    CatalogObject,
-    Customers,
-    CustomersSearch,
+    Catalog(String),
+    Customers(String),
 }
 
 /// All of the HTTP verbs that have been implemented and are accepted by the different
@@ -45,12 +43,10 @@ impl fmt::Display for SquareEndpoint {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             SquareEndpoint::Payments => write!(f, "payments"),
-            SquareEndpoint::Bookings => write!(f, "bookings"),  // TODO Implement Bookings
-            SquareEndpoint::BookingsAvailabilitySearch => write!(f, "bookings/availability/search"),  // TODO Implement Bookings
+            SquareEndpoint::Bookings(path) => write!(f, "bookings{}", path),  // TODO Implement Bookings
             SquareEndpoint::Locations => write!(f, "locations"),  // TODO Implement Locations
-            SquareEndpoint::CatalogObject => write!(f, "catalog/object"),  // TODO Implement Catalog
-            SquareEndpoint::Customers => write!(f, "customers"),  // TODO Implement Customers
-            SquareEndpoint::CustomersSearch => write!(f, "customers/search")
+            SquareEndpoint::Catalog(path) => write!(f, "catalog{}", path),  // TODO Implement Catalog
+            SquareEndpoint::Customers(path) => write!(f, "customers{}", path),  // TODO Implement Customers
         }
     }
 }
