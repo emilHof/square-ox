@@ -63,3 +63,9 @@ pub struct CustomerBuildError;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CustomerSearchQueryBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BookingsPostBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BookingsCancelBuildError;
