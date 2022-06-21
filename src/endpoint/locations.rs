@@ -1,9 +1,8 @@
 // TODO import the necessary mods
 use crate::client::SquareClient;
-use crate::endpoint::payment::PaymentBuilder;
 use crate::endpoint::{EndpointVerb, SquareEndpoint};
 use crate::error::{SquareError, LocationsBuildError};
-use crate::response::{Location, SquareResponse};
+use crate::response::{jsons::Location, SquareResponse};
 
 use serde::{Deserialize, Serialize};
 
