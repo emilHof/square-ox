@@ -6,36 +6,37 @@ use crate::client::SquareClient;
 use crate::endpoint::{EndpointVerb, SquareEndpoint};
 use crate::error::{CustomerBuildError, CustomerSearchQueryBuildError, ListParametersBuilderError};
 use crate::error::SquareError;
-use crate::response::{Response, SquareResponse, Address, Location, Customer, FilterValue};
+use crate::response::{SquareResponse, jsons::Address, jsons::Customer, jsons::FilterValue};
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::endpoint::bookings::{QueryFilter, SearchQuery};
 
 impl SquareClient {
     pub async fn list_customers(&self, list_parameters: Vec<(String, String)>)
         -> Result<SquareResponse, SquareError> {
         self.request(
             EndpointVerb::GET,
-            SquareEndpoint::Customers,
+            SquareEndpoint::Customers("".to_string()),
             None::<&Customer>,
             Some(list_parameters),
         ).await
     }
+
     pub async fn create_customer(&self, customer: Customer)
         -> Result<SquareResponse, SquareError> {
         self.request(
             EndpointVerb::POST,
-            SquareEndpoint::Customers,
+            SquareEndpoint::Customers("".to_string()),
             Some(&customer),
             None,
         ).await
     }
+
     pub async fn search_customers(&self, customer_search_query: CustomerSearchQuery)
     -> Result<SquareResponse, SquareError>{
         self.request(
             EndpointVerb::POST,
-            SquareEndpoint::CustomersSearch,
+            SquareEndpoint::Customers("/list".to_string()),
             Some(&customer_search_query),
             None,
         ).await
@@ -165,7 +166,7 @@ impl CustomerBuilder {
         self
     }
 
-    async fn build(mut self) -> Result<Customer, CustomerBuildError> {
+    async fn build(self) -> Result<Customer, CustomerBuildError> {
         let mut customer = self.customer;
         let mut cnt = 0;
         if customer.given_name.is_some() {cnt += 1}
@@ -629,67 +630,46 @@ impl CustomerSearchQueryBuilder {
     }
 
     fn creation_source_value(mut self, value: String) -> Self {
-        match value.as_str() {
-            "OTHER" => (),
-            "APPOINTMENTS" => (),
-            "COUPON" => (),
-            "DELETION_RECOVERY" => (),
-            "DIRECTORY" => (),
-            "EGIFTING" => (),
-            "EMAIL_COLLECTION" => (),
-            "FEEDBACK" => (),
-            "IMPORT" => (),
-            "INVOICES" => (),
-            "LOYALTY" => (),
-            "MARKETING" => (),
-            "MERGE" => (),
-            "ONLINE_STORE" => (),
-            "INSTANT_PROFILE" => (),
-            "TERMINAL" => (),
-            "THIRD_PARTY" => (),
-            "THIRD_PARTY_IMPORT" => (),
-            "UNMERGE_RECOVERY" => (),
-            _ => return self
-        }
+        if crate::response::enums::CustomerCreationSource::validate(&value) {
+            let values = vec![value.clone()];
+            let creation_source = CreationSource {
+                rule: Some("INCLUDE".to_string()),
+                values: Some(values.clone())
+            };
+            let filter = CustomerFilter {
+                created_at:  None,
+                creation_source: Some(creation_source.clone()),
+                email_address: None,
+                group_ids: None,
+                phone_number: None,
+                reference_id: None,
+                updated_at: None
+            };
+            let query = SearchQueryAttribute {
+                filter: Some(filter.clone()),
+                sort: None
+            };
 
-        let values = vec![value.clone()];
-        let creation_source = CreationSource {
-            rule: Some("INCLUDE".to_string()),
-            values: Some(values.clone())
-        };
-        let filter = CustomerFilter {
-            created_at:  None,
-            creation_source: Some(creation_source.clone()),
-            email_address: None,
-            group_ids: None,
-            phone_number: None,
-            reference_id: None,
-            updated_at: None
-        };
-        let query = SearchQueryAttribute {
-            filter: Some(filter.clone()),
-            sort: None
-        };
-
-        if let Some(ref mut query) = &mut self.query {
-            if let Some(ref mut filter) = &mut query.filter {
-                if let Some(ref mut creation_source) = &mut filter.creation_source {
-                    if let Some(ref mut values) = &mut creation_source.values {
-                        for val in values.iter() {
-                            if *val == value {return self}
+            if let Some(ref mut query) = &mut self.query {
+                if let Some(ref mut filter) = &mut query.filter {
+                    if let Some(ref mut creation_source) = &mut filter.creation_source {
+                        if let Some(ref mut values) = &mut creation_source.values {
+                            for val in values.iter() {
+                                if *val == value {return self}
+                            }
+                            values.push(value)
+                        } else {
+                            creation_source.values = Some(values);
                         }
-                        values.push(value)
                     } else {
-                        creation_source.values = Some(values);
+                        filter.creation_source = Some(creation_source)
                     }
                 } else {
-                    filter.creation_source = Some(creation_source)
+                    query.filter = Some(filter);
                 }
             } else {
-                query.filter = Some(filter);
+                self.query = Some(query);
             }
-        } else {
-            self.query = Some(query);
         }
 
         self
