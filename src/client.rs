@@ -99,7 +99,7 @@ impl SquareClient {
     ///     let payment = payment::PaymentBuilder::new().build().await;
     ///
     ///     let client = client::SquareClient::new(ACCESS_TOKEN);
-    ///     client.request( EndpointVerb::POST, SquareEndpoint::Payments, Some(&payment), None).await;
+    ///     client.request( EndpointVerb::POST, SquareEndpoint::Payments, Some(&payment), None).await.expect("");
     /// };
     ///
     /// ```
@@ -153,7 +153,13 @@ impl SquareClient {
 
         println!("{}", response);
 
-        let response = serde_json::from_str(&response)?;
+        let response: SquareResponse = serde_json::from_str(&response)?;
+
+
+        // handle the possibility of an error being returned by the Square API
+        if response.errors.is_some() && response.errors.as_ref().unwrap().len() > 0 {
+            return Err(SquareError::from(response.errors))
+        }
 
         Ok(response)
     }
