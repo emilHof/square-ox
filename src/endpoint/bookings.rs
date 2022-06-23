@@ -71,30 +71,78 @@ pub struct BookingsPost {
     booking: Booking,
 }
 
-/// The [BookingsBuilder](BookingsBuilder)
+/// The [BookingsPostBuilder](BookingsPostBuilder) is used to build a valid
+/// [BookingsPost](BookingsPost)
+///
+/// To build a valid BookingPost and to avoid returning a
+/// [BookingsPostBuildError](BookingsPostBuildError) one must previously call:
+/// * `.customer_id()`
+/// * `.location_id()`
+/// * `.add_appointment_segment()`
+/// * `.start_at()`
+///
+/// # Example: Build a [BookingPost](BookingPost)
+/// ```
+/// use square_rs::jsons::AppointmentSegment;
+/// let builder = square_rs::endpoint::bookings::BookingsPostBuilder::new()
+/// .customer_id("some_id".to_string())
+/// .location_id("some_id".to_string())
+/// .start_at("some_start_at_date_time".to_string())
+/// .add_appointment_segment(AppointmentSegment::default())
+/// .build()
+/// .await;
+/// ```
 #[derive(Default)]
 pub struct BookingsPostBuilder(Booking);
 
 impl BookingsPostBuilder {
-    fn new() -> Self {
+    /// Build a new [BookingsPost](BookingsPost) using the
+    /// [BookingsPostBuilder](BookingsPostBuilder)
+    ///
+    /// # Example: Create a new client
+    /// ```
+    /// let builder = square_rs::endpoint::bookings::BookingsPostBuilder::new();
+    /// ```
+    pub fn new() -> Self {
         let mut booking = Booking::default();
         booking.appointment_segments = Some(vec![]);
         Self(booking)
     }
 
-    fn customer_id(mut self, customer_id: String) -> Self {
+
+    /// Add a customer_id
+    ///
+    /// # Arguments:
+    /// * `customer_id` - The id of your booking customer.
+    ///
+    /// # Example: Set the customer id
+    /// ```
+    /// let builder = square_rs::endpoint::bookings::BookingsPostBuilder::new()
+    /// .customer_id("some_id".to_string());
+    /// ```
+    pub fn customer_id(mut self, customer_id: String) -> Self {
         self.0.customer_id = Some(customer_id);
 
         self
     }
 
-    fn location_id(mut self, location_id: String) -> Self {
+    // Add a location_id
+    ///
+    /// # Arguments:
+    /// * `location_id` - The id of the booking location.
+    ///
+    /// # Example: Set the customer id
+    /// ```
+    /// let builder = square_rs::endpoint::bookings::BookingsPostBuilder::new()
+    /// .location_id("some_id".to_string());
+    /// ```
+    pub fn location_id(mut self, location_id: String) -> Self {
         self.0.location_id = Some(location_id);
 
         self
     }
 
-    fn location_type(mut self, location_type: String) -> Self {
+    pub fn location_type(mut self, location_type: String) -> Self {
         if BusinessAppointmentSettingsBookingLocationType::validate(&location_type) {
             self.0.location_type = Some(location_type);
         }
@@ -102,31 +150,50 @@ impl BookingsPostBuilder {
         self
     }
 
-    fn start_at(mut self, start_at_date_time: String) -> Self {
+    pub fn start_at(mut self, start_at_date_time: String) -> Self {
         self.0.start_at = Some(start_at_date_time);
 
         self
     }
 
-    fn add_appointment_segment(mut self, appointment_segment: AppointmentSegment) -> Self {
+    pub fn add_appointment_segment(mut self, appointment_segment: AppointmentSegment) -> Self {
         self.0.appointment_segments.as_mut().unwrap().push(appointment_segment);
 
         self
     }
 
-    fn seller_note(mut self, seller_note: String) -> Self {
+    pub fn seller_note(mut self, seller_note: String) -> Self {
         self.0.seller_note = Some(seller_note);
 
         self
     }
 
-    fn customer_note(mut self, customer_note: String) -> Self {
+    pub fn customer_note(mut self, customer_note: String) -> Self {
         self.0.customer_note = Some(customer_note);
 
         self
     }
-
-    async fn build(mut self) -> Result<BookingsPost, BookingsPostBuildError> {
+    /// Build a [BookingPost](BookingPost)
+    ///
+    /// To build a valid BookingPost and to avoid returning a
+    /// [BookingsPostBuildError](BookingsPostBuildError) one must previously call:
+    /// * `.customer_id()`
+    /// * `.location_id()`
+    /// * `.add_appointment_segment()`
+    /// * `.start_at()`
+    ///
+    /// # Example: Build a [BookingPost](BookingPost)
+    /// ```
+    /// use square_rs::jsons::AppointmentSegment;
+    /// let builder = square_rs::endpoint::bookings::BookingsPostBuilder::new()
+    /// .customer_id("some_id".to_string())
+    /// .location_id("some_id".to_string())
+    /// .start_at("some_start_at_date_time".to_string())
+    /// .add_appointment_segment(AppointmentSegment::default())
+    /// .build()
+    /// .await;
+    /// ```
+    pub async fn build(mut self) -> Result<BookingsPost, BookingsPostBuildError> {
 
         let booking = self.0;
 
@@ -166,7 +233,7 @@ pub struct BookingsCancelBuilder {
 }
 
 impl BookingsCancelBuilder {
-    fn new() -> Self {
+    pub fn new() -> Self {
         BookingsCancelBuilder {
             booking_id: None,
             body: Some(BookingsCancelBody {
@@ -175,14 +242,14 @@ impl BookingsCancelBuilder {
             })
         }
     }
-    
-    fn booking_id(mut self, booking_id: String) -> Self {
+
+    pub fn booking_id(mut self, booking_id: String) -> Self {
         self.booking_id = Some(booking_id);
         
         self
     }
 
-    fn booking_version(mut self, booking_version: i32) -> Self {
+    pub fn booking_version(mut self, booking_version: i32) -> Self {
         let body = self.body.as_mut().unwrap();
         body.booking_version = Some(booking_version);
 
@@ -190,7 +257,7 @@ impl BookingsCancelBuilder {
         self
     }
 
-    async fn build(self) -> Result<BookingsCancel, BookingsCancelBuildError> {
+    pub async fn build(self) -> Result<BookingsCancel, BookingsCancelBuildError> {
         if self.booking_id.is_none() {
             Err(BookingsCancelBuildError)
         } else {
@@ -202,7 +269,8 @@ impl BookingsCancelBuilder {
     }
 }
 
-/// The [SearchQuery](SearchQuery)
+// holds a QQuery struct which contains the actual query data, as this is the way it is expected
+// by the Square API
 #[derive(Serialize, Debug, Deserialize)]
 pub struct SearchQuery {
     query: QQuery,
@@ -235,11 +303,11 @@ pub struct SearchQueryBuilder {
 }
 
 impl SearchQueryBuilder {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Default::default()
     }
 
-    fn start_at_range(mut self, start: String, end: String) -> Self {
+    pub fn start_at_range(mut self, start: String, end: String) -> Self {
         self.start_at_range = Some(StartAtRange {
             end_at: end.clone(),
             start_at: start.clone(),
@@ -248,13 +316,13 @@ impl SearchQueryBuilder {
         self
     }
 
-    fn location_id(mut self, location_id: String) -> Self {
+    pub fn location_id(mut self, location_id: String) -> Self {
         self.location_id = Some(location_id);
 
         self
     }
 
-    fn segment_filters(mut self, service_variation_id: String) -> Self {
+    pub fn segment_filters(mut self, service_variation_id: String) -> Self {
         let new_filter = SegmentFilter {
             service_variation_id: service_variation_id.clone(),
             team_member_id_filter: None
@@ -275,7 +343,7 @@ impl SearchQueryBuilder {
         self
     }
 
-    async fn build(&self) -> Result<SearchQuery, SearchQueryBuildError> {
+    pub async fn build(&self) -> Result<SearchQuery, SearchQueryBuildError> {
         let start_at_range = match &self.start_at_range {
             Some(sar) => sar.clone(),
             None => return Err(SearchQueryBuildError),
