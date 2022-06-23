@@ -1,26 +1,41 @@
+/*!
+The errors returned by components of the crate.
+ */
+
 use serde::{Deserialize, Serialize};
+use crate::response::ResponseError;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct SquareError;
+pub struct SquareError(Option<Vec<ResponseError>>);
+
+impl SquareError {
+    pub fn from(response_errors: Option<Vec<ResponseError>>) -> Self {
+        Self(response_errors)
+    }
+
+    pub fn get(self) -> Option<Vec<ResponseError>> {
+        self.0
+    }
+}
 
 impl From<reqwest::Error> for SquareError {
     fn from(r: reqwest::Error) -> Self {
         eprintln!("Reqwest Failed: {:?}", r);
-        SquareError
+        SquareError(None)
     }
 }
 
 impl From<reqwest::header::InvalidHeaderValue> for SquareError {
     fn from(r: reqwest::header::InvalidHeaderValue) -> Self {
         eprintln!("Reqwest Header Failed: {:?}", r);
-        SquareError
+        SquareError(None)
     }
 }
 
 impl From<serde_json::Error> for SquareError {
     fn from(s: serde_json::Error) -> Self {
         eprintln!("Serde JSON Failed: {:?}", s);
-        SquareError
+        SquareError(None)
     }
 }
 
@@ -69,3 +84,6 @@ pub struct BookingsPostBuildError;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BookingsCancelBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CustomerDeleteBuildError;
