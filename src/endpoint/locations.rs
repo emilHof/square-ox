@@ -1,3 +1,7 @@
+/*!
+Customers functionality of the [Square API](https://developer.squareup.com).
+ */
+
 // TODO import the necessary mods
 use crate::client::SquareClient;
 use crate::endpoint::{EndpointVerb, SquareEndpoint};
@@ -20,37 +24,10 @@ impl SquareClient {
 
 // TODO create a Locations struct with minimum necessary information
 
-#[derive(Serialize, Debug, Deserialize)]
-pub struct Locations;
-
-// TODO have a LocationBuilder
-pub struct LocationsBuilder;
-
-impl Default for LocationsBuilder {
-    fn default() -> Self {
-        Self
-    }
-}
-
-impl LocationsBuilder {
-    pub fn new() -> Self{ Default::default() }
-
-    pub async fn build(&self) -> Result<Locations, LocationsBuildError> {
-        Ok(Locations)
-    }
-}
-
 
 #[cfg(test)]
 mod test_locations {
     use super::*;
-
-    #[actix_rt::test]
-    async fn test_locations_builder_success() {
-        let expected = Locations;
-        let actual = LocationsBuilder::new().build().await;
-        assert_eq!(format!("{:?}", expected), format!("{:?}", actual.unwrap()))
-    }
 
     #[actix_rt::test]
     async fn test_create_location_request() {
