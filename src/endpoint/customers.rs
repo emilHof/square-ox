@@ -4,7 +4,7 @@ Customers functionality of the [Square API](https://developer.squareup.com).
 
 use crate::client::SquareClient;
 use crate::endpoint::{EndpointVerb, SquareEndpoint};
-use crate::error::{CustomerBuildError, CustomerSearchQueryBuildError, ListParametersBuilderError};
+use crate::error::{CustomerBuildError, CustomerDeleteBuildError, CustomerSearchQueryBuildError, ListParametersBuilderError};
 use crate::error::SquareError;
 use crate::response::{SquareResponse, jsons::Address, jsons::Customer, jsons::FilterValue};
 
@@ -36,22 +36,32 @@ impl SquareClient {
     -> Result<SquareResponse, SquareError>{
         self.request(
             EndpointVerb::POST,
-            SquareEndpoint::Customers("/list".to_string()),
+            SquareEndpoint::Customers("/search".to_string()),
             Some(&customer_search_query),
             None,
+        ).await
+    }
+
+    pub async fn delete_customer(&self, customer_to_delete: CustomerDelete)
+    -> Result<SquareResponse, SquareError > {
+        self.request(
+            EndpointVerb::DELETE,
+            SquareEndpoint::Customers(format!("/{}", customer_to_delete.customer_id)),
+            None::<&CustomerSearchQuery>,
+            customer_to_delete.version,
         ).await
     }
 }
 
 #[derive(Default)]
-pub struct ListParametersBuilder {
+pub struct CustomerListParametersBuilder {
     cursor: Option<String>,
     limit: Option<String>,
     sort_field: Option<String>,
     sort_order: Option<String>,
 }
 
-impl ListParametersBuilder {
+impl CustomerListParametersBuilder {
     pub fn new() -> Self {
         Default::default()
     }
@@ -120,53 +130,59 @@ pub struct CustomerBuilder {
 
 // TODO add building functions for remaining attributes
 impl CustomerBuilder {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Default::default()
     }
 
-    fn given_name(mut self, given_name: String) -> Self {
+    pub fn given_name(mut self, given_name: String) -> Self {
         self.customer.given_name = Some(given_name);
 
         self
     }
 
-    fn family_name(mut self, family_name: String) -> Self {
+    pub fn family_name(mut self, family_name: String) -> Self {
         self.customer.family_name = Some(family_name);
 
         self
     }
 
-    fn email_address(mut self, email_address: String) -> Self {
+    pub fn nickname(mut self, nickname: String) -> Self {
+        self.customer.nickname = Some(nickname);
+
+        self
+    }
+
+    pub fn email_address(mut self, email_address: String) -> Self {
         self.customer.email_address = Some(email_address);
 
         self
     }
 
-    fn address(mut self, address: Address) -> Self {
+    pub fn address_from_address(mut self, address: Address) -> Self {
         self.customer.address = Some(address);
 
         self
     }
 
-    fn birthday(mut self, birthday: String) -> Self {
+    pub fn birthday(mut self, birthday: String) -> Self {
         self.customer.birthday = Some(birthday);
 
         self
     }
 
-    fn phone_number(mut self, phone_number: String) -> Self {
+    pub fn phone_number(mut self, phone_number: String) -> Self {
         self.customer.phone_number = Some(phone_number);
 
         self
     }
 
-    fn note(mut self, note: String) -> Self {
+    pub fn note(mut self, note: String) -> Self {
         self.customer.birthday = Some(note);
 
         self
     }
 
-    async fn build(self) -> Result<Customer, CustomerBuildError> {
+    pub async fn build(self) -> Result<Customer, CustomerBuildError> {
         let mut customer = self.customer;
         let mut cnt = 0;
         if customer.given_name.is_some() {cnt += 1}
@@ -180,6 +196,43 @@ impl CustomerBuilder {
         customer.idempotency_key = Some(Uuid::new_v4().to_string());
 
         Ok(customer)
+    }
+}
+
+#[derive(Debug)]
+pub struct CustomerDelete {
+    customer_id: String,
+    version: Option<Vec<(String, String)>>,
+}
+
+#[derive(Default)]
+pub struct CustomerDeleteBuilder {
+    customer_id: Option<String>,
+    version: Option<Vec<(String, String)>>
+}
+
+impl CustomerDeleteBuilder {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    pub fn customer_id(mut self, customer_id: String) -> Self {
+        self.customer_id = Some(customer_id);
+
+        self
+    }
+
+    pub fn version(mut self, version: i64) -> Self {
+        self.version = Some(vec![("version".to_string(), version.to_string())]);
+
+        self
+    }
+
+    async fn build(self) -> Result<CustomerDelete, CustomerDeleteBuildError>  {
+        match self.customer_id {
+            Some(customer_id) => Ok(CustomerDelete{ customer_id, version: self.version}),
+            None => Err(CustomerDeleteBuildError)
+        }
     }
 }
 
@@ -253,31 +306,31 @@ pub struct CreationSource {
 
 #[derive(Default)]
 pub struct CustomerSearchQueryBuilder {
-    pub cursor: Option<String>,
-    pub limit: Option<i64>,
-    pub query: Option<SearchQueryAttribute>,
+    cursor: Option<String>,
+    limit: Option<i64>,
+    query: Option<SearchQueryAttribute>,
 }
 
 // TODO add building function for adding group_id's
 impl CustomerSearchQueryBuilder {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Default::default()
     }
 
-    fn cursor(mut self, cursor: String) -> Self {
+    pub fn cursor(mut self, cursor: String) -> Self {
         self.cursor = Some(cursor);
 
         self
     }
 
-    fn limit(mut self, limit: i64) -> Self {
+    pub fn limit(mut self, limit: i64) -> Self {
         if limit < 1 || limit > 100 { return self };
         self.limit = Some(limit);
 
         self
     }
 
-    fn created_at(mut self, start: String, end: String) -> Self {
+    pub fn created_at(mut self, start: String, end: String) -> Self {
         let time_range = TimeRange {
                 start_at: Some(start),
                 end_at: Some(end),
@@ -309,7 +362,7 @@ impl CustomerSearchQueryBuilder {
         self
     }
 
-    fn updated_at(mut self, start: String, end: String) -> Self {
+    pub fn updated_at(mut self, start: String, end: String) -> Self {
         let time_range = TimeRange {
                 start_at: Some(start),
                 end_at: Some(end),
@@ -341,7 +394,7 @@ impl CustomerSearchQueryBuilder {
         self
     }
 
-    fn exact_email_address(mut self, email: String) -> Self {
+    pub fn exact_email_address(mut self, email: String) -> Self {
         let email_group = CustomerTextFilter {
             exact: Some(email.clone()),
             fuzzy: None
@@ -377,7 +430,7 @@ impl CustomerSearchQueryBuilder {
         self
     }
 
-    fn fuzzy_email_address(mut self, email: String) -> Self {
+    pub fn fuzzy_email_address(mut self, email: String) -> Self {
         let email_group = CustomerTextFilter {
             exact: None,
             fuzzy: Some(email.clone())
@@ -413,7 +466,7 @@ impl CustomerSearchQueryBuilder {
         self
     }
 
-    fn exact_phone_number(mut self, number: String) -> Self {
+    pub fn exact_phone_number(mut self, number: String) -> Self {
         let phone_group = CustomerTextFilter {
             exact: Some(number.clone()),
             fuzzy: None,
@@ -449,7 +502,7 @@ impl CustomerSearchQueryBuilder {
         self
     }
 
-    fn fuzzy_phone_number(mut self, number: String) -> Self {
+    pub fn fuzzy_phone_number(mut self, number: String) -> Self {
         let phone_group = CustomerTextFilter {
             exact: None,
             fuzzy: Some(number.clone())
@@ -485,7 +538,7 @@ impl CustomerSearchQueryBuilder {
         self
     }
 
-    fn exact_reference_id(mut self, id: String) -> Self {
+    pub fn exact_reference_id(mut self, id: String) -> Self {
         let reference_id_group = CustomerTextFilter {
             exact: Some(id.clone()),
             fuzzy: None,
@@ -521,7 +574,7 @@ impl CustomerSearchQueryBuilder {
         self
     }
 
-    fn fuzzy_reference_id(mut self, id: String) -> Self {
+    pub fn fuzzy_reference_id(mut self, id: String) -> Self {
         let reference_id_group = CustomerTextFilter {
             exact: None,
             fuzzy: Some(id.clone()),
@@ -557,7 +610,7 @@ impl CustomerSearchQueryBuilder {
         self
     }
 
-    fn set_creation_source_exclude(mut self) -> Self {
+    pub fn set_creation_source_exclude(mut self) -> Self {
         let creation_source = CreationSource {
             rule: Some("EXCLUDE".to_string()),
             values: None
@@ -593,7 +646,7 @@ impl CustomerSearchQueryBuilder {
         self
     }
 
-    fn set_creation_source_include(mut self) -> Self {
+    pub fn set_creation_source_include(mut self) -> Self {
         let creation_source = CreationSource {
             rule: Some("INCLUDE".to_string()),
             values: None
@@ -629,7 +682,7 @@ impl CustomerSearchQueryBuilder {
         self
     }
 
-    fn creation_source_value(mut self, value: String) -> Self {
+    pub fn creation_source_value(mut self, value: String) -> Self {
         if crate::response::enums::CustomerCreationSource::validate(&value) {
             let values = vec![value.clone()];
             let creation_source = CreationSource {
@@ -675,7 +728,7 @@ impl CustomerSearchQueryBuilder {
         self
     }
 
-    async fn build(self) -> Result<CustomerSearchQuery, CustomerSearchQueryBuildError> {
+    pub async fn build(self) -> Result<CustomerSearchQuery, CustomerSearchQueryBuildError> {
         Ok (
             CustomerSearchQuery {
                 cursor: self.cursor,
@@ -692,7 +745,7 @@ mod test_customers {
 
     #[actix_rt::test]
     async fn test_list_parameter_builder() {
-        let mut sut = ListParametersBuilder::new();
+        let mut sut = CustomerListParametersBuilder::new();
         let expected =  vec![
             ("limit".to_string(), "4".to_string()),
             ("sort_field".to_string(), "DEFAULT".to_string())
@@ -722,6 +775,68 @@ mod test_customers {
         println!("{:?}", result.unwrap())
     }
 
+    #[actix_rt::test]
+    async fn test_customer_builder() {
+        let expected = Customer {
+            id: None,
+            birthday: Some("1996-11-02".to_string()),
+            address: Some(Address{
+                address_line_1: Some("1234 Hillborrow Rd.".to_string()),
+                address_line_2: None,
+                address_line_3: None,
+                locality: Some("Charleston".to_string()),
+                sublocality: None,
+                administrative_district_level: Some("MA".to_string()),
+                postal_code: Some("12345".to_string()),
+                country: Some("United States".to_string())
+            }),
+            company_name: None,
+            created_at: None,
+            creation_source: None,
+            updated_at: None,
+            email_address: None,
+            family_name: Some("Ramsey".to_string()),
+            given_name: Some("Pierre".to_string()),
+            group_ids: None,
+            nickname: None,
+            note: None,
+            phone_number: Some("123-456-7890".to_string()),
+            preferences: None,
+            reference_id: None,
+            segment_ids: None,
+            tax_ids: None,
+            version: None,
+            cards: None,
+            idempotency_key: None
+        };
+
+        let address = Address{
+            address_line_1: Some("1234 Hillborrow Rd.".to_string()),
+            address_line_2: None,
+            address_line_3: None,
+            locality: Some("Charleston".to_string()),
+            sublocality: None,
+            administrative_district_level: Some("MA".to_string()),
+            postal_code: Some("12345".to_string()),
+            country: Some("United States".to_string())
+        };
+
+        let mut actual = CustomerBuilder::new().address_from_address(address)
+            .given_name("Pierre".to_string())
+            .family_name("Ramsey".to_string())
+            .phone_number("123-456-7890".to_string())
+            .phone_number("123-456-7890".to_string())
+            .birthday("1996-11-02".to_string())
+            .build()
+            .await;
+
+        assert!(actual.is_ok());
+
+        actual.as_mut().unwrap().idempotency_key = None;
+
+        assert_eq!(format!("{:?}", expected), format!("{:?}", actual.unwrap()))
+    }
+
     // #[actix_rt::test]
     async fn test_create_customer() {
         use dotenv::dotenv;
@@ -738,6 +853,41 @@ mod test_customers {
 
         assert!(result.is_ok());
         println!("{:?}", result.unwrap())
+    }
+
+    #[actix_rt::test]
+    async fn test_customer_delete_builder() {
+        let expected = CustomerDelete {
+            customer_id: "dew212ewfd32123ca".to_string(),
+            version: None
+        };
+
+        let actual = CustomerDeleteBuilder::new()
+            .customer_id("dew212ewfd32123ca".to_string())
+            .build()
+            .await;
+
+        assert!(actual.is_ok());
+        assert_eq!(format!("{:?}", expected), format!("{:?}", actual.unwrap()))
+    }
+
+    // #[actix_rt::test]
+    async fn test_delete_customer() {
+        use dotenv::dotenv;
+        use std::env;
+
+        dotenv().ok();
+        let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
+        let sut = SquareClient::new(&access_token);
+
+        let input = CustomerDelete {
+            customer_id: "F91CDB9574ZR9AY25C1WS9G7E8".to_string(),
+            version: None
+        };
+
+        let res = sut.delete_customer(input).await;
+
+        assert!(res.is_ok());
     }
 
     #[actix_rt::test]
@@ -805,7 +955,7 @@ mod test_customers {
 
         let input = CustomerSearchQuery {
             cursor: None,
-            limit: Some(5),
+            limit: None,
             query: Some(SearchQueryAttribute {
                 filter: Some(CustomerFilter {
                     created_at: Some(TimeRange {
@@ -837,6 +987,7 @@ mod test_customers {
 
         let result = sut.search_customers(input).await;
 
+        // assert!(result.is_ok() || result.err().unwrap().get().is_some())
         assert!(result.is_ok())
     }
 }
