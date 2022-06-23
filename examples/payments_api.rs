@@ -78,7 +78,7 @@ async fn process_payment(
     // The amount must be given in the smallest denomination, convert to pence.
     let amount = payment_form.get_price() * 100;
 
-    // Buld a payment using the infomation from the form
+    // Build a payment using the information from the form
     let payment = match PaymentBuilder::new()
         .amount(amount as i64, Currency::GBP)
         .source_id(payment_form.source_id)
