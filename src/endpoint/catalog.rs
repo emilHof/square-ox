@@ -20,36 +20,36 @@ impl SquareClient {
         ).await
     }
 
-    pub async fn list_catalog(&self, search_parameters: Option<Vec<(String, String)>>)
+    pub async fn list_catalog(&self, list_parameters: Option<Vec<(String, String)>>)
     -> Result<SquareResponse, SquareError> {
         self.request(
             EndpointVerb::GET,
             SquareEndpoint::Catalog("/list".to_string()),
             None::<&CatalogObject>,
-            search_parameters
+            list_parameters
         ).await
     }
 }
 
 #[derive(Default)]
-pub struct ListParameterBuilder {
+pub struct CatalogListParameterBuilder {
     cursor: Option<String>,
     types: Option<Vec<String>>,
     catalog_version: Option<i64>,
 }
 
-impl ListParameterBuilder {
-    fn new() -> Self {
+impl CatalogListParameterBuilder {
+    pub fn new() -> Self {
         Default::default()
     }
 
-    fn cursor(mut self, cursor: String) -> Self {
+    pub fn cursor(mut self, cursor: String) -> Self {
         self.cursor = Some(cursor);
 
         self
     }
 
-    fn add_type(mut self, type_name: String) -> Self {
+    pub fn add_type(mut self, type_name: String) -> Self {
         if let Some(ref mut types) = &mut self.types {
             if crate::response::enums::CatalogObjectTypeEnum::validate(&type_name) {
                 for existing_type in types.iter() {
@@ -67,7 +67,7 @@ impl ListParameterBuilder {
         self
     }
 
-    async fn build(self) -> Vec<(String, String)> {
+    pub async fn build(self) -> Vec<(String, String)> {
         let mut res = vec![];
 
         if let Some(cursor) = self.cursor {
@@ -113,7 +113,7 @@ mod test_catalog {
     #[actix_rt::test]
     async fn test_list_parameter_builder() {
         let expected = vec![("types".to_string(), "ITEM%2CCATEGORY".to_string())];
-        let actual = ListParameterBuilder::new()
+        let actual = CatalogListParameterBuilder::new()
             .add_type("ITEM".to_string()).add_type("CATEGORY".to_string())
             .add_type("ITEM".to_string()).add_type("ITEMS".to_string())
             .build().await;
