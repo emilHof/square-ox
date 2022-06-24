@@ -3,10 +3,11 @@ Customers functionality of the [Square API](https://developer.squareup.com).
  */
 
 use crate::client::SquareClient;
-use crate::endpoint::{EndpointVerb, SquareEndpoint};
-use crate::error::{CustomerBuildError, CustomerDeleteBuildError, CustomerSearchQueryBuildError, ListParametersBuilderError};
-use crate::error::SquareError;
-use crate::response::{SquareResponse, jsons::Address, jsons::Customer, jsons::FilterValue};
+use crate::api::{Verb, SquareAPI};
+use crate::errors::{SquareError, CustomerBuildError, CustomerDeleteBuildError,
+                    CustomerSearchQueryBuildError, ListParametersBuilderError};
+use crate::response::SquareResponse;
+use crate::objects::{Address, Customer, FilterValue, maps::CustomerCreationSource};
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -15,8 +16,8 @@ impl SquareClient {
     pub async fn list_customers(&self, list_parameters: Vec<(String, String)>)
         -> Result<SquareResponse, SquareError> {
         self.request(
-            EndpointVerb::GET,
-            SquareEndpoint::Customers("".to_string()),
+            Verb::GET,
+            SquareAPI::Customers("".to_string()),
             None::<&Customer>,
             Some(list_parameters),
         ).await
@@ -25,8 +26,8 @@ impl SquareClient {
     pub async fn create_customer(&self, customer: Customer)
         -> Result<SquareResponse, SquareError> {
         self.request(
-            EndpointVerb::POST,
-            SquareEndpoint::Customers("".to_string()),
+            Verb::POST,
+            SquareAPI::Customers("".to_string()),
             Some(&customer),
             None,
         ).await
@@ -35,8 +36,8 @@ impl SquareClient {
     pub async fn search_customers(&self, customer_search_query: CustomerSearchQuery)
     -> Result<SquareResponse, SquareError>{
         self.request(
-            EndpointVerb::POST,
-            SquareEndpoint::Customers("/search".to_string()),
+            Verb::POST,
+            SquareAPI::Customers("/search".to_string()),
             Some(&customer_search_query),
             None,
         ).await
@@ -45,8 +46,8 @@ impl SquareClient {
     pub async fn delete_customer(&self, customer_to_delete: CustomerDelete)
     -> Result<SquareResponse, SquareError > {
         self.request(
-            EndpointVerb::DELETE,
-            SquareEndpoint::Customers(format!("/{}", customer_to_delete.customer_id)),
+            Verb::DELETE,
+            SquareAPI::Customers(format!("/{}", customer_to_delete.customer_id)),
             None::<&CustomerSearchQuery>,
             customer_to_delete.version,
         ).await
@@ -683,7 +684,7 @@ impl CustomerSearchQueryBuilder {
     }
 
     pub fn creation_source_value(mut self, value: String) -> Self {
-        if crate::response::enums::CustomerCreationSource::validate(&value) {
+        if CustomerCreationSource::validate(&value) {
             let values = vec![value.clone()];
             let creation_source = CreationSource {
                 rule: Some("INCLUDE".to_string()),

@@ -1,6 +1,6 @@
 use square_rs::client::SquareClient;
-use square_rs::error::SearchQueryBuildError;
-use square_rs::endpoint::bookings::SearchQueryBuilder;
+use square_rs::errors::SearchQueryBuildError;
+use square_rs::api::bookings::SearchQueryBuilder;
 
 use actix_web::{middleware::Logger, post, get, web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};

@@ -3,9 +3,8 @@ use actix_rt;
 
 use dotenv::dotenv;
 use std::env;
-use square_rs::endpoint::catalog;
-use square_rs::endpoint::customers::{CustomerListParametersBuilder, CustomerSearchQueryBuilder};
-use square_rs::jsons::Response;
+use square_rs::api::catalog;
+use square_rs::api::customers::{CustomerListParametersBuilder, CustomerSearchQueryBuilder};
 use square_rs::response::ResponseError;
 
 #[actix_rt::test]

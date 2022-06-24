@@ -3,9 +3,10 @@ Catalog functionality of the [Square API](https://developer.squareup.com).
  */
 
 use crate::client::SquareClient;
-use crate::endpoint::{EndpointVerb, SquareEndpoint};
-use crate::error::SquareError;
-use crate::response::{jsons::CatalogObject, SquareResponse};
+use crate::api::{Verb, SquareAPI};
+use crate::errors::SquareError;
+use crate::response::SquareResponse;
+use crate::objects::{CatalogObject, maps::CatalogObjectTypeEnum};
 
 use serde::{Deserialize, Serialize};
 
@@ -13,8 +14,8 @@ impl SquareClient {
     pub async fn upsert_catalog_object(&self, object: CatalogObjectRequest)
         -> Result<SquareResponse, SquareError> {
         self.request(
-            EndpointVerb::POST,
-            SquareEndpoint::Catalog("/object".to_string()),
+            Verb::POST,
+            SquareAPI::Catalog("/object".to_string()),
             Some(&object),
             None,
         ).await
@@ -23,8 +24,8 @@ impl SquareClient {
     pub async fn list_catalog(&self, list_parameters: Option<Vec<(String, String)>>)
     -> Result<SquareResponse, SquareError> {
         self.request(
-            EndpointVerb::GET,
-            SquareEndpoint::Catalog("/list".to_string()),
+            Verb::GET,
+            SquareAPI::Catalog("/list".to_string()),
             None::<&CatalogObject>,
             list_parameters
         ).await
@@ -51,7 +52,7 @@ impl CatalogListParameterBuilder {
 
     pub fn add_type(mut self, type_name: String) -> Self {
         if let Some(ref mut types) = &mut self.types {
-            if crate::response::enums::CatalogObjectTypeEnum::validate(&type_name) {
+            if CatalogObjectTypeEnum::validate(&type_name) {
                 for existing_type in types.iter() {
                     if *existing_type == type_name.as_ref() {
                         return self

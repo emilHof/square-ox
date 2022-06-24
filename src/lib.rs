@@ -17,8 +17,7 @@
 #![deny(clippy::all)]
 
 pub mod client;
-pub mod endpoint;
-pub mod error;
-pub mod money;
+pub mod api;
+pub mod errors;
 pub mod response;
-pub use crate::response::jsons;
+pub mod objects;

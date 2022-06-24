@@ -4,9 +4,10 @@ Customers functionality of the [Square API](https://developer.squareup.com).
 
 // TODO import the necessary mods
 use crate::client::SquareClient;
-use crate::endpoint::{EndpointVerb, SquareEndpoint};
-use crate::error::{SquareError, LocationsBuildError};
-use crate::response::{jsons::Location, SquareResponse};
+use crate::api::{Verb, SquareAPI};
+use crate::errors::{SquareError, LocationsBuildError};
+use crate::response::SquareResponse;
+use crate::objects::Location;
 
 use serde::{Deserialize, Serialize};
 
@@ -14,8 +15,8 @@ use serde::{Deserialize, Serialize};
 impl SquareClient {
     pub async fn list_locations(&self) -> Result<SquareResponse, SquareError> {
         self.request(
-            EndpointVerb::GET,
-            SquareEndpoint::Locations,
+            Verb::GET,
+            SquareAPI::Locations,
             None::<&Location>,
             None,
         ).await

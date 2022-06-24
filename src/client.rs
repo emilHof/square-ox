@@ -16,8 +16,8 @@ let client = SquareClient::new(ACCESS_TOKEN);
 After creating a client you will be able to use all of the clients methods.
 
 */
-use crate::endpoint::{SquareEndpoint, EndpointVerb};
-use crate::error::SquareError;
+use crate::api::{SquareAPI, Verb};
+use crate::errors::SquareError;
 use crate::response::SquareResponse;
 
 use reqwest::{header, Client};
@@ -85,28 +85,28 @@ impl SquareClient {
         }
     }
 
-    /// Sends a request to a given [SquareEndpoint](crate::endpoint::SquareEndpoint)
+    /// Sends a request to a given [SquareEndpoint](crate::api::SquareEndpoint)
     /// # Arguments
-    /// * `endpoint` - The [SquareEndpoint](crate::endpoint::SquareEndpoint) to send the request to
+    /// * `api` - The [SquareEndpoint](crate::api::SquareEndpoint) to send the request to
     /// * `body` - The json that will be included in the request.
     /// All types that meet the conditions to be deserialized to JSON are accepted.
     ///
     /// # Example:
     /// ```
     /// async {
-    ///     use square_rs::{endpoint::{EndpointVerb, SquareEndpoint, payment}, client};
+    ///     use square_rs::{api::{Verb, SquareAPI, payment}, client};
     ///     const ACCESS_TOKEN:&str = "your_square_access_token";
     ///     let payment = payment::PaymentBuilder::new().build().await;
     ///
     ///     let client = client::SquareClient::new(ACCESS_TOKEN);
-    ///     client.request( EndpointVerb::POST, SquareEndpoint::Payments, Some(&payment), None).await.expect("");
+    ///     client.request( Verb::POST, SquareAPI::Payments, Some(&payment), None).await.expect("");
     /// };
     ///
     /// ```
     pub async fn request<T>(
         &self,
-        verb: EndpointVerb,
-        endpoint: SquareEndpoint,
+        verb: Verb,
+        endpoint: SquareAPI,
         json: Option<&T>,
         parameters: Option<Vec<(String, String)>>,
     ) -> Result<SquareResponse, SquareError>
@@ -128,11 +128,11 @@ impl SquareClient {
 
         // Send the request to the Square API, and get the response
         let mut builder = match verb {
-            EndpointVerb::GET => client.get(&url),
-            EndpointVerb::POST => client.post(&url),
-            EndpointVerb::PUT => client.put(&url),
-            EndpointVerb::PATCH => client.patch(&url),
-            EndpointVerb::DELETE => client.delete(&url),
+            Verb::GET => client.get(&url),
+            Verb::POST => client.post(&url),
+            Verb::PUT => client.put(&url),
+            Verb::PATCH => client.patch(&url),
+            Verb::DELETE => client.delete(&url),
         };
 
         // Add query parameters if there are any

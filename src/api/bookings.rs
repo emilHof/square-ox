@@ -2,17 +2,16 @@
 Bookings functionality of the [Square API](https://developer.squareup.com).
  */
 
-use std::fmt::format;
 use crate::client::SquareClient;
-use crate::endpoint::{EndpointVerb, SquareEndpoint};
-use crate::error::{SearchQueryBuildError, BookingsPostBuildError, BookingsCancelBuildError};
-use crate::error::SquareError;
-use crate::response::{SquareResponse, jsons::FilterValue,
-                      enums::BusinessAppointmentSettingsBookingLocationType};
+use crate::api::{Verb, SquareAPI};
+use crate::errors::{SquareError, SearchQueryBuildError,
+                    BookingsPostBuildError, BookingsCancelBuildError};
+use crate::response::SquareResponse;
+use crate::objects::{AppointmentSegment, Booking, FilterValue,
+                     maps::BusinessAppointmentSettingsBookingLocationType};
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::jsons::{AppointmentSegment, Booking};
 
 impl SquareClient {
     /// Search for availability with the given [SearchQuery](SearchQuery) to the Square API
@@ -24,8 +23,8 @@ impl SquareClient {
     pub async fn search_availability(&self, search_query: SearchQuery)
                                      -> Result<SquareResponse, SquareError> {
         self.request(
-            EndpointVerb::POST,
-            SquareEndpoint::Bookings("/availability/search".to_string()),
+            Verb::POST,
+            SquareAPI::Bookings("/availability/search".to_string()),
             Some(&search_query),
             None,
         ).await
@@ -40,8 +39,8 @@ impl SquareClient {
     pub async fn create_booking(&self, booking_post: BookingsPost)
         -> Result<SquareResponse, SquareError> {
         self.request(
-            EndpointVerb::POST,
-            SquareEndpoint::Bookings("".to_string()),
+            Verb::POST,
+            SquareAPI::Bookings("".to_string()),
             Some(&booking_post),
             None,
         ).await
@@ -56,9 +55,9 @@ impl SquareClient {
     pub async fn cancel_booking(&self, booking_to_cancel: BookingsCancel)
                                 -> Result<SquareResponse, SquareError> {
         self.request(
-            EndpointVerb::POST,
-            SquareEndpoint::Bookings(format!("/{}/cancel",
-                                             booking_to_cancel.booking_id.clone())),
+            Verb::POST,
+            SquareAPI::Bookings(format!("/{}/cancel",
+                                        booking_to_cancel.booking_id.clone())),
             Some(&booking_to_cancel.body),
             None,
         ).await
@@ -83,14 +82,16 @@ pub struct BookingsPost {
 ///
 /// # Example: Build a [BookingPost](BookingPost)
 /// ```
-/// use square_rs::jsons::AppointmentSegment;
-/// let builder = square_rs::endpoint::bookings::BookingsPostBuilder::new()
-/// .customer_id("some_id".to_string())
-/// .location_id("some_id".to_string())
-/// .start_at("some_start_at_date_time".to_string())
-/// .add_appointment_segment(AppointmentSegment::default())
-/// .build()
-/// .await;
+/// async {
+///     use square_rs::objects::AppointmentSegment;
+///     let builder = square_rs::api::bookings::BookingsPostBuilder::new()
+///     .customer_id("some_id".to_string())
+///     .location_id("some_id".to_string())
+///     .start_at("some_start_at_date_time".to_string())
+///     .add_appointment_segment(AppointmentSegment::default())
+///     .build()
+///     .await;
+/// };
 /// ```
 #[derive(Default)]
 pub struct BookingsPostBuilder(Booking);
@@ -101,7 +102,7 @@ impl BookingsPostBuilder {
     ///
     /// # Example: Create a new client
     /// ```
-    /// let builder = square_rs::endpoint::bookings::BookingsPostBuilder::new();
+    /// let builder = square_rs::api::bookings::BookingsPostBuilder::new();
     /// ```
     pub fn new() -> Self {
         let mut booking = Booking::default();
@@ -117,7 +118,7 @@ impl BookingsPostBuilder {
     ///
     /// # Example: Set the customer id
     /// ```
-    /// let builder = square_rs::endpoint::bookings::BookingsPostBuilder::new()
+    /// let builder = square_rs::api::bookings::BookingsPostBuilder::new()
     /// .customer_id("some_id".to_string());
     /// ```
     pub fn customer_id(mut self, customer_id: String) -> Self {
@@ -133,7 +134,7 @@ impl BookingsPostBuilder {
     ///
     /// # Example: Set the customer id
     /// ```
-    /// let builder = square_rs::endpoint::bookings::BookingsPostBuilder::new()
+    /// let builder = square_rs::api::bookings::BookingsPostBuilder::new()
     /// .location_id("some_id".to_string());
     /// ```
     pub fn location_id(mut self, location_id: String) -> Self {
@@ -184,14 +185,16 @@ impl BookingsPostBuilder {
     ///
     /// # Example: Build a [BookingPost](BookingPost)
     /// ```
-    /// use square_rs::jsons::AppointmentSegment;
-    /// let builder = square_rs::endpoint::bookings::BookingsPostBuilder::new()
-    /// .customer_id("some_id".to_string())
-    /// .location_id("some_id".to_string())
-    /// .start_at("some_start_at_date_time".to_string())
-    /// .add_appointment_segment(AppointmentSegment::default())
-    /// .build()
-    /// .await;
+    /// async {
+    ///     use square_rs::objects::AppointmentSegment;
+    ///     let builder = square_rs::api::bookings::BookingsPostBuilder::new()
+    ///     .customer_id("some_id".to_string())
+    ///     .location_id("some_id".to_string())
+    ///     .start_at("some_start_at_date_time".to_string())
+    ///     .add_appointment_segment(AppointmentSegment::default())
+    ///     .build()
+    ///     .await;
+    /// };
     /// ```
     pub async fn build(mut self) -> Result<BookingsPost, BookingsPostBuildError> {
 

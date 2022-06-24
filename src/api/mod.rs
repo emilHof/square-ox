@@ -18,7 +18,7 @@ use std::fmt;
 /// All of the endpoints of the [Square API](https://developer.squareup.com)
 /// for which we have implemented some of the functionality.
 #[non_exhaustive]
-pub enum SquareEndpoint {
+pub enum SquareAPI {
     Payments,
     Bookings(String),
     Locations,
@@ -28,7 +28,7 @@ pub enum SquareEndpoint {
 
 /// All of the HTTP verbs that have been implemented and are accepted by the different
 /// [Square API](https://developer.squareup.com) endpoints.
-pub enum EndpointVerb {
+pub enum Verb {
     GET,
     POST,
     PUT,
@@ -39,20 +39,20 @@ pub enum EndpointVerb {
 /// Implement the Display trait for all of the endpoints we need this allows
 /// for them to be changed in the future without effecting the existing code
 /// base.
-impl fmt::Display for SquareEndpoint {
+impl fmt::Display for SquareAPI {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            SquareEndpoint::Payments => write!(f, "payments"),
-            SquareEndpoint::Bookings(path) => write!(f, "bookings{}", path),  // TODO Implement Bookings
-            SquareEndpoint::Locations => write!(f, "locations"),  // TODO Implement Locations
-            SquareEndpoint::Catalog(path) => write!(f, "catalog{}", path),  // TODO Implement Catalog
-            SquareEndpoint::Customers(path) => write!(f, "customers{}", path),  // TODO Implement Customers
+            SquareAPI::Payments => write!(f, "payments"),
+            SquareAPI::Bookings(path) => write!(f, "bookings{}", path),  // TODO Implement Bookings
+            SquareAPI::Locations => write!(f, "locations"),  // TODO Implement Locations
+            SquareAPI::Catalog(path) => write!(f, "catalog{}", path),  // TODO Implement Catalog
+            SquareAPI::Customers(path) => write!(f, "customers{}", path),  // TODO Implement Customers
         }
     }
 }
 
 impl SquareClient {
-    pub fn endpoint(&self, end_point: SquareEndpoint) -> String {
+    pub fn endpoint(&self, end_point: SquareAPI) -> String {
         /// The main base URL for the Square API
         const SQUARE_PRODUCTION_BASE: &str = "https://connect.squareup.com/v2/";
         const SQUARE_SANDBOX_BASE: &str = "https://connect.squareupsandbox.com/v2/";
