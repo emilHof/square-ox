@@ -2,6 +2,8 @@ use std::fmt;
 use std::fmt::Formatter;
 use serde::{Deserialize, Serialize};
 
+// TODO change the implementation of existing Response Object fields to use the right enums
+
 /// The Currency code corresponding to the amount of Money.
 #[non_exhaustive]
 #[derive(Serialize, Deserialize, Debug, Clone)]

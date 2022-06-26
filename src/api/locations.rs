@@ -2,7 +2,6 @@
 Customers functionality of the [Square API](https://developer.squareup.com).
  */
 
-// TODO import the necessary mods
 use crate::client::SquareClient;
 use crate::api::{Verb, SquareAPI};
 use crate::errors::{SquareError, LocationsBuildError, LocationBuildError};
@@ -90,29 +89,29 @@ pub struct LocationBuilder {
 }
 
 impl LocationBuilder {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Default::default()
     }
 
-    fn name(mut self, name: String) -> Self {
+    pub fn name(mut self, name: String) -> Self {
         self.name = Some(name);
 
         self
     }
 
-    fn address(mut self, address: Address) -> Self {
+    pub fn address(mut self, address: Address) -> Self {
         self.address = Some(address);
 
         self
     }
 
-    fn business_email(mut self, business_email: String) -> Self {
+    pub fn business_email(mut self, business_email: String) -> Self {
         self.business_email = Some(business_email);
 
         self
     }
 
-    fn add_business_hours_period(mut self, business_hours_period: BusinessHoursPeriod) -> Self {
+    pub fn add_business_hours_period(mut self, business_hours_period: BusinessHoursPeriod) -> Self {
         match self.business_hours.take() {
             Some(mut business_hours) => {
                 business_hours.periods.push(business_hours_period);
@@ -126,19 +125,19 @@ impl LocationBuilder {
         self
     }
 
-    fn business_hours(mut self, business_hours: BusinessHours) -> Self {
+    pub fn business_hours(mut self, business_hours: BusinessHours) -> Self {
         self.business_hours = Some(business_hours);
 
         self
     }
 
-    fn business_name(mut self, business_name: String) -> Self {
+    pub fn business_name(mut self, business_name: String) -> Self {
         self.business_name = Some(business_name);
 
         self
     }
 
-    fn add_capability(mut self, capability: String) -> Self {
+    pub fn add_capability(mut self, capability: String) -> Self {
         match self.capabilities.take() {
             Some(mut capabilities) => {
                 capabilities.push(capability);
@@ -150,121 +149,121 @@ impl LocationBuilder {
         self
     }
 
-    fn capabilities(mut self, capabilities: Vec<String>) -> Self {
+    pub fn capabilities(mut self, capabilities: Vec<String>) -> Self {
         self.capabilities = Some(capabilities);
 
         self
     }
 
-    fn coordinates(mut self, coordinates: Coordinates) -> Self {
+    pub fn coordinates(mut self, coordinates: Coordinates) -> Self {
         self.coordinates = Some(coordinates);
 
         self
     }
 
-    fn country(mut self, country: String) -> Self {
+    pub fn country(mut self, country: String) -> Self {
         self.country = Some(country);
 
         self
     }
 
-    fn currency(mut self, currency: Currency) -> Self {
+    pub fn currency(mut self, currency: Currency) -> Self {
         self.currency = Some(currency);
 
         self
     }
 
-    fn description(mut self, description: String) -> Self {
+    pub fn description(mut self, description: String) -> Self {
         self.description = Some(description);
 
         self
     }
 
-    fn facebook_url(mut self, facebook_url: String) -> Self {
+    pub fn facebook_url(mut self, facebook_url: String) -> Self {
         self.facebook_url = Some(facebook_url);
 
         self
     }
 
-    fn full_format_logo_url(mut self, full_format_logo_url: String) -> Self {
+    pub fn full_format_logo_url(mut self, full_format_logo_url: String) -> Self {
         self.full_format_logo_url = Some(full_format_logo_url);
 
         self
     }
 
-    fn instagram_username(mut self, instagram_username: String) -> Self {
+    pub fn instagram_username(mut self, instagram_username: String) -> Self {
         self.instagram_username = Some(instagram_username);
 
         self
     }
 
-    fn language_code(mut self, language_code: String) -> Self {
+    pub fn language_code(mut self, language_code: String) -> Self {
         self.language_code = Some(language_code);
 
         self
     }
 
-    fn logo_url(mut self, logo_url: String) -> Self {
+    pub fn logo_url(mut self, logo_url: String) -> Self {
         self.logo_url = Some(logo_url);
 
         self
     }
 
-    fn mcc(mut self, mcc: String) -> Self {
+    pub fn mcc(mut self, mcc: String) -> Self {
         self.mcc = Some(mcc);
 
         self
     }
 
-    fn merchant_id(mut self, merchant_id: String) -> Self {
+    pub fn merchant_id(mut self, merchant_id: String) -> Self {
         self.merchant_id = Some(merchant_id);
 
         self
     }
 
-    fn phone_number(mut self, phone_number: String) -> Self {
+    pub fn phone_number(mut self, phone_number: String) -> Self {
         self.phone_number = Some(phone_number);
 
         self
     }
 
-    fn pos_background_url(mut self, pos_background_url: String) -> Self {
+    pub fn pos_background_url(mut self, pos_background_url: String) -> Self {
         self.pos_background_url = Some(pos_background_url);
 
         self
     }
 
-    fn status(mut self, status: LocationStatus) -> Self {
+    pub fn status(mut self, status: LocationStatus) -> Self {
         self.status = Some(status);
 
         self
     }
 
-    fn tax_ids(mut self, tax_ids: TaxIds) -> Self {
+    pub fn tax_ids(mut self, tax_ids: TaxIds) -> Self {
         self.tax_ids = Some(tax_ids);
 
         self
     }
 
-    fn timezone(mut self, timezone: String) -> Self {
+    pub fn timezone(mut self, timezone: String) -> Self {
         self.timezone = Some(timezone);
 
         self
     }
 
-    fn twitter_username(mut self, twitter_username: String) -> Self {
+    pub fn twitter_username(mut self, twitter_username: String) -> Self {
         self.twitter_username = Some(twitter_username);
 
         self
     }
 
-    fn location_type(mut self, location_type: LocationType) -> Self {
+    pub fn location_type(mut self, location_type: LocationType) -> Self {
         self.type_name = Some(location_type);
 
         self
     }
 
-    fn website_url(mut self, website_url: String) -> Self {
+    pub fn website_url(mut self, website_url: String) -> Self {
         self.website_url = Some(website_url);
 
         self

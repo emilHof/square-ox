@@ -963,5 +963,5 @@ pub struct BookingCreatorDetails {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Money {
     pub amount: i64,
-    pub currency: enums::Currency,
+    pub currency: Currency,
 }
