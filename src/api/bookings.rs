@@ -30,11 +30,11 @@ impl SquareClient {
         ).await
     }
 
-    /// Create a booking with the given [Bookings](Bookings) to the Square API
+    /// Create a booking with the given [BookingsPost](BookingsPost) to the Square API
     /// and get the response back.
     ///
     /// # Arguments
-    /// * `create_booking` - A [Bookings](Bookings) created from the
+    /// * `create_booking` - A [BookingsPost](BookingsPost) created from the
     /// [BookingsBuilder](BookingsBuilder)
     pub async fn create_booking(&self, booking_post: BookingsPost)
         -> Result<SquareResponse, SquareError> {
@@ -46,12 +46,43 @@ impl SquareClient {
         ).await
     }
 
+    /// Update a booking with the given [BookingsPost](BookingsPost) to the Square API
+    /// and get the response back.
+    ///
+    /// # Arguments
+    /// * `updated_booking` - A [BookingsPost](BookingsPost) created from the
+    /// [BookingsBuilder](BookingsBuilder)
+    pub async fn update_booking(&self, updated_booking: BookingsPost, booking_id: String)
+                                -> Result<SquareResponse, SquareError> {
+        self.request(
+            Verb::PUT,
+            SquareAPI::Bookings(format!("/{}", booking_id)),
+            Some(&updated_booking),
+            None,
+        ).await
+    }
+
+    /// Retrieve an existing booking from the Square API.
+    ///
+    /// # Arguments
+    /// * `booking_id` - The id of the booking as a String
+    pub async fn retrieve_booking(&self, booking_id: String)
+                                -> Result<SquareResponse, SquareError> {
+        self.request(
+            Verb::GET,
+            SquareAPI::Bookings(format!("/{}", booking_id)),
+            None::<&BookingsPost>,
+            None,
+        ).await
+    }
+
+
     /// Create a booking with the given [Bookings](Bookings) to the Square API
     /// and get the response back.
     ///
     /// # Arguments
-    /// * `create_booking` - A [Bookings](Bookings) created from the
-    /// [BookingsBuilder](BookingsBuilder)
+    /// * `booking_to_cancel` - A [BookingsCancel](BookingsCancel) created from the
+    /// [BookingsCancelBuilder](BookingsCancelBuilder)
     pub async fn cancel_booking(&self, booking_to_cancel: BookingsCancel)
                                 -> Result<SquareResponse, SquareError> {
         self.request(
@@ -547,6 +578,21 @@ mod test_bookings {
     }
 
     #[actix_rt::test]
+    async fn test_retrieve_booking() {
+        use dotenv::dotenv;
+        use std::env;
+
+        dotenv().ok();
+        let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
+        let sut = SquareClient::new(&access_token);
+
+        let res =
+            sut.retrieve_booking("burxkwa4ot1ydg".to_string()).await;
+
+        assert!(res.is_ok())
+    }
+
+    #[actix_rt::test]
     async fn test_bookings_cancel_builder() {
         let expected = BookingsCancel {
             booking_id: "9uv6i3p5x5ao1p".to_string(),
@@ -589,6 +635,51 @@ mod test_bookings {
         };
 
         let res = sut.cancel_booking(input).await;
+
+        assert!(res.is_ok())
+    }
+
+    #[actix_rt::test]
+    async fn test_update_booking() {
+        use dotenv::dotenv;
+        use std::env;
+
+        dotenv().ok();
+        let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
+        let sut = SquareClient::new(&access_token);
+
+        let input = BookingsPost {
+            idempotency_key: Uuid::new_v4().to_string(),
+            booking: Booking {
+                id: None,
+                all_day: None,
+                appointment_segments: Some(vec![AppointmentSegment {
+                    duration_minutes: 60.00,
+                    team_member_id: "TMKFnToW8ByXrcm6".to_string(),
+                    any_team_member_id: None,
+                    intermission_minutes: None,
+                    resource_ids: None,
+                    service_variation_id: "BSOL4BB6RCMX6SH4KQIFWZDP".to_string(),
+                    service_variation_version:  1655427266071,
+                }]),
+                created_at: None,
+                booking_creator_details: None,
+                customer_id: Some("7PB8P9553RYA3F672D15369VK4".to_string()),
+                customer_note: None,
+                location_id: Some("L1JC53TYHS40Z".to_string()),
+                location_type: None,
+                seller_note: Some("be nice!".to_string()),
+                source: None,
+                start_at: Some("2022-10-11T16:30:00Z".to_string()),
+                status: None,
+                transition_time_minutes: None,
+                updated_at: None,
+                version: None
+            }
+        };
+
+        let res =
+            sut.update_booking(input, "oruft3c9lh0duq".to_string()).await;
 
         assert!(res.is_ok())
     }
