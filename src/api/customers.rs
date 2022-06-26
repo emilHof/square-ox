@@ -7,7 +7,7 @@ use crate::api::{Verb, SquareAPI};
 use crate::errors::{SquareError, CustomerBuildError, CustomerDeleteBuildError,
                     CustomerSearchQueryBuildError, ListParametersBuilderError};
 use crate::response::SquareResponse;
-use crate::objects::{Address, Customer, FilterValue, maps::CustomerCreationSource};
+use crate::objects::{Address, Customer, FilterValue, enums::CustomerCreationSource};
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -302,7 +302,7 @@ pub struct CreationSource {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rule: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub values: Option<Vec<String>>,
+    pub values: Option<Vec<CustomerCreationSource>>,
 }
 
 #[derive(Default)]
@@ -683,47 +683,45 @@ impl CustomerSearchQueryBuilder {
         self
     }
 
-    pub fn creation_source_value(mut self, value: String) -> Self {
-        if CustomerCreationSource::validate(&value) {
-            let values = vec![value.clone()];
-            let creation_source = CreationSource {
-                rule: Some("INCLUDE".to_string()),
-                values: Some(values.clone())
-            };
-            let filter = CustomerFilter {
-                created_at:  None,
-                creation_source: Some(creation_source.clone()),
-                email_address: None,
-                group_ids: None,
-                phone_number: None,
-                reference_id: None,
-                updated_at: None
-            };
-            let query = SearchQueryAttribute {
-                filter: Some(filter.clone()),
-                sort: None
-            };
+    pub fn creation_source_value(mut self, value: CustomerCreationSource) -> Self {
+        let values = vec![value.clone()];
+        let creation_source = CreationSource {
+            rule: Some("INCLUDE".to_string()),
+            values: Some(values.clone())
+        };
+        let filter = CustomerFilter {
+            created_at:  None,
+            creation_source: Some(creation_source.clone()),
+            email_address: None,
+            group_ids: None,
+            phone_number: None,
+            reference_id: None,
+            updated_at: None
+        };
+        let query = SearchQueryAttribute {
+            filter: Some(filter.clone()),
+            sort: None
+        };
 
-            if let Some(ref mut query) = &mut self.query {
-                if let Some(ref mut filter) = &mut query.filter {
-                    if let Some(ref mut creation_source) = &mut filter.creation_source {
-                        if let Some(ref mut values) = &mut creation_source.values {
-                            for val in values.iter() {
-                                if *val == value {return self}
-                            }
-                            values.push(value)
-                        } else {
-                            creation_source.values = Some(values);
+        if let Some(ref mut query) = &mut self.query {
+            if let Some(ref mut filter) = &mut query.filter {
+                if let Some(ref mut creation_source) = &mut filter.creation_source {
+                    if let Some(ref mut values) = &mut creation_source.values {
+                        for val in values.iter() {
+                            if *val == value {return self}
                         }
+                        values.push(value)
                     } else {
-                        filter.creation_source = Some(creation_source)
+                        creation_source.values = Some(values);
                     }
                 } else {
-                    query.filter = Some(filter);
+                    filter.creation_source = Some(creation_source)
                 }
             } else {
-                self.query = Some(query);
+                query.filter = Some(filter);
             }
+        } else {
+            self.query = Some(query);
         }
 
         self
@@ -904,7 +902,8 @@ mod test_customers {
                     }),
                     creation_source: Some(CreationSource {
                         rule: Some("EXCLUDE".to_string()),
-                        values: Some(vec!["APPOINTMENTS".to_string(), "COUPON".to_string()])
+                        values: Some(vec![CustomerCreationSource::APPOINTMENTS,
+                                          CustomerCreationSource::COUPON])
                     }),
                     email_address: Some(CustomerTextFilter {
                         exact: Some("emil.k.hofstetter@gmail.com".to_string()),
@@ -935,9 +934,9 @@ mod test_customers {
             .fuzzy_phone_number("0176-47-85-993".to_string())
             .fuzzy_reference_id("432mi23cß2".to_string())
             .exact_reference_id("cmiw9u209md82".to_string())
-            .creation_source_value("APPOINTMENTS".to_string())
-            .creation_source_value("COUPON".to_string())
-            .creation_source_value("APPOINTMENTS".to_string())
+            .creation_source_value(CustomerCreationSource::APPOINTMENTS)
+            .creation_source_value(CustomerCreationSource::COUPON)
+            .creation_source_value(CustomerCreationSource::APPOINTMENTS)
             .set_creation_source_exclude()
             .build().await;
 
@@ -965,7 +964,8 @@ mod test_customers {
                     }),
                     creation_source: Some(CreationSource {
                         rule: Some("INCLUDE".to_string()),
-                        values: Some(vec!["APPOINTMENTS".to_string(), "THIRD_PARTY".to_string()]),
+                        values: Some(vec![CustomerCreationSource::APPOINTMENTS,
+                                          CustomerCreationSource::THIRD_PARTY]),
                     }),
                     email_address: Some(CustomerTextFilter {
                         exact: None,

@@ -21,7 +21,7 @@ use std::fmt;
 pub enum SquareAPI {
     Payments,
     Bookings(String),
-    Locations,
+    Locations(String),
     Catalog(String),
     Customers(String),
 }
@@ -44,7 +44,7 @@ impl fmt::Display for SquareAPI {
         match self {
             SquareAPI::Payments => write!(f, "payments"),
             SquareAPI::Bookings(path) => write!(f, "bookings{}", path),  // TODO Implement Bookings
-            SquareAPI::Locations => write!(f, "locations"),  // TODO Implement Locations
+            SquareAPI::Locations(path) => write!(f, "locations{}", path),
             SquareAPI::Catalog(path) => write!(f, "catalog{}", path),  // TODO Implement Catalog
             SquareAPI::Customers(path) => write!(f, "customers{}", path),  // TODO Implement Customers
         }

@@ -1,7 +1,7 @@
-pub mod maps;
 pub mod enums;
 
 use serde::{Deserialize, Serialize};
+use crate::objects::enums::{BusinessAppointmentSettingsBookingLocationType, Currency, LocationStatus, LocationType};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -27,53 +27,59 @@ pub enum Response {
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct Location {
-    pub id: String,
-    #[serde(default)]
-    pub name: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub business_email: Option<String>,
     pub address: Option<Address>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub timezone: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub capabilities: Option<Vec<String>>,
-    #[serde(default)]
-    pub status: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub status: Option<LocationStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub created_id: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub coordinates: Option<Coordinates>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub country: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub created_at: Option<String>,
-    #[serde(default)]
-    pub currency: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub currency: Option<Currency>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub facebook_url: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub full_format_logo_url: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub logo_url: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub instagram_username: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub language_code: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub mcc: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub merchant_id: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub phone_number: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pos_background_url: Option<String>,
-    #[serde(default)]
-    pub tax_ids: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tax_ids: Option<TaxIds>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub twitter_username: Option<String>,
-    #[serde(rename = "type", default)]
-    pub type_name: Option<String>,
-    #[serde(default)]
-    pub business_hours: Option<Periods>,
-    #[serde(default)]
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
+    pub type_name: Option<LocationType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub business_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub business_hours: Option<BusinessHours>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub website_url: Option<String>
 }
 
@@ -104,12 +110,12 @@ pub struct Coordinates {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
-pub struct Periods {
-    pub periods: Vec<Period>,
+pub struct BusinessHours {
+    pub periods: Vec<BusinessHoursPeriod>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
-pub struct Period {
+pub struct BusinessHoursPeriod {
     pub day_of_week: String,
     pub start_local_time: String,
     pub end_local_time: String,
@@ -190,7 +196,14 @@ pub struct Preferences {
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct TaxIds {
-    pub eu_vat: String
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub eu_vat: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fr_siret: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fr_naf: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub es_nif: Option<String>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
@@ -917,7 +930,7 @@ pub struct Booking {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub location_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub location_type: Option<String>,
+    pub location_type: Option<BusinessAppointmentSettingsBookingLocationType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub seller_note: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

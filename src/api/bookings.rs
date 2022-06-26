@@ -8,7 +8,7 @@ use crate::errors::{SquareError, SearchQueryBuildError,
                     BookingsPostBuildError, BookingsCancelBuildError};
 use crate::response::SquareResponse;
 use crate::objects::{AppointmentSegment, Booking, FilterValue,
-                     maps::BusinessAppointmentSettingsBookingLocationType};
+                     enums::BusinessAppointmentSettingsBookingLocationType};
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -143,10 +143,8 @@ impl BookingsPostBuilder {
         self
     }
 
-    pub fn location_type(mut self, location_type: String) -> Self {
-        if BusinessAppointmentSettingsBookingLocationType::validate(&location_type) {
-            self.0.location_type = Some(location_type);
-        }
+    pub fn location_type(mut self, location_type: BusinessAppointmentSettingsBookingLocationType) -> Self {
+        self.0.location_type = Some(location_type);
 
         self
     }
@@ -202,7 +200,7 @@ impl BookingsPostBuilder {
 
         if booking.customer_id.is_none()
             || booking.location_id.is_none()
-            || booking.appointment_segments.as_ref().unwrap().len() < 0
+            || booking.appointment_segments.as_ref().unwrap().len() < 1
             || booking.start_at.is_none() {
             Err(BookingsPostBuildError)
         } else {

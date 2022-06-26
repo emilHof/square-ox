@@ -87,3 +87,6 @@ pub struct BookingsCancelBuildError;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CustomerDeleteBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct LocationBuildError;

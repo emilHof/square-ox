@@ -6,7 +6,7 @@ use crate::client::SquareClient;
 use crate::api::{Verb, SquareAPI};
 use crate::errors::SquareError;
 use crate::response::SquareResponse;
-use crate::objects::{CatalogObject, maps::CatalogObjectTypeEnum};
+use crate::objects::{CatalogObject, enums::CatalogObjectTypeEnum};
 
 use serde::{Deserialize, Serialize};
 
@@ -35,7 +35,7 @@ impl SquareClient {
 #[derive(Default)]
 pub struct CatalogListParameterBuilder {
     cursor: Option<String>,
-    types: Option<Vec<String>>,
+    types: Option<Vec<CatalogObjectTypeEnum>>,
     catalog_version: Option<i64>,
 }
 
@@ -50,16 +50,14 @@ impl CatalogListParameterBuilder {
         self
     }
 
-    pub fn add_type(mut self, type_name: String) -> Self {
+    pub fn add_type(mut self, type_name: CatalogObjectTypeEnum) -> Self {
         if let Some(ref mut types) = &mut self.types {
-            if CatalogObjectTypeEnum::validate(&type_name) {
                 for existing_type in types.iter() {
-                    if *existing_type == type_name.as_ref() {
+                    if *existing_type == type_name {
                         return self
                     }
                 }
                 types.push(type_name)
-            }
         } else {
             let types = vec![type_name];
             self.types = Some(types);
@@ -115,8 +113,9 @@ mod test_catalog {
     async fn test_list_parameter_builder() {
         let expected = vec![("types".to_string(), "ITEM%2CCATEGORY".to_string())];
         let actual = CatalogListParameterBuilder::new()
-            .add_type("ITEM".to_string()).add_type("CATEGORY".to_string())
-            .add_type("ITEM".to_string()).add_type("ITEMS".to_string())
+            .add_type(CatalogObjectTypeEnum::ITEM)
+            .add_type(CatalogObjectTypeEnum::CATEGORY)
+            .add_type(CatalogObjectTypeEnum::ITEM)
             .build().await;
 
         assert_eq!(expected, actual)
