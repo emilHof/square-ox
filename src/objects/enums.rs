@@ -15,98 +15,104 @@ pub enum Currency {
     SGD
 }
 
+/// The CustomerCreationSource type, indicating how the customer was created.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all(serialize = "SCREAMING_SNAKE_CASE", deserialize = "PascalCase"))]
 pub enum CustomerCreationSource {
-    OTHER,
-    APPOINTMENTS,
-    COUPON,
-    DELETION_RECOVERY,
-    DIRECTORY,
-    EGIFTING,
-    EMAIL_COLLECTION,
-    FEEDBACK,
-    IMPORT,
-    INVOICES,
-    LOYALTY,
-    MARKETING,
-    MERGE,
-    ONLINE_STORE,
-    INSTANT_PROFILE,
-    TERMINAL,
-    THIRD_PARTY,
-    THIRD_PARTY_IMPORT,
-    UNMERGE_RECOVERY
+    Other,
+    Appointments,
+    Coupon,
+    DeletionRecovery,
+    Directory,
+    Egifting,
+    EmailCollection,
+    Feedback,
+    Import,
+    Invoices,
+    Loyalty,
+    Marketing,
+    Merge,
+    OnlineStore,
+    InstantProfile,
+    Terminal,
+    ThirdParty,
+    ThirdPartyImport,
+    UnmergeRecovery
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(rename_all(serialize = "SCREAMING_SNAKE_CASE", deserialize = "PascalCase"))]
 pub enum CatalogObjectTypeEnum {
-    ITEM,
-    IMAGE,
-    CATEGORY,
-    ITEM_VARIATION,
-    TAX,
-    DISCOUNT,
-    MODIFIER_LIST,
-    MODIFIER,
-    PRICING_RULE,
-    TIME_PERIOD,
-    PRODUCT_SET,
-    MEASUREMENT_UNIT,
-    SUBSCRIPTION_PLAN,
-    ITEM_OPTION,
-    ITEM_OPTION_VAL,
-    CUSTOM_ATTRIBUTE_DEFINITION,
-    QUICK_AMOUNTS_SETTINGS,
+    Item,
+    Image,
+    Category,
+    ItemVariation,
+    Tax,
+    Discount,
+    ModifierList,
+    Modifier,
+    PricingRule,
+    TimePeriod,
+    ProductSet,
+    MeasurementUnit,
+    SubscriptionPlan,
+    ItemOption,
+    ItemOptionVal,
+    CustomAttributeDefinition,
+    QuickAmountsSettings,
 }
 
 impl fmt::Display for CatalogObjectTypeEnum {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            CatalogObjectTypeEnum::ITEM => write!(f, "ITEM"),
-            CatalogObjectTypeEnum::IMAGE => write!(f, "IMAGE =>"),
-            CatalogObjectTypeEnum::CATEGORY => write!(f, "CATEGORY"),
-            CatalogObjectTypeEnum::ITEM_VARIATION => write!(f, "ITEM_VARIATION"),
-            CatalogObjectTypeEnum::TAX => write!(f, "TAX"),
-            CatalogObjectTypeEnum::DISCOUNT => write!(f, "DISCOUNT"),
-            CatalogObjectTypeEnum::MODIFIER_LIST => write!(f, "MODIFIER_LIST"),
-            CatalogObjectTypeEnum::MODIFIER => write!(f, "MODIFIER"),
-            CatalogObjectTypeEnum::PRICING_RULE => write!(f, "PRICING_RULE"),
-            CatalogObjectTypeEnum::TIME_PERIOD => write!(f, "TIME_PERIOD"),
-            CatalogObjectTypeEnum::PRODUCT_SET => write!(f, "PRODUCT_SET"),
-            CatalogObjectTypeEnum::MEASUREMENT_UNIT => write!(f, "MEASUREMENT_UNIT"),
-            CatalogObjectTypeEnum::SUBSCRIPTION_PLAN => write!(f, "SUBSCRIPTION_PLAN"),
-            CatalogObjectTypeEnum::ITEM_OPTION => write!(f, "ITEM_OPTION"),
-            CatalogObjectTypeEnum::ITEM_OPTION_VAL => write!(f, "ITEM_OPTION_VAL"),
-            CatalogObjectTypeEnum::CUSTOM_ATTRIBUTE_DEFINITION
-            => write!(f, "CUSTOM_ATTRIBUTE_DEFINITION"),
-            CatalogObjectTypeEnum::QUICK_AMOUNTS_SETTINGS => write!(f, "QUICK_AMOUNTS_SETTINGS"),
+            CatalogObjectTypeEnum::Item => write!(f, "ITEM"),
+            CatalogObjectTypeEnum::Image => write!(f, "IMAGE =>"),
+            CatalogObjectTypeEnum::Category => write!(f, "CATEGORY"),
+            CatalogObjectTypeEnum::ItemVariation => write!(f, "ItemVariation"),
+            CatalogObjectTypeEnum::Tax => write!(f, "TAX"),
+            CatalogObjectTypeEnum::Discount => write!(f, "DISCOUNT"),
+            CatalogObjectTypeEnum::ModifierList => write!(f, "MODIFIER_LIST"),
+            CatalogObjectTypeEnum::Modifier => write!(f, "MODIFIER"),
+            CatalogObjectTypeEnum::PricingRule => write!(f, "PRICING_RULE"),
+            CatalogObjectTypeEnum::TimePeriod => write!(f, "TIME_PERIOD"),
+            CatalogObjectTypeEnum::ProductSet => write!(f, "PRODUCT_SET"),
+            CatalogObjectTypeEnum::MeasurementUnit => write!(f, "MeasurementUnit"),
+            CatalogObjectTypeEnum::SubscriptionPlan => write!(f, "SubscriptionPlan"),
+            CatalogObjectTypeEnum::ItemOption => write!(f, "ItemOption"),
+            CatalogObjectTypeEnum::ItemOptionVal => write!(f, "ItemOptionVal"),
+            CatalogObjectTypeEnum::CustomAttributeDefinition
+            => write!(f, "CustomAttributeDefinition"),
+            CatalogObjectTypeEnum::QuickAmountsSettings => write!(f, "QuickAmountsSettings"),
         }
     }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all(serialize = "SCREAMING_SNAKE_CASE", deserialize = "PascalCase"))]
 pub enum BusinessAppointmentSettingsBookingLocationType {
-    BUSINESS_LOCATION,
-    CUSTOMER_LOCATION,
-    PHONE,
+    BusinessLocation,
+    CustomerLocation,
+    Phone,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all(serialize = "SCREAMING_SNAKE_CASE", deserialize = "PascalCase"))]
 pub enum BookingBookingSource {
-    FIRST_PARTY_MERCHANT,
-    FIRST_PARTY_BUYER,
-    THIRD_PARTY_BUYER,
-    API,
+    FirstPartyMerchant,
+    FirstPartyBuyer,
+    ThirdPartyBuyer,
+    Api,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all(serialize = "SCREAMING_SNAKE_CASE", deserialize = "PascalCase"))]
 pub enum BookingStatus {
-    PENDING,
-    CANCELLED_BY_CUSTOMER,
-    CANCELLED_BY_SELLER,
-    DECLINED,
-    ACCEPTED,
-    NO_SHOW,
+    Pending,
+    CancelledByCustomer,
+    CancelledBySeller,
+    Declined,
+    Accepted,
+    NoShow,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -116,15 +122,17 @@ pub enum LocationStatus {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all(serialize = "snake_case", deserialize = "PascalCase"))]
 pub enum TaxIds {
-    es_nif,
-    eu_vat,
-    fr_naf,
-    fr_siret,
+    EsNif,
+    EuVat,
+    FrNaf,
+    FrSiret,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all(serialize = "snake_case", deserialize = "PascalCase"))]
 pub enum LocationType {
-    PHYSICAL,
-    MOBILE
+    Physical,
+    Mobile,
 }

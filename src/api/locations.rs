@@ -12,6 +12,20 @@ use serde::{Deserialize, Serialize};
 use crate::objects::enums::{Currency, LocationStatus, LocationType};
 
 impl SquareClient {
+    /// See which [Location](Location)s are available to by requesting the information from the
+    /// [Square API](https://developer.squareup.com) and subsequently receiving them formatted as a
+    /// list of [Location](Location)s.
+    /// # Example
+    /// ```rust
+    ///use square_rs::{
+    ///    response::{SquareResponse, ResponseError},
+    ///    client::SquareClient
+    ///    };
+    ///
+    /// async {
+    ///     let locations = SquareClient::new("some_token").list_locations().await;
+    /// };
+    /// ```
     pub async fn list_locations(&self) -> Result<SquareResponse, SquareError> {
         self.request(
             Verb::GET,
@@ -21,7 +35,28 @@ impl SquareClient {
         ).await
     }
 
-    pub async fn create_location(&self, new_location: LocationCreationBody)
+    /// Create a new [Location](Location) at the [Square API](https://developer.squareup.com).
+    /// # Arguments
+    /// * `new_location` - A [LocationCreationWrapper](LocationCreationWrapper) that is build by the
+    /// the [LocationBuilder](LocationBuilder).
+    /// # Example
+    /// ```rust
+    /// use square_rs::{
+    ///    response::{SquareResponse, ResponseError},
+    ///    client::SquareClient,
+    ///    api::locations::LocationBuilder
+    ///    };
+    ///
+    ///  async {
+    ///     let location = LocationBuilder::new()
+    ///         .name("The Foo Bar".to_string())
+    ///         .build()
+    ///         .await
+    ///         .unwrap();
+    ///     let res = SquareClient::new("some_token").create_location(location).await;
+    /// };
+    /// ```
+    pub async fn create_location(&self, new_location: LocationCreationWrapper)
         -> Result<SquareResponse, SquareError> {
         self.request(
             Verb::POST,
@@ -31,8 +66,32 @@ impl SquareClient {
         ).await
     }
 
-    pub async fn update_location(&self, updated_location: LocationCreationBody, location_id: String)
-        -> Result<SquareResponse, SquareError> {
+    /// Update an existing [Location](Location) at the [Square API](https://developer.squareup.com).
+    /// # Arguments
+    /// * `updated_location` - A [LocationCreationWrapper](LocationCreationWrapper) that is build by the
+    /// the [LocationBuilder](LocationBuilder).
+    /// * `location_id` - The id of the location that is to be updated.
+    /// # Example
+    /// ```rust
+    /// use square_rs::{
+    ///    response::{SquareResponse, ResponseError},
+    ///    client::SquareClient,
+    ///    api::locations::LocationBuilder
+    ///    };
+    ///
+    ///  async {
+    ///     let location = LocationBuilder::new()
+    ///         .name("The New Foo Bar".to_string())
+    ///         .build()
+    ///         .await
+    ///         .unwrap();
+    ///     let res = SquareClient::new("some_token")
+    ///         .update_location(location, "foo_bar_id".to_string())
+    ///         .await;
+    /// };
+    /// ```
+    pub async fn update_location(&self, updated_location: LocationCreationWrapper, location_id: String)
+                                 -> Result<SquareResponse, SquareError> {
         self.request(
             Verb::PUT,
             SquareAPI::Locations(format!("/{}", location_id)),
@@ -41,22 +100,60 @@ impl SquareClient {
         ).await
     }
 
+    /// Retrieve a [Location](Location) from [Square API](https://developer.squareup.com) by the
+    /// location id.
+    /// # Arguments
+    /// * `location_id` - The id of the location that is to be retrieved.
+    /// # Example
+    /// ```rust
+    /// use square_rs::{
+    ///    response::{SquareResponse, ResponseError},
+    ///    client::SquareClient
+    ///    };
+    ///
+    ///  async {
+    ///     let res = SquareClient::new("some_token")
+    ///         .retrieve_location("foo_bar_id".to_string())
+    ///         .await;
+    /// };
+    /// ```
     pub async fn retrieve_location(&self, location_id: String)
                                  -> Result<SquareResponse, SquareError> {
         self.request(
             Verb::GET,
             SquareAPI::Locations(format!("/{}", location_id)),
-            None::<&LocationCreationBody>,
+            None::<&LocationCreationWrapper>,
             None,
         ).await
     }
 }
 
+/// Build a  wrapping a [Location](Location)
+///
+/// When passing a [Location](Location) to one of the request methods, they almost always must
+/// be wrapped within a [LocationCreationWrapper](LocationCreationWrapper) to adhere to the
+/// [Square API](https://developer.squareup.com) contract.
+///
+/// A [Location](Location) must have a name upon creation, otherwise it is not seen as a valid
+/// new [Location](Location).
+/// * `.name()`
+///
+/// # Example: Build a [LocationCreationWrapper](LocationCreationWrapper)
+/// ```
+/// async {
+///     let builder = square_rs::api::locations::LocationBuilder::new()
+///     .name("The Foo Bar".to_string())
+///     .build()
+///     .await;
+/// };
+/// ```
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
-pub struct LocationCreationBody {
+pub struct LocationCreationWrapper {
     location: Location
 }
 
+/// The [LocationBuilder](LocationBuilder) facilitates the creation of a [Location](Location) object
+/// wrapped in a [LocationCreationWrapper](LocationCreationWrapper).
 #[derive(Default)]
 pub struct LocationBuilder {
     pub name: Option<String>,
@@ -111,6 +208,7 @@ impl LocationBuilder {
         self
     }
 
+    /// Add individual [BusinessHoursPeriod](BusinessHoursPeriod)'s by the use of this method.
     pub fn add_business_hours_period(mut self, business_hours_period: BusinessHoursPeriod) -> Self {
         match self.business_hours.take() {
             Some(mut business_hours) => {
@@ -125,6 +223,7 @@ impl LocationBuilder {
         self
     }
 
+    /// Add a complete [BusinessHours](BusinessHours) object by using this method.
     pub fn business_hours(mut self, business_hours: BusinessHours) -> Self {
         self.business_hours = Some(business_hours);
 
@@ -137,6 +236,7 @@ impl LocationBuilder {
         self
     }
 
+    /// Add an individual *capability* by the use of this method.
     pub fn add_capability(mut self, capability: String) -> Self {
         match self.capabilities.take() {
             Some(mut capabilities) => {
@@ -149,6 +249,8 @@ impl LocationBuilder {
         self
     }
 
+    /// Add multiple *capabilities* at once through this method. This method will overwrite all
+    /// other *capabilities* that are already held by the [Location](Location) object.
     pub fn capabilities(mut self, capabilities: Vec<String>) -> Self {
         self.capabilities = Some(capabilities);
 
@@ -269,9 +371,28 @@ impl LocationBuilder {
         self
     }
 
-    pub async fn build(mut self) -> Result<LocationCreationBody, LocationBuildError> {
+    /// Build a [LocationCreationWrapper](LocationCreationWrapper) wrapping a [Location](Location)
+    ///
+    /// When passing a [Location](Location) to one of the request methods, they almost always must
+    /// be wrapped within a [LocationCreationWrapper](LocationCreationWrapper) to adhere to the
+    /// [Square API](https://developer.squareup.com) contract.
+    ///
+    /// A [Location](Location) must have a name upon creation, otherwise it is not seen as a valid
+    /// new [Location](Location).
+    /// * `.name()`
+    ///
+    /// # Example: Build a [LocationCreationWrapper](LocationCreationWrapper)
+    /// ```
+    /// async {
+    ///     let builder = square_rs::api::locations::LocationBuilder::new()
+    ///     .name("The Foo Bar".to_string())
+    ///     .build()
+    ///     .await;
+    /// };
+    /// ```
+    pub async fn build(mut self) -> Result<LocationCreationWrapper, LocationBuildError> {
         if let Some(name) = self.name.take() {
-            Ok( LocationCreationBody {
+            Ok( LocationCreationWrapper {
                 location: Location {
                     id: None,
                     name,
@@ -352,7 +473,7 @@ mod test_locations {
             pos_background_url: None,
             tax_ids: None,
             twitter_username: None,
-            type_name: Some(LocationType::PHYSICAL),
+            type_name: Some(LocationType::Physical),
             business_hours: None,
             business_name: None,
             website_url: None
@@ -360,7 +481,7 @@ mod test_locations {
         let actual = LocationBuilder::new()
             .name("New Test Location".to_string())
             .facebook_url("some_url".to_string())
-            .location_type(LocationType::PHYSICAL)
+            .location_type(LocationType::Physical)
             .build()
             .await;
 
@@ -373,14 +494,14 @@ mod test_locations {
     async fn test_location_builder_fail() {
         let res = LocationBuilder::new()
             .facebook_url("some_url".to_string())
-            .location_type(LocationType::PHYSICAL)
+            .location_type(LocationType::Physical)
             .build()
             .await;
 
         assert!(res.is_err());
     }
 
-    #[actix_rt::test]
+    // #[actix_rt::test]
     async fn test_create_location() {
         use dotenv::dotenv;
         use std::env;
@@ -389,7 +510,7 @@ mod test_locations {
         let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
         let sut = SquareClient::new(&access_token);
 
-        let input = LocationCreationBody{
+        let input = LocationCreationWrapper {
             location: Location {
                 id: None,
                 name: "New Test Location".to_string(),
@@ -415,7 +536,7 @@ mod test_locations {
                 pos_background_url: None,
                 tax_ids: None,
                 twitter_username: None,
-                type_name: Some(LocationType::PHYSICAL),
+                type_name: Some(LocationType::Physical),
                 business_hours: None,
                 website_url: None,
                 business_email: None
@@ -436,7 +557,7 @@ mod test_locations {
         let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
         let sut = SquareClient::new(&access_token);
 
-        let input = LocationCreationBody {
+        let input = LocationCreationWrapper {
             location: Location {
                 id: None,
                 name: "Updated Test Location".to_string(),
@@ -462,7 +583,7 @@ mod test_locations {
                 pos_background_url: None,
                 tax_ids: None,
                 twitter_username: None,
-                type_name: Some(LocationType::PHYSICAL),
+                type_name: Some(LocationType::Physical),
                 business_hours: None,
                 business_name: None,
                 website_url: Some("example-website.com".to_string())

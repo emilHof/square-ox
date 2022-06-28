@@ -902,8 +902,8 @@ mod test_customers {
                     }),
                     creation_source: Some(CreationSource {
                         rule: Some("EXCLUDE".to_string()),
-                        values: Some(vec![CustomerCreationSource::APPOINTMENTS,
-                                          CustomerCreationSource::COUPON])
+                        values: Some(vec![CustomerCreationSource::Appointments,
+                                          CustomerCreationSource::Coupon])
                     }),
                     email_address: Some(CustomerTextFilter {
                         exact: Some("emil.k.hofstetter@gmail.com".to_string()),
@@ -934,9 +934,9 @@ mod test_customers {
             .fuzzy_phone_number("0176-47-85-993".to_string())
             .fuzzy_reference_id("432mi23cß2".to_string())
             .exact_reference_id("cmiw9u209md82".to_string())
-            .creation_source_value(CustomerCreationSource::APPOINTMENTS)
-            .creation_source_value(CustomerCreationSource::COUPON)
-            .creation_source_value(CustomerCreationSource::APPOINTMENTS)
+            .creation_source_value(CustomerCreationSource::Appointments)
+            .creation_source_value(CustomerCreationSource::Coupon)
+            .creation_source_value(CustomerCreationSource::Appointments)
             .set_creation_source_exclude()
             .build().await;
 
@@ -964,8 +964,8 @@ mod test_customers {
                     }),
                     creation_source: Some(CreationSource {
                         rule: Some("INCLUDE".to_string()),
-                        values: Some(vec![CustomerCreationSource::APPOINTMENTS,
-                                          CustomerCreationSource::THIRD_PARTY]),
+                        values: Some(vec![CustomerCreationSource::Appointments,
+                                          CustomerCreationSource::ThirdParty]),
                     }),
                     email_address: Some(CustomerTextFilter {
                         exact: None,

@@ -85,7 +85,7 @@ impl SquareClient {
         }
     }
 
-    /// Sends a request to a given [SquareEndpoint](crate::api::SquareEndpoint)
+    /// Sends a request to a given [SquareEndpoint](SquareEndpoint)
     /// # Arguments
     /// * `api` - The [SquareEndpoint](crate::api::SquareEndpoint) to send the request to
     /// * `body` - The json that will be included in the request.

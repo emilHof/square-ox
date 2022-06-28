@@ -113,9 +113,9 @@ mod test_catalog {
     async fn test_list_parameter_builder() {
         let expected = vec![("types".to_string(), "ITEM%2CCATEGORY".to_string())];
         let actual = CatalogListParameterBuilder::new()
-            .add_type(CatalogObjectTypeEnum::ITEM)
-            .add_type(CatalogObjectTypeEnum::CATEGORY)
-            .add_type(CatalogObjectTypeEnum::ITEM)
+            .add_type(CatalogObjectTypeEnum::Item)
+            .add_type(CatalogObjectTypeEnum::Category)
+            .add_type(CatalogObjectTypeEnum::Item)
             .build().await;
 
         assert_eq!(expected, actual)
