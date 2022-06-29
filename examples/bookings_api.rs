@@ -6,6 +6,7 @@ use actix_web::{middleware::Logger, post, get, web, App, HttpResponse, HttpServe
 use serde::{Deserialize, Serialize};
 use std::env;
 use dotenv;
+use square_rs::objects::{Response, Address, Location};
 
 
 #[actix_web::main]
@@ -90,6 +91,19 @@ async fn list_availability(
     }
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FrontendLocationsSchema {
+    locations: Vec<FrontendLocationSchema>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct FrontendLocationSchema {
+    name: String,
+    address: Address,
+    capabilities: Option<Vec<String>>,
+    website_url: Option<String>,
+}
+
 #[get("/locations")]
 async fn list_locations(
     state: web::Data<AppState>
@@ -99,11 +113,29 @@ async fn list_locations(
     let client = &state.client;
 
     match client.list_locations().await {
-        Ok(r) => HttpResponse::Ok()
-            .set_header("Access-Control-Allow-Origin", "*")
-            .json(r),
+        Ok(r) => {
+            println!("{:?}", &r);
+            match r.response.unwrap() {
+                Response::Locations(locations) => {
+                    HttpResponse::Ok()
+                        .set_header("Access-Control-Allow-Origin", "*")
+                        .json(FrontendLocationsSchema {
+                            locations: locations.into_iter().map(|location| FrontendLocationSchema {
+                                name: location.name,
+                                address: location.address.unwrap(),
+                                capabilities: location.capabilities,
+                                website_url: location.website_url,
+                            }).collect()
+                        })
+                },
+                _ => {
+                    println!("Failed to fetch any locations!");
+                    HttpResponse::BadRequest().finish()
+                },
+            }
+        },
         Err(_) => {
-            println!("Failed to create payment");
+            println!("Failed to make locations list request!");
             HttpResponse::BadRequest().finish()
         }
     }
