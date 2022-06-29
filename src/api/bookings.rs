@@ -441,7 +441,6 @@ mod test_bookings {
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual.unwrap()))
     }
 
-
     #[actix_rt::test]
     async fn test_search_availability() {
         use dotenv::dotenv;

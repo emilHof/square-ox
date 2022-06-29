@@ -6,13 +6,13 @@ use crate::client::SquareClient;
 use crate::api::{Verb, SquareAPI};
 use crate::errors::{SquareError, LocationsBuildError, LocationBuildError};
 use crate::response::SquareResponse;
-use crate::objects::{Address, BusinessHours, BusinessHoursPeriod, Coordinates, Location, TaxIds};
+use crate::objects::{Address, BusinessHours, BusinessHoursPeriod, Coordinates, Location, TaxIds,
+                     enums::{Currency, LocationStatus, LocationType}};
 
 use serde::{Deserialize, Serialize};
-use crate::objects::enums::{Currency, LocationStatus, LocationType};
 
 impl SquareClient {
-    /// See which [Location](Location)s are available to by requesting the information from the
+    /// See which [Location](Location)s are available by requesting the information from the
     /// [Square API](https://developer.squareup.com) and subsequently receiving them formatted as a
     /// list of [Location](Location)s.
     /// # Example

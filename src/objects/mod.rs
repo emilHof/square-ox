@@ -25,6 +25,8 @@ pub enum Response {
     Customers(Vec<Customer>),
     Objects(Vec<CatalogObject>),
     Booking(Booking),
+    Cards(Vec<Card>),
+    Card(Card),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
@@ -208,6 +210,7 @@ pub struct TaxIds {
     pub es_nif: Option<String>,
 }
 
+/// Representation of a Credit/Debit Card for the crate and the Square API.
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct Card {
     #[serde(default, skip_serializing_if = "Option::is_none")]

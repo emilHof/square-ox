@@ -1,5 +1,5 @@
 use std::fmt;
-use std::fmt::Formatter;
+use std::fmt::{Formatter, write};
 use serde::{Deserialize, Serialize};
 
 // TODO change the implementation of existing Response Object fields to use the right enums
@@ -135,4 +135,20 @@ pub enum TaxIds {
 pub enum LocationType {
     Physical,
     Mobile,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum SortOrder {
+    Desc,
+    Asc,
+}
+
+impl fmt::Display for SortOrder {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            SortOrder::Asc => write!(f, "ASC"),
+            SortOrder::Desc => write!(f, "DESC"),
+        }
+    }
 }

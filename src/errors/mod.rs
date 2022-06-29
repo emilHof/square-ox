@@ -90,3 +90,6 @@ pub struct CustomerDeleteBuildError;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LocationBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CardBuildError;

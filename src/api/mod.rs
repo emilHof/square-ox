@@ -10,10 +10,12 @@ pub mod bookings;
 pub mod locations;
 pub mod catalog;
 pub mod customers;
+pub mod cards;
 
 use crate::client::ClientMode;
 use crate::client::SquareClient;
 use std::fmt;
+use std::fmt::write;
 
 /// All of the endpoints of the [Square API](https://developer.squareup.com)
 /// for which we have implemented some of the functionality.
@@ -24,6 +26,7 @@ pub enum SquareAPI {
     Locations(String),
     Catalog(String),
     Customers(String),
+    Cards(String),
 }
 
 /// All of the HTTP verbs that have been implemented and are accepted by the different
@@ -47,6 +50,7 @@ impl fmt::Display for SquareAPI {
             SquareAPI::Locations(path) => write!(f, "locations{}", path),
             SquareAPI::Catalog(path) => write!(f, "catalog{}", path),  // TODO Implement Catalog
             SquareAPI::Customers(path) => write!(f, "customers{}", path),  // TODO Implement Customers
+            SquareAPI::Cards(path) => write!(f, "cards{}", path)
         }
     }
 }
