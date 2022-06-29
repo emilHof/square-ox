@@ -17,7 +17,7 @@ pub enum Currency {
 
 /// The CustomerCreationSource type, indicating how the customer was created.
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-#[serde(rename_all(serialize = "SCREAMING_SNAKE_CASE", deserialize = "PascalCase"))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CustomerCreationSource {
     Other,
     Appointments,
@@ -41,7 +41,7 @@ pub enum CustomerCreationSource {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-#[serde(rename_all(serialize = "SCREAMING_SNAKE_CASE", deserialize = "PascalCase"))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CatalogObjectTypeEnum {
     Item,
     Image,
@@ -88,7 +88,7 @@ impl fmt::Display for CatalogObjectTypeEnum {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all(serialize = "SCREAMING_SNAKE_CASE", deserialize = "PascalCase"))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum BusinessAppointmentSettingsBookingLocationType {
     BusinessLocation,
     CustomerLocation,
@@ -96,7 +96,7 @@ pub enum BusinessAppointmentSettingsBookingLocationType {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all(serialize = "SCREAMING_SNAKE_CASE", deserialize = "PascalCase"))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum BookingBookingSource {
     FirstPartyMerchant,
     FirstPartyBuyer,
@@ -105,7 +105,7 @@ pub enum BookingBookingSource {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all(serialize = "SCREAMING_SNAKE_CASE", deserialize = "PascalCase"))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum BookingStatus {
     Pending,
     CancelledByCustomer,
@@ -122,7 +122,7 @@ pub enum LocationStatus {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all(serialize = "snake_case", deserialize = "PascalCase"))]
+#[serde(rename_all = "snake_case")]
 pub enum TaxIds {
     EsNif,
     EuVat,
@@ -131,7 +131,7 @@ pub enum TaxIds {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all(serialize = "snake_case", deserialize = "PascalCase"))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum LocationType {
     Physical,
     Mobile,
