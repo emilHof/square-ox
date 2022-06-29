@@ -3,7 +3,7 @@ pub mod enums;
 use serde::{Deserialize, Serialize};
 use crate::objects::enums::{BusinessAppointmentSettingsBookingLocationType, Currency, LocationStatus, LocationType};
 
-/// The Response enum holds the variatey of responses that can be returned from a
+/// The Response enum holds the variety of responses that can be returned from a
 /// [Square API](https://developer.squareup.com) call.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
