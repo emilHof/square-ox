@@ -126,6 +126,8 @@ impl SquareClient {
         // Create a client with the appropriate headers
         let client = Client::builder().default_headers(headers).build()?;
 
+        println!("url: {}", &url);
+
         // Send the request to the Square API, and get the response
         let mut builder = match verb {
             Verb::GET => client.get(&url),
@@ -150,6 +152,8 @@ impl SquareClient {
 
         // TODO remove the debug code!
         let response = builder.send().await?.text().await?;
+
+        println!("{:?}", response);
 
         let response: SquareResponse = serde_json::from_str(&response)?;
 

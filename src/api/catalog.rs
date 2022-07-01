@@ -136,6 +136,4 @@ mod test_catalog {
 
         assert!(res.is_ok())
     }
-
-
 }

@@ -1,6 +1,6 @@
 use square_rs::client::SquareClient;
 use square_rs::errors::SearchQueryBuildError;
-use square_rs::api::bookings::SearchQueryBuilder;
+use square_rs::api::bookings::SearchAvailabilityQueryBuilder;
 
 use actix_web::{middleware::Logger, post, get, web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
@@ -66,7 +66,7 @@ async fn list_availability(
 
     let query_params = form.into_inner();
 
-    let search_query = match SearchQueryBuilder::new()
+    let search_query = match SearchAvailabilityQueryBuilder::new()
         .location_id(location_id.clone())
         .start_at_range(query_params.start_at, query_params.end_at)
         .segment_filters(query_params.segment_id)

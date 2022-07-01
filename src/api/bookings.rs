@@ -18,9 +18,25 @@ impl SquareClient {
     /// and get the response back.
     ///
     /// # Arguments
-    /// * `search_availability` - A [SearchQuery](SearchQuery)
-    /// created from the [SearchQueryBuilder](SearchQueryBuilder)
-    pub async fn search_availability(&self, search_query: SearchQuery)
+    /// * `search_query` - A vector of search query parameter created through the
+    /// [ListBookingsQueryBuilder](ListBookingsQueryBuilder)
+    pub async fn list_bookings(&self, search_query: Option<Vec<(String, String)>>)
+                                     -> Result<SquareResponse, SquareError> {
+        self.request(
+            Verb::GET,
+            SquareAPI::Bookings("".to_string()),
+            None::<&BookingsPost>,
+            search_query,
+        ).await
+    }
+
+    /// Search for availability with the given [SearchQuery](SearchQuery) to the Square API
+    /// and get the response back.
+    ///
+    /// # Arguments
+    /// * `search_query` - A [SearchQuery](SearchQuery) created from the
+    /// [SearchAvailabilityQueryBuilder](SearchAvailabilityQueryBuilder)
+    pub async fn search_availability(&self, search_query: SearchAvailabilityQuery)
                                      -> Result<SquareResponse, SquareError> {
         self.request(
             Verb::POST,
@@ -76,7 +92,6 @@ impl SquareClient {
         ).await
     }
 
-
     /// Create a booking with the given [Bookings](Bookings) to the Square API
     /// and get the response back.
     ///
@@ -92,6 +107,231 @@ impl SquareClient {
             Some(&booking_to_cancel.body),
             None,
         ).await
+    }
+
+    /// Retrieves a seller's booking profile at the [Square API](https://developer.squareup.com).
+    pub async fn retrieve_business_booking_profile(&self)
+                                -> Result<SquareResponse, SquareError> {
+        self.request(
+            Verb::GET,
+            SquareAPI::Bookings("/business-booking-profile".to_string()),
+            None::<&BookingsPost>,
+            None,
+        ).await
+    }
+
+    /// Lists booking profiles for team members at the [Square API](https://developer.squareup.com).
+    ///
+    /// # Arguments
+    /// * `search_query` - A search query created by the
+    /// [ListTeamMemberBookingsProfileBuilder](ListTeamMemberBookingsProfileBuilder).
+    pub async fn list_team_member_booking_profiles(&self, search_query: Option<Vec<(String, String)>>)
+                                                   -> Result<SquareResponse, SquareError> {
+        self.request(
+            Verb::GET,
+            SquareAPI::Bookings("/team-member-booking-profiles".to_string()),
+            None::<&BookingsPost>,
+            search_query,
+        ).await
+    }
+
+    /// Lists booking profiles for team members at the [Square API](https://developer.squareup.com).
+    ///
+    /// # Arguments
+    /// * `team_member_id` - The id of the team member you would like to retrieve from the
+    /// [Square API](https://developer.squareup.com).
+    pub async fn retrieve_team_member_booking_profiles(&self, team_member_id: String)
+                                                   -> Result<SquareResponse, SquareError> {
+        self.request(
+            Verb::GET,
+            SquareAPI::Bookings(format!("/team-member-booking-profiles/{}", team_member_id)),
+            None::<&BookingsPost>,
+            None,
+        ).await
+    }
+}
+#[derive(Default)]
+pub struct ListBookingsQueryBuilder {
+    limit: Option<i64>,
+    cursor: Option<String>,
+    team_member_id: Option<String>,
+    location_id: Option<String>,
+    start_at_min: Option<String>,
+    start_at_max: Option<String>,
+}
+
+impl ListBookingsQueryBuilder {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    /// The maximum number of results per page to return in a paged response.
+    pub fn limit(mut self, limit: i64) -> Self {
+        self.limit = Some(limit);
+
+        self
+    }
+
+    /// The pagination cursor from the preceding response to return the next page of the results.
+    /// Do not set this when retrieving the first page of the results.
+    pub fn cursor(mut self, cursor: String) -> Self {
+        self.cursor = Some(cursor);
+
+        self
+    }
+
+    /// The team member for whom to retrieve bookings.
+    /// If this is not set, bookings of all members are retrieved.
+    pub fn team_member_id(mut self, team_member_id: String) -> Self {
+        self.team_member_id = Some(team_member_id);
+
+        self
+    }
+
+    /// The location for which to retrieve bookings.
+    /// If this is not set, all locations' bookings are retrieved.
+    pub fn location_id(mut self, location_id: String) -> Self {
+        self.location_id = Some(location_id);
+
+        self
+    }
+
+    /// The RFC 3339 timestamp specifying the earliest of the start time.
+    /// If this is not set, the current time is used.
+    //
+    // Examples for January 25th, 2020 6:25:34pm Pacific Standard Time:
+    //
+    // UTC: 2020-01-26T02:25:34Z
+    //
+    // Pacific Standard Time with UTC offset: 2020-01-25T18:25:34-08:00
+    pub fn start_at_min(mut self, start_at_min: String) -> Self {
+        self.start_at_min = Some(start_at_min);
+
+        self
+    }
+
+    /// The RFC 3339 timestamp specifying the latest of the start time.
+    /// If this is not set, the time of 31 days after start_at_min is used.
+    //
+    // Examples for January 25th, 2020 6:25:34pm Pacific Standard Time:
+    //
+    // UTC: 2020-01-26T02:25:34Z
+    //
+    // Pacific Standard Time with UTC offset: 2020-01-25T18:25:34-08:00
+    pub fn start_at_max(mut self, start_at_max: String) -> Self {
+        self.start_at_max = Some(start_at_max);
+
+        self
+    }
+
+    pub async fn build(mut self) -> Vec<(String, String)> {
+        let ListBookingsQueryBuilder {
+            limit,
+            cursor,
+            team_member_id,
+            location_id,
+            start_at_min,
+            start_at_max,
+
+        } = self;
+
+        let mut res = vec![];
+
+        if let Some(limit) = limit {
+            res.push(("limit".to_string(), limit.to_string()))
+        }
+
+        if let Some(cursor) = cursor {
+            res.push(("cursor".to_string(), cursor))
+        }
+
+        if let Some(team_member_id) = team_member_id {
+            res.push(("team_member_id".to_string(), team_member_id))
+        }
+
+        if let Some(location_id) = location_id {
+            res.push(("location_id".to_string(), location_id))
+        }
+
+        if let Some(start_at_min) = start_at_min {
+            res.push(("start_at_min".to_string(), start_at_min))
+        }
+
+        if let Some(start_at_max) = start_at_max {
+            res.push(("start_at_max".to_string(), start_at_max))
+        }
+
+        res
+    }
+}
+
+#[derive(Default)]
+pub struct ListTeamMemberBookingsProfileBuilder {
+    limit: Option<i32>,
+    cursor: Option<String>,
+    bookable_only: Option<bool>,
+    location_id: Option<String>,
+}
+
+impl ListTeamMemberBookingsProfileBuilder {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    /// The maximum number of results to return in a paged response.
+    pub fn limit(mut self, limit: i32) -> Self {
+        self.limit = Some(limit);
+
+        self
+    }
+
+    /// The pagination cursor from the preceding response to return the next page of the results.
+    /// Do not set this when retrieving the first page of the results.
+    pub fn cursor(mut self, cursor: String) -> Self {
+        self.cursor = Some(cursor);
+
+        self
+    }
+
+    /// Indicates whether to include only bookable team members in the returned result.
+    pub fn bookable_only(mut self) -> Self {
+        self.bookable_only = Some(true);
+
+        self
+    }
+
+    /// Indicates whether to include only team members enabled at the given location in the
+    /// returned result.
+    pub fn location_id(mut self, location_id: String) -> Self {
+        self.location_id = Some(location_id);
+
+        self
+    }
+
+    pub async fn build(mut self) -> Vec<(String, String)> {
+        let ListTeamMemberBookingsProfileBuilder {
+            limit,
+            cursor,
+            bookable_only,
+            location_id,
+        } = self;
+
+        let mut res = vec![];
+
+        if let Some(limit) = limit {
+            res.push(("limit".to_string(), limit.to_string()))
+        }
+        if let Some(cursor) = cursor {
+            res.push(("cursor".to_string(), cursor))
+        }
+        if let Some(bookable_only) = bookable_only {
+            res.push(("bookable_only".to_string(), bookable_only.to_string()))
+        }
+        if let Some(location_id) = location_id {
+            res.push(("location_id".to_string(), location_id))
+        }
+
+        res
     }
 }
 
@@ -304,12 +544,12 @@ impl BookingsCancelBuilder {
 // holds a QQuery struct which contains the actual query data, as this is the way it is expected
 // by the Square API
 #[derive(Serialize, Debug, Deserialize)]
-pub struct SearchQuery {
-    query: QQuery,
+pub struct SearchAvailabilityQuery {
+    query: QueryBody,
 }
 
 #[derive(Serialize, Debug, Deserialize)]
-pub struct QQuery {
+pub struct QueryBody {
     filter: QueryFilter,
 }
 
@@ -325,16 +565,16 @@ pub struct QueryFilter {
     segment_filters: Option<Vec<SegmentFilter>>
 }
 
-/// The [SearchQueryBuilder](SearchQueryBuilder)
+/// The [SearchAvailabilityQueryBuilder](SearchAvailabilityQueryBuilder)
 #[derive(Default)]
-pub struct SearchQueryBuilder {
+pub struct SearchAvailabilityQueryBuilder {
     start_at_range: Option<StartAtRange>,
     booking_id: Option<String>,
     location_id: Option<String>,
     segment_filters: Option<Vec<SegmentFilter>>
 }
 
-impl SearchQueryBuilder {
+impl SearchAvailabilityQueryBuilder {
     pub fn new() -> Self {
         Default::default()
     }
@@ -375,7 +615,7 @@ impl SearchQueryBuilder {
         self
     }
 
-    pub async fn build(&self) -> Result<SearchQuery, SearchQueryBuildError> {
+    pub async fn build(&self) -> Result<SearchAvailabilityQuery, SearchQueryBuildError> {
         let start_at_range = match &self.start_at_range {
             Some(sar) => sar.clone(),
             None => return Err(SearchQueryBuildError),
@@ -385,8 +625,8 @@ impl SearchQueryBuilder {
         let location_id = self.location_id.clone();
         let segment_filters = self.segment_filters.clone();
 
-        Ok(SearchQuery {
-            query: QQuery {
+        Ok(SearchAvailabilityQuery {
+            query: QueryBody {
                 filter: QueryFilter {
                     start_at_range,
                     booking_id,
@@ -417,13 +657,13 @@ mod test_bookings {
 
     #[actix_rt::test]
     async fn test_search_query_builder() {
-        let sut = SearchQueryBuilder::new()
+        let sut = SearchAvailabilityQueryBuilder::new()
             .start_at_range(
                 "2022-10-12T07:20:50.52Z".to_string(),
                 "2023-10-12T07:20:50.52Z".to_string())
             .location_id("LPNXWH14W6S47".to_string());
-        let expected = SearchQuery {
-            query: QQuery {
+        let expected = SearchAvailabilityQuery {
+            query: QueryBody {
                 filter: QueryFilter {
                     start_at_range: StartAtRange {
                         end_at: "2023-10-12T07:20:50.52Z".to_string(),
@@ -450,7 +690,7 @@ mod test_bookings {
         let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
         let sut = SquareClient::new(&access_token);
 
-        let input = SearchQueryBuilder::new()
+        let input = SearchAvailabilityQueryBuilder::new()
             .start_at_range(
                 "2022-09-12T07:20:50.52Z".to_string(),
                 "2022-10-12T07:20:50.52Z".to_string())
@@ -679,6 +919,118 @@ mod test_bookings {
 
         let res =
             sut.update_booking(input, "oruft3c9lh0duq".to_string()).await;
+
+        assert!(res.is_ok())
+    }
+
+    #[actix_rt::test]
+    async fn test_list_bookings_query_builder() {
+        let expected = vec![
+            ("location_id".to_string(), "L1JC53TYHS40Z".to_string()),
+            ("start_at_min".to_string(), "2022-09-12T07:20:50.52Z".to_string()),
+        ];
+
+        let actual = ListBookingsQueryBuilder::new()
+            .location_id("L1JC53TYHS40Z".to_string())
+            .start_at_min("2022-09-12T07:20:50.52Z".to_string())
+            .build()
+            .await;
+
+        assert_eq!(expected, actual)
+
+
+    }
+
+    #[actix_rt::test]
+    async fn test_list_bookings() {
+        use dotenv::dotenv;
+        use std::env;
+
+        dotenv().ok();
+        let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
+        let sut = SquareClient::new(&access_token);
+
+        let input = vec![
+            ("start_at_min".to_string(), "2022-09-12T07:20:50.52Z".to_string())
+        ];
+
+        let res = sut.list_bookings(Some(input)).await;
+
+        assert!(res.is_ok())
+    }
+
+    #[actix_rt::test]
+    async fn test_retrieve_business_booking_profile() {
+        use dotenv::dotenv;
+        use std::env;
+
+        dotenv().ok();
+        let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
+        let sut = SquareClient::new(&access_token);
+
+        let input = vec![
+            ("start_at_min".to_string(), "2022-09-12T07:20:50.52Z".to_string())
+        ];
+
+        let res = sut.retrieve_business_booking_profile().await;
+
+        assert!(res.is_ok())
+    }
+
+    #[actix_rt::test]
+    async fn test_list_team_member_booking_profile_query_builder() {
+        let expected = vec![
+            ("limit".to_string(), "10".to_string()),
+            ("bookable_only".to_string(), "true".to_string()),
+            ("location_id".to_string(), "L1JC53TYHS40Z".to_string()),
+        ];
+
+        let actual = ListTeamMemberBookingsProfileBuilder::new()
+            .bookable_only()
+            .limit(10)
+            .location_id("L1JC53TYHS40Z".to_string())
+            .build()
+            .await;
+
+        assert_eq!(expected, actual)
+
+
+    }
+
+    #[actix_rt::test]
+    async fn test_list_team_member_booking_profiles() {
+        use dotenv::dotenv;
+        use std::env;
+
+        dotenv().ok();
+        let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
+        let sut = SquareClient::new(&access_token);
+
+        let input = vec![
+            ("limit".to_string(), "10".to_string()),
+            ("bookable_only".to_string(), "true".to_string()),
+            ("location_id".to_string(), "L1JC53TYHS40Z".to_string()),
+        ];
+
+        let res = sut
+            .list_team_member_booking_profiles(Some(input))
+            .await;
+
+        assert!(res.is_ok())
+    }
+
+    #[actix_rt::test]
+    async fn test_retrieve_team_member_booking_profile() {
+        use dotenv::dotenv;
+        use std::env;
+
+        dotenv().ok();
+        let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
+        let sut = SquareClient::new(&access_token);
+
+        let res = sut
+            .retrieve_team_member_booking_profiles("TMKFnToW8ByXrcm6".to_string())
+            .await;
 
         assert!(res.is_ok())
     }

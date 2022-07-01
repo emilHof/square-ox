@@ -152,3 +152,33 @@ impl fmt::Display for SortOrder {
         }
     }
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum BusinessBookingProfileBookingPolicy {
+    AcceptAll,
+    RequiresAcceptance,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum BusinessAppointmentSettingsCancellationPolicy {
+    CancellationTreatedAsNoShow,
+    CustomPolicy,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType {
+    PerTeamMember,
+    PerLocation,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum BusinessBookingProfileCustomerTimezoneChoice {
+    BusinessLocationTimezone,
+    CustomerChoice,
+}
+
+

@@ -70,7 +70,7 @@ impl PaymentBuilder {
     }
 
     pub fn amount(mut self, amount: i64, currency: Currency) -> Self {
-        self.amount_money = Some(Money { amount, currency });
+        self.amount_money = Some(Money { amount: Some(amount), currency });
 
         self
     }

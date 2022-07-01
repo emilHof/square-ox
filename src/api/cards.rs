@@ -305,6 +305,27 @@ mod test {
     }
 
     #[actix_rt::test]
+    async fn test_retrieve_card() {
+        use dotenv::dotenv;
+        use std::env;
+
+        dotenv().ok();
+        let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
+        let sut = SquareClient::new(&access_token);
+
+        let input = vec![
+            ("include_disabled".to_string(), "false".to_string()),
+            ("sort_order".to_string(), "ASC".to_string()),
+        ];
+
+        let res = sut
+            .retrieve_card("ccof:Es7R2xLyCWzmrKGI4GB".to_string()).await;
+
+        assert!(res.is_ok())
+
+    }
+
+    #[actix_rt::test]
     async fn test_card_builder() {
         let expected = CardWrapper {
             card: Card {

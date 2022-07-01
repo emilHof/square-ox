@@ -1,12 +1,12 @@
 pub mod enums;
 
 use serde::{Deserialize, Serialize};
-use crate::objects::enums::{BusinessAppointmentSettingsBookingLocationType, Currency, LocationStatus, LocationType};
+use crate::objects::enums::{BusinessAppointmentSettingsBookingLocationType, BusinessAppointmentSettingsCancellationPolicy, BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType, BusinessBookingProfileBookingPolicy, BusinessBookingProfileCustomerTimezoneChoice, Currency, LocationStatus, LocationType};
 
 /// The Response enum holds the variety of responses that can be returned from a
 /// [Square API](https://developer.squareup.com) call.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "snake_case")]
 #[non_exhaustive]
 pub enum Response {
     Payment {
@@ -25,8 +25,12 @@ pub enum Response {
     Customers(Vec<Customer>),
     Objects(Vec<CatalogObject>),
     Booking(Booking),
+    Bookings(Vec<Booking>),
+    BusinessBookingProfile(BusinessBookingProfile),
     Cards(Vec<Card>),
     Card(Card),
+    TeamMemberBookingProfiles(Vec<TeamMemberBookingProfile>),
+    TeamMemberBookingProfile(TeamMemberBookingProfile),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
@@ -967,6 +971,71 @@ pub struct BookingCreatorDetails {
 /// So for GBP the amount is in pence.
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Money {
-    pub amount: i64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub amount: Option<i64>,
     pub currency: Currency,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct BusinessBookingProfile {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub allow_user_cancel: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub booking_enabled: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub booking_policy: Option<BusinessBookingProfileBookingPolicy>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub business_appointment_settings: Option<BusinessAppointmentSettings>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub customer_timezone_choice: Option<BusinessBookingProfileCustomerTimezoneChoice>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub seller_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub support_seller_level_writes: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct BusinessAppointmentSettings {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub alignment_time: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub any_team_member_booking_enabled: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cancellation_fee_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cancellation_policy: Option<BusinessAppointmentSettingsCancellationPolicy>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cancellation_policy_text: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cancellation_window_seconds: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub location_types: Option<Vec<BusinessAppointmentSettingsBookingLocationType>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_appointments_per_day_limit: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_appointments_per_day_limit_type: Option<BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max_booking_lead_time_seconds: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub min_booking_lead_time_seconds: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub multiple_service_booking_enabled: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub skip_booking_flow_staff_selection: Option<bool>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct TeamMemberBookingProfile {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub display_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_bookable: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub profile_image_url: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub team_member_id: Option<String>,
 }
