@@ -1,7 +1,8 @@
 pub mod enums;
 
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::objects::enums::{BusinessAppointmentSettingsBookingLocationType, BusinessAppointmentSettingsCancellationPolicy, BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType, BusinessBookingProfileBookingPolicy, BusinessBookingProfileCustomerTimezoneChoice, Currency, LocationStatus, LocationType};
+use crate::objects::enums::{BusinessAppointmentSettingsBookingLocationType, BusinessAppointmentSettingsCancellationPolicy, BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType, BusinessBookingProfileBookingPolicy, BusinessBookingProfileCustomerTimezoneChoice, Currency, LocationStatus, LocationType, OrderFulfillmentFulfillmentLineItemApplication, OrderFulfillmentPickupDetailsScheduleType, OrderLineItemDiscountScope, OrderLineItemDiscountType, OrderLineItemItemType, OrderLineItemTaxScope, OrderLineItemTaxType, OrderServiceChargeCalculationPhase, OrderServiceChargeType, OrderState, RefundStatus, TenderCardDetailsEntryMethod, TenderCardDetailsStatus, TenderType};
 
 /// The Response enum holds the variety of responses that can be returned from a
 /// [Square API](https://developer.squareup.com) call.
@@ -31,6 +32,9 @@ pub enum Response {
     Card(Card),
     TeamMemberBookingProfiles(Vec<TeamMemberBookingProfile>),
     TeamMemberBookingProfile(TeamMemberBookingProfile),
+    Checkout(Checkout),
+    PaymentLinks(Vec<PaymentLink>),
+    PaymentLink(PaymentLink),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
@@ -278,7 +282,7 @@ pub struct CatalogObject {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub custom_attribute_definition_data: Option<CatalogCustomAttributeDefinition>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub custom_attributes_values: Option<std::collections::HashMap<String, CatalogCustomAttributeValue>>,
+    pub custom_attributes_values: Option<HashMap<String, CatalogCustomAttributeValue>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub discount_data: Option<CatalogDiscount>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -334,7 +338,7 @@ pub struct CatalogObjectVariation {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub custom_attribute_definition_data: Option<CatalogCustomAttributeDefinition>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub custom_attributes_values: Option<std::collections::HashMap<String, CatalogCustomAttributeValue>>,
+    pub custom_attributes_values: Option<HashMap<String, CatalogCustomAttributeValue>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub discount_data: Option<CatalogDiscount>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -390,7 +394,7 @@ pub struct CatalogObjectOption {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub custom_attribute_definition_data: Option<CatalogCustomAttributeDefinition>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub custom_attributes_values: Option<std::collections::HashMap<String, CatalogCustomAttributeValue>>,
+    pub custom_attributes_values: Option<HashMap<String, CatalogCustomAttributeValue>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub discount_data: Option<CatalogDiscount>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1039,3 +1043,744 @@ pub struct TeamMemberBookingProfile {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub team_member_id: Option<String>,
 }
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CreateOrderRequest {
+    pub idempotency_key: String,
+    pub order: Order,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize, Default)]
+pub struct Order {
+    pub id: Option<String>,
+    pub location_id: Option<String>,
+    pub close_at: Option<String>,
+    pub created_at: Option<String>,
+    pub customer_id: Option<String>,
+    pub discounts: Option<Vec<OrderLineItemDiscount>>,
+    pub fulfillments: Option<OrderFulfillment>,
+    pub line_items: Option<Vec<OrderLineItem>>,
+    pub metadata: Option<HashMap<String, String>>,
+    pub net_amounts: Option<OrderMoneyAmounts>,
+    pub pricing_options: Option<OrderPricingOptions>,
+    pub reference_id: Option<String>,
+    pub refunds: Option<Vec<Refund>>,
+    pub return_amounts: Option<OrderMoneyAmounts>,
+    pub returns: Option<Vec<OrderReturn>>,
+    pub rewards: Option<Vec<OrderReward>>,
+    pub rounding_adjustment: Option<OrderRoundingAdjustment>,
+    pub service_charges: Option<Vec<OrderServiceChargeType>>,
+    pub source: Option<OrderSource>,
+    pub state: Option<OrderState>,
+    pub taxes: Option<Vec<OrderLineItemTax>>,
+    pub tenders: Option<Vec<Tender>>,
+    pub ticket_name: Option<String>,
+    pub total_discount_money: Option<Money>,
+    pub total_money: Option<Money>,
+    pub total_service_charge_money: Option<Money>,
+    pub total_tax_money: Option<Money>,
+    pub total_tip_money: Option<Money>,
+    pub updated_at: Option<String>,
+    pub version: Option<i64>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct ChargeRequestAdditionalRecipient {
+
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderLineItemDiscount {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub amount_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub applied_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_object_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_version: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    metadata: Option<HashMap<String, String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub percentage: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pricing_rule_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reward_ids: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scope: Option<OrderLineItemDiscountScope>,
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
+    pub discount_type: Option<OrderLineItemDiscountType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderFulfillment {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    entries: Option<Vec<OrderFulfillmentFulfillmentEntry>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    line_item_application: Option<OrderFulfillmentFulfillmentLineItemApplication>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<HashMap<String, String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pickup_details: Option<OrderFulfillmentPickupDetails>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    shipment_details: Option<OrderFulfillmentShipmentDetails>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    state: Option<String>,
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
+    fulfillment_type: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    uid: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderFulfillmentFulfillmentEntry {
+    pub line_item_uid: String,
+    pub quantity: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<HashMap<String, String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderFulfillmentPickupDetails {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub accepted_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub auto_complete_duration: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cancel_reason: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub canceled_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub curbside_pickup_details: Option<OrderFulfillmentPickupDetailsCurbsidePickupDetails>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expired_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expires_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_curbside_pickup: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub note: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub picked_up_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pickup_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pickup_window_duration: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub placed_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prep_time_duration: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ready_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub recipient: Option<OrderFulfillmentRecipient>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rejected_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schedule_type: Option<OrderFulfillmentPickupDetailsScheduleType>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderFulfillmentPickupDetailsCurbsidePickupDetails {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub buyer_arrived_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub curbside_details: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderFulfillmentRecipient {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub address: Option<Address>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub customer_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub display_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub email_address: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub phone_number: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderFulfillmentShipmentDetails {
+    cancel_reason: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    canceled_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    carrier: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    expected_shipped_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    failed_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    failure_reason: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    in_progress_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    packaged_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    placed_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    recipient: Option<OrderFulfillmentRecipient>,
+    shipped_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    shipping_note: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    shipping_type: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    tracking_number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    tracking_url: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderLineItem {
+    pub quantity: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub applied_discounts: Option<Vec<OrderLineItemAppliedDiscount>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub applied_taxes: Option<Vec<OrderLineItemAppliedTax>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub base_price_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_object_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_version: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gross_sales_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub item_type: Option<OrderLineItemItemType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<HashMap<String, String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub modifiers: Option<Vec<OrderLineItemModifier>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub note: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub  pricing_blocklists: Option<OrderLineItemPricingBlocklists>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub quantity_unit: Option<OrderQuantityUnit>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_discount_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_tax_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub variation_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub variation_total_price_money: Option<Money>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderLineItemAppliedDiscount {
+    pub discount_uid: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub applied_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderLineItemAppliedTax {
+    pub tax_uid: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub  applied_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderLineItemModifier {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub base_price_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_object_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_version: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<HashMap<String, String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub quantity: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_price_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderLineItemPricingBlocklists {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub blocked_discounts: Option<Vec<OrderLineItemPricingBlocklistsBlockedDiscount>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub blocked_taxes: Option<Vec<OrderLineItemPricingBlocklistsBlockedTax>>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderLineItemPricingBlocklistsBlockedDiscount {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub discount_catalog_object_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub discount_uid: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderLineItemPricingBlocklistsBlockedTax {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tax_catalog_object_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tax_uid: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderQuantityUnit {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_object_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_version: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub measurement_unit: Option<MeasurementUnit>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub precision: Option<i32>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderMoneyAmounts {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub discount_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub service_charge_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tax_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tip_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_money: Option<Money>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderPricingOptions {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub auto_apply_discounts: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub auto_apply_taxes: Option<bool>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct Refund {
+    pub id: String,
+    pub amount_money: Money,
+    pub location_id: String,
+    pub reason: String,
+    pub status: RefundStatus,
+    pub tender_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub processing_fee_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub transaction_id: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderReturn {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub return_amounts: Option<OrderMoneyAmounts>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub return_discounts: Option<Vec<OrderReturnDiscount>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub return_line_items: Option<Vec<OrderReturnLineItem>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub return_service_charges: Option<Vec<OrderReturnServiceCharge>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub return_taxes: Option<Vec<OrderReturnTax>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rounding_adjustment: Option<OrderRoundingAdjustment>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_order_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderReturnDiscount {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub amount_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub applied_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_object_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_version: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub percentage: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scope: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_discount_uid: Option<String>,
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
+    pub discount_type: Option<OrderLineItemDiscountType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderReturnLineItem {
+    pub quantity: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub applied_discounts: Option<Vec<OrderLineItemAppliedDiscount>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub applied_taxes: Option<Vec<OrderLineItemAppliedTax>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub base_price_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_object_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_version: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gross_return_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub item_type: Option<OrderLineItemItemType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub note: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub quantity_unit: Option<OrderQuantityUnit>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub return_modifiers: Option<Vec<OrderReturnLineItemModifier>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_line_item_uid: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_discount_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_tax_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub variation_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub variation_total_price_money: Option<Money>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderReturnLineItemModifier {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub base_price_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_object_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_version: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_modifier_uid: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_price_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderReturnServiceCharge {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub amount_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub applied_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub applied_taxes: Option<Vec<OrderLineItemAppliedTax>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub calculation_phase: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_object_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_version: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub percentage: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_service_charge_uid: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub taxable: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_tax_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+}
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderReturnTax {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub applied_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_object_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_version: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub percentage: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scope: Option<OrderLineItemTaxScope>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_tax_uid: Option<String>,
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
+    pub calculation_type: Option<OrderLineItemTaxType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderRoundingAdjustment {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub amount_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderReward {
+    pub id: String,
+    pub reward_tier_id: String
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderServiceCharge {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub amount_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub applied_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub applied_taxes: Option<Vec<OrderLineItemAppliedTax>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub calculation_phase: Option<OrderServiceChargeCalculationPhase>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_object_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_version: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<HashMap<String, String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub percentage: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub taxable: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_tax_money: Option<Money>,
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
+    pub service_charge_type: Option<OrderServiceChargeType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderSource {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct OrderLineItemTax {
+    pub applied_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub auto_applied: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_object_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_version: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<HashMap<String, String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub percentage: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scope: Option<OrderLineItemTaxScope>,
+    #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
+    pub calculation_method_type: Option<OrderLineItemTaxType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub uid: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct Tender {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    #[serde(rename = "type")]
+    pub tender_type: TenderType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub amount_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub card_details: Option<TenderCardDetails>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cash_details: Option<TenderCashDetails>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub customer_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub location_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub note: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub payment_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub processing_fee_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tip_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub transaction_id: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct TenderCardDetails {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub card: Option<Card>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entry_method: Option<TenderCardDetailsEntryMethod>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub status: Option<TenderCardDetailsStatus>
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct TenderCashDetails {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub buyer_tendered_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub change_back_money: Option<Money>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct Checkout {
+    pub id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ask_for_shipping_address: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub checkout_page_url: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub merchant_support_email: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub order: Option<Order>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pre_populate_buyer_email: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pre_populate_shipping_address: Option<Address>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub redirect_url: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct PaymentLink {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    pub version: i32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub checkout_options: Option<CheckoutOptions>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub order_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub payment_note: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pre_populated_data: Option<PrePopulatedData>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub updated_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CheckoutOptions {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub accepted_payment_methods: Option<AcceptedPaymentMethods>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub allow_tipping: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ask_for_shipping_address: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub custom_fields: Option<Vec<CustomField>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub merchant_support_email: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub redirect_url: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub subscription_plan_id: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct AcceptedPaymentMethods {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub afterpay_clearpay: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub apple_pay: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cash_app_pay: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub google_pay: Option<bool>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CustomField {
+    pub title: String,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct PrePopulatedData {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub buyer_address: Option<Address>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub buyer_email: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub buyer_phone_number: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct QuickPay {
+    pub location_id: String,
+    pub name: String,
+    pub price_money: Money,
+}
+
+
+
+
+
+
+
+
+
+

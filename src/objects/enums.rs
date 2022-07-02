@@ -181,4 +181,123 @@ pub enum BusinessBookingProfileCustomerTimezoneChoice {
     CustomerChoice,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum OrderLineItemDiscountScope {
+    OtherDiscountScope,
+    LineItem,
+    Order,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum OrderLineItemDiscountType {
+    UnknownDiscount,
+    FixedPercentage,
+    FixedAmount,
+    VariablePercentage,
+    VariableAmount,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum OrderFulfillmentFulfillmentLineItemApplication {
+    All,
+    EntryList
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum OrderFulfillmentPickupDetailsScheduleType {
+    Scheduled,
+    Asap
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum OrderLineItemItemType {
+    Item,
+    CustomAmount,
+    GiftCard,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum RefundStatus {
+    Pending,
+    Approved,
+    Rejected,
+    Failed,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum OrderLineItemTaxScope {
+    OtherTaxScope,
+    LineItem,
+    Order
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum OrderLineItemTaxType {
+    UnknownTax,
+    Additive,
+    Inclusive,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum OrderState {
+    Open,
+    Completed,
+    Canceled,
+    Draft
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum OrderServiceChargeCalculationPhase {
+    SubtotalPhase,
+    TotalPhase,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum OrderServiceChargeType {
+    AutoGratuity,
+    Custom,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TenderType {
+    Card,
+    Cash,
+    ThirdPartyCard,
+    SquareGiftCard,
+    NoSale,
+    Wallet,
+    Other,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TenderCardDetailsStatus {
+    Authorized,
+    Captured,
+    Voided,
+    Failed,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TenderCardDetailsEntryMethod {
+    Swiped,
+    Keyed,
+    Emv,
+    OnFile,
+    Contactless
+}
+
 

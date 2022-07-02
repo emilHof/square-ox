@@ -93,3 +93,12 @@ pub struct LocationBuildError;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CardBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreateOrderRequestBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreatePaymentLinkBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PaymentLinkBuildError;

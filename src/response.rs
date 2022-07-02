@@ -23,6 +23,10 @@ pub struct SquareResponse {
     pub cursor: Option<String>,
     #[serde(default)]
     pub id_mapping: Option<Vec<(String, String)>>,
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub cancelled_order_id: Option<String>,
 }
 
 
