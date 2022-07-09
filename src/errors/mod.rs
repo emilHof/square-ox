@@ -102,3 +102,6 @@ pub struct CreatePaymentLinkBuildError;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PaymentLinkBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ObjectUpsertRequestBuildError;

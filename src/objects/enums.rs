@@ -300,4 +300,63 @@ pub enum TenderCardDetailsEntryMethod {
     Contactless
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum CatalogObjectType {
+    Item,
+    Image,
+    Category,
+    ItemVariation,
+    Tax,
+    Discount,
+    ModifierList,
+    PricingRule,
+    ProductSet,
+    TimePeriod,
+    MeasurementUnit,
+    SubscriptionPlan,
+    ItemOption,
+    ItemOptionVal,
+    CustomAttributeDefinition,
+    QuickAmountSetting,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum CatalogCustomAttributeDefinitionType {
+    String,
+    Boolean,
+    Number,
+    Selection
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum CatalogItemProductType {
+    Regular,
+    GiftCard,  /// Deprecated
+    AppointmentServices,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum InventoryAlertType {
+    None,
+    LowQuantity,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum CatalogPricingType {
+    FixedPricing,
+    VariablePricing,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum SearchCatalogItemsRequestStockLevel {
+    Out,
+    Low,
+}
+
 

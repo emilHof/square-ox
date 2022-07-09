@@ -776,7 +776,7 @@ mod test_checkout {
         assert!(res.is_ok());
     }
 
-    #[actix_rt::test]
+    // #[actix_rt::test]
     async fn test_update_payment_link() {
         use dotenv::dotenv;
         use std::env;
@@ -790,7 +790,7 @@ mod test_checkout {
             PaymentLinkWrapper {
                 payment_link: objects::PaymentLink {
                     id: None,
-                    version: 3,
+                    version: 5,
                     checkout_options: None,
                     created_at: None,
                     description: None,

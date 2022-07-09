@@ -7,6 +7,7 @@ with the [Square API](https://developer.squareup.com)'s response pattern more ma
  */
 
 use serde::{Deserialize, Serialize};
+use crate::objects::CatalogObject;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[non_exhaustive]
@@ -16,7 +17,13 @@ use serde::{Deserialize, Serialize};
 /// [Square API](https://developer.squareup.com).
 pub struct SquareResponse {
     #[serde(flatten)]
-    pub response: crate::objects::Response,
+    pub response: Option<crate::objects::Response>,
+    #[serde(flatten)]
+    pub opt_response01: Option<crate::objects::Response>,
+    #[serde(flatten)]
+    pub opt_response02: Option<crate::objects::Response>,
+    #[serde(flatten)]
+    pub opt_response03: Option<crate::objects::Response>,
     #[serde(default)]
     pub errors: Option<Vec<ResponseError>>,
     #[serde(default)]
@@ -27,6 +34,12 @@ pub struct SquareResponse {
     pub id: Option<String>,
     #[serde(default)]
     pub cancelled_order_id: Option<String>,
+    #[serde(default)]
+    pub deleted_object_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub deleted_at: Option<String>,
+    #[serde(default)]
+    pub latest_time: Option<String>,
 }
 
 

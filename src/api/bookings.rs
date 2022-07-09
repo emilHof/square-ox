@@ -695,7 +695,7 @@ mod test_bookings {
                 "2022-09-12T07:20:50.52Z".to_string(),
                 "2022-10-12T07:20:50.52Z".to_string())
             .location_id("L1JC53TYHS40Z".to_string())
-            .segment_filters("BSOL4BB6RCMX6SH4KQIFWZDP".to_string())
+            .segment_filters("BJHURKYAIAQIDMY267GZNYNW".to_string())
             .build().await.unwrap();
 
         println!("{:?}", input);

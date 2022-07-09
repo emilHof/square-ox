@@ -1,8 +1,14 @@
+/*!
+A non-comprehensive list of the Objects used by the
+[Square API](https://developer.squareup.com).
+*/
+
 pub mod enums;
 
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::objects::enums::{BusinessAppointmentSettingsBookingLocationType, BusinessAppointmentSettingsCancellationPolicy, BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType, BusinessBookingProfileBookingPolicy, BusinessBookingProfileCustomerTimezoneChoice, Currency, LocationStatus, LocationType, OrderFulfillmentFulfillmentLineItemApplication, OrderFulfillmentPickupDetailsScheduleType, OrderLineItemDiscountScope, OrderLineItemDiscountType, OrderLineItemItemType, OrderLineItemTaxScope, OrderLineItemTaxType, OrderServiceChargeCalculationPhase, OrderServiceChargeType, OrderState, RefundStatus, TenderCardDetailsEntryMethod, TenderCardDetailsStatus, TenderType};
+use serde_json::json_internal_vec;
+use crate::objects::enums::{BusinessAppointmentSettingsBookingLocationType, BusinessAppointmentSettingsCancellationPolicy, BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType, BusinessBookingProfileBookingPolicy, BusinessBookingProfileCustomerTimezoneChoice, CatalogCustomAttributeDefinitionType, CatalogItemProductType, CatalogObjectType, CatalogPricingType, Currency, InventoryAlertType, LocationStatus, LocationType, OrderFulfillmentFulfillmentLineItemApplication, OrderFulfillmentPickupDetailsScheduleType, OrderLineItemDiscountScope, OrderLineItemDiscountType, OrderLineItemItemType, OrderLineItemTaxScope, OrderLineItemTaxType, OrderServiceChargeCalculationPhase, OrderServiceChargeType, OrderState, RefundStatus, SortOrder, TenderCardDetailsEntryMethod, TenderCardDetailsStatus, TenderType};
 
 /// The Response enum holds the variety of responses that can be returned from a
 /// [Square API](https://developer.squareup.com) call.
@@ -20,18 +26,36 @@ pub enum Response {
     Order {
         random_name: String,
     },
+
+    // Locations Endpoint Responses
     Locations(Vec<Location>),
-    Availabilities(Vec<Availability>),
+
+    // Customer Endpoint Responses
     Customer(Customer),
     Customers(Vec<Customer>),
+
+    // Catalog Endpoint Responses
     Objects(Vec<CatalogObject>),
+    CatalogObject(CatalogObject),
+    Items(Vec<CatalogObject>),
+    MatchedVariationIds(Vec<String>),
+    Limits(CatalogInfoResponseLimits),
+    StandardUnitDescriptionGroup(StandardUnitDescriptionGroup),
+    RelatedObjects(Vec<CatalogObject>),
+
+    // Bookings Endpoint Responses
     Booking(Booking),
     Bookings(Vec<Booking>),
+    Availabilities(Vec<Availability>),
     BusinessBookingProfile(BusinessBookingProfile),
-    Cards(Vec<Card>),
-    Card(Card),
     TeamMemberBookingProfiles(Vec<TeamMemberBookingProfile>),
     TeamMemberBookingProfile(TeamMemberBookingProfile),
+
+    // Cards Endpoint Responses
+    Cards(Vec<Card>),
+    Card(Card),
+
+    // Checkout Endpoint Responses
     Checkout(Checkout),
     PaymentLinks(Vec<PaymentLink>),
     PaymentLink(PaymentLink),
@@ -272,7 +296,7 @@ pub struct CatalogObject {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
     #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
-    pub type_name: Option<String>,
+    pub type_name: Option<CatalogObjectType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub absent_at_location_ids: Option<Vec<String>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -328,7 +352,7 @@ pub struct CatalogObjectVariation {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
     #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
-    pub type_name: Option<String>,
+    pub type_name: Option<CatalogObjectType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub absent_at_location_ids: Option<Vec<String>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -384,7 +408,7 @@ pub struct CatalogObjectOption {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
     #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
-    pub type_name: Option<String>,
+    pub type_name: Option<CatalogObjectType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub absent_at_location_ids: Option<Vec<String>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -458,7 +482,7 @@ pub struct CatalogCustomAttributeDefinition {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     name: Option<String>,
     #[serde(rename = "type", default, skip_serializing_if = "Option::is_none")]
-    pub type_name: Option<String>,
+    pub type_name: Option<CatalogObjectType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     app_visibility: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -535,7 +559,7 @@ pub struct CatalogCustomAttributeValue {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub string_value: Option<String>,
     #[serde(rename="type", default, skip_serializing_if = "Option::is_none")]
-    pub type_name: Option<String>,
+    pub type_name: Option<CatalogCustomAttributeDefinitionType>,
 }
 
 #[derive(Clone, Serialize, Debug, Deserialize)]
@@ -573,37 +597,37 @@ pub struct CatalogImage {
 #[derive(Clone, Serialize, Debug, Deserialize)]
 pub struct CatalogItem {
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    abbreviation: Option<String>,
+    pub abbreviation: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    available_electronically: Option<bool>,
+    pub available_electronically: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    available_for_pickup: Option<bool>,
+    pub available_for_pickup: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    available_online: Option<bool>,
+    pub available_online: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    category_id: Option<String>,
+    pub category_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    description: Option<String>,
+    pub description: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    image_ids : Option<Vec<String>>,
+    pub image_ids : Option<Vec<String>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    image_option: Option<Vec<CatalogItemOptionForItem>>,
+    pub image_option: Option<Vec<CatalogItemOptionForItem>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    label_color: Option<String>,
+    pub label_color: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    modifier_list_info: Option<Vec<CatalogItemModifierListInfo>>,
+    pub modifier_list_info: Option<Vec<CatalogItemModifierListInfo>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    name: Option<String>,
+    pub name: Option<String>,
     #[serde(rename="type", default, skip_serializing_if = "Option::is_none")]
-    product_type: Option<String>,
+    pub product_type: Option<CatalogItemProductType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    skip_modifier_scree: Option<bool>,
+    pub skip_modifier_scree: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    sort_name: Option<String>,
+    pub sort_name: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    tax_ids: Option<Vec<String>>,
+    pub tax_ids: Option<Vec<String>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    variations: Option<Vec<CatalogObjectVariation>>,
+    pub variations: Option<Vec<CatalogObjectVariation>>,
 }
 
 #[derive(Clone, Serialize, Debug, Deserialize)]
@@ -671,7 +695,7 @@ pub struct CatalogItemVariation {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub inventory_alert_threshold: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub inventory_alert_type: Option<String>,
+    pub inventory_alert_type: Option<InventoryAlertType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub item_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -687,7 +711,7 @@ pub struct CatalogItemVariation {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub price_money: Option<Money>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub pricing_type: Option<String>,
+    pub pricing_type: Option<CatalogPricingType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sellable: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -721,13 +745,13 @@ pub struct ItemVariationLocationOverrides {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub inventory_alert_threshold: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub inventory_alert_type: Option<String>,
+    pub inventory_alert_type: Option<InventoryAlertType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub location_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub price_money: Option<Money>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub pricing_type: Option<String>,
+    pub pricing_type: Option<CatalogPricingType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub sold_out: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1774,6 +1798,163 @@ pub struct QuickPay {
     pub name: String,
     pub price_money: Money,
 }
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CatalogQuery {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub exact_query: Option<CatalogQueryExact>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub item_variations_for_item_option_values_query: Option<CatalogQueryItemVariationsForItemOptionValues>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub items_for_item_options_query: Option<CatalogQueryItemsForItemOptions>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub items_for_modifier_list_query: Option<CatalogQueryItemsForModifierList>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub items_for_tax_query: Option<CatalogQueryItemsForTax>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prefix_query: Option<CatalogQueryPrefix>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub range_query: Option<CatalogQueryRange>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub set_query: Option<CatalogQuerySet>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sorted_attribute_query: Option<CatalogQuerySortedAttribute>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub text_query: Option<CatalogQueryText>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CatalogQueryExact {
+    pub attribute_name: String,
+    pub attribute_value: String,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CatalogQueryItemVariationsForItemOptionValues {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub item_option_value_ids: Option<Vec<String>>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CatalogQueryItemsForItemOptions {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub item_option_ids: Option<Vec<String>>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CatalogQueryItemsForModifierList {
+    pub modifier_list_ids: Vec<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CatalogQueryItemsForTax {
+    pub tax_ids: Vec<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CatalogQueryPrefix {
+    pub attribute_name: String,
+    pub attribute_prefix: String,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CatalogQueryRange {
+    pub attribute_name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attribute_max_value: Option<i64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attribute_min_value: Option<i64>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CatalogQuerySet {
+    pub attribute_name: String,
+    pub attribute_values: Vec<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CatalogQuerySortedAttribute {
+    pub attribute_name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub initial_attribute_value: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sort_order: Option<SortOrder>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CatalogQueryText {
+    pub keywords: Vec<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CatalogInfoResponseLimits {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub batch_delete_max_object_ids: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub batch_retrieve_max_object_ids: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub batch_upsert_max_objects_per_batch: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub batch_upsert_max_total_objects: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub search_max_page_limit: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub update_item_modifier_lists_max_item_ids: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub update_item_modifier_lists_max_modifier_lists_to_disable: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub update_item_modifier_lists_max_modifier_lists_to_enable: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub update_item_taxes_max_item_ids: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub update_item_taxes_max_taxes_to_disable: Option<i32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub update_item_taxes_max_taxes_to_enable: Option<i32>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct StandardUnitDescriptionGroup {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub language_code: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub standard_unit_descriptions: Option<Vec<StandardUnitDescription>>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct StandardUnitDescription {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub abbreviation: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unit: Option<MeasurementUnit>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CustomAttributeFilter {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    bool_filter: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    custom_attribute_definition_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    key: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    number_filter: Option<Range>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    selection_uids_filter: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    string_filter: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct Range {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub max: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub min: Option<String>,
+}
+
+
 
 
 
