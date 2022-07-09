@@ -14,15 +14,27 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 impl SquareClient {
+    pub fn bookings(&self) -> Bookings {
+        Bookings {
+            client: &self
+        }
+    }
+}
+
+pub struct Bookings<'a> {
+    client: &'a SquareClient,
+}
+
+impl<'a> Bookings<'a> {
     /// Search for availability with the given [SearchQuery](SearchQuery) to the Square API
     /// and get the response back.
     ///
     /// # Arguments
     /// * `search_query` - A vector of search query parameter created through the
     /// [ListBookingsQueryBuilder](ListBookingsQueryBuilder)
-    pub async fn list_bookings(&self, search_query: Option<Vec<(String, String)>>)
-                                     -> Result<SquareResponse, SquareError> {
-        self.request(
+    pub async fn list(&self, search_query: Option<Vec<(String, String)>>)
+                               -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::GET,
             SquareAPI::Bookings("".to_string()),
             None::<&BookingsPost>,
@@ -38,7 +50,7 @@ impl SquareClient {
     /// [SearchAvailabilityQueryBuilder](SearchAvailabilityQueryBuilder)
     pub async fn search_availability(&self, search_query: SearchAvailabilityQuery)
                                      -> Result<SquareResponse, SquareError> {
-        self.request(
+        self.client.request(
             Verb::POST,
             SquareAPI::Bookings("/availability/search".to_string()),
             Some(&search_query),
@@ -52,9 +64,9 @@ impl SquareClient {
     /// # Arguments
     /// * `create_booking` - A [BookingsPost](BookingsPost) created from the
     /// [BookingsBuilder](BookingsBuilder)
-    pub async fn create_booking(&self, booking_post: BookingsPost)
-        -> Result<SquareResponse, SquareError> {
-        self.request(
+    pub async fn create(&self, booking_post: BookingsPost)
+                                -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::POST,
             SquareAPI::Bookings("".to_string()),
             Some(&booking_post),
@@ -68,9 +80,9 @@ impl SquareClient {
     /// # Arguments
     /// * `updated_booking` - A [BookingsPost](BookingsPost) created from the
     /// [BookingsBuilder](BookingsBuilder)
-    pub async fn update_booking(&self, updated_booking: BookingsPost, booking_id: String)
+    pub async fn update(&self, updated_booking: BookingsPost, booking_id: String)
                                 -> Result<SquareResponse, SquareError> {
-        self.request(
+        self.client.request(
             Verb::PUT,
             SquareAPI::Bookings(format!("/{}", booking_id)),
             Some(&updated_booking),
@@ -82,9 +94,9 @@ impl SquareClient {
     ///
     /// # Arguments
     /// * `booking_id` - The id of the booking as a String
-    pub async fn retrieve_booking(&self, booking_id: String)
-                                -> Result<SquareResponse, SquareError> {
-        self.request(
+    pub async fn retrieve(&self, booking_id: String)
+                                  -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::GET,
             SquareAPI::Bookings(format!("/{}", booking_id)),
             None::<&BookingsPost>,
@@ -98,9 +110,9 @@ impl SquareClient {
     /// # Arguments
     /// * `booking_to_cancel` - A [BookingsCancel](BookingsCancel) created from the
     /// [BookingsCancelBuilder](BookingsCancelBuilder)
-    pub async fn cancel_booking(&self, booking_to_cancel: BookingsCancel)
+    pub async fn cancel(&self, booking_to_cancel: BookingsCancel)
                                 -> Result<SquareResponse, SquareError> {
-        self.request(
+        self.client.request(
             Verb::POST,
             SquareAPI::Bookings(format!("/{}/cancel",
                                         booking_to_cancel.booking_id.clone())),
@@ -110,9 +122,9 @@ impl SquareClient {
     }
 
     /// Retrieves a seller's booking profile at the [Square API](https://developer.squareup.com).
-    pub async fn retrieve_business_booking_profile(&self)
-                                -> Result<SquareResponse, SquareError> {
-        self.request(
+    pub async fn retrieve_business_profile(&self)
+                                                   -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::GET,
             SquareAPI::Bookings("/business-booking-profile".to_string()),
             None::<&BookingsPost>,
@@ -125,9 +137,9 @@ impl SquareClient {
     /// # Arguments
     /// * `search_query` - A search query created by the
     /// [ListTeamMemberBookingsProfileBuilder](ListTeamMemberBookingsProfileBuilder).
-    pub async fn list_team_member_booking_profiles(&self, search_query: Option<Vec<(String, String)>>)
+    pub async fn list_team_member_profiles(&self, search_query: Option<Vec<(String, String)>>)
                                                    -> Result<SquareResponse, SquareError> {
-        self.request(
+        self.client.request(
             Verb::GET,
             SquareAPI::Bookings("/team-member-booking-profiles".to_string()),
             None::<&BookingsPost>,
@@ -140,9 +152,9 @@ impl SquareClient {
     /// # Arguments
     /// * `team_member_id` - The id of the team member you would like to retrieve from the
     /// [Square API](https://developer.squareup.com).
-    pub async fn retrieve_team_member_booking_profiles(&self, team_member_id: String)
-                                                   -> Result<SquareResponse, SquareError> {
-        self.request(
+    pub async fn retrieve_team_member_profiles(&self, team_member_id: String)
+                                                       -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::GET,
             SquareAPI::Bookings(format!("/team-member-booking-profiles/{}", team_member_id)),
             None::<&BookingsPost>,
@@ -150,6 +162,7 @@ impl SquareClient {
         ).await
     }
 }
+
 #[derive(Default)]
 pub struct ListBookingsQueryBuilder {
     limit: Option<i64>,
@@ -701,7 +714,7 @@ mod test_bookings {
         println!("{:?}", input);
         println!("{:?}", serde_json::to_string(&input).unwrap());
 
-        let result = sut.search_availability(input).await;
+        let result = sut.bookings().search_availability(input).await;
 
         assert!(result.is_ok())
     }
@@ -792,7 +805,7 @@ mod test_bookings {
                     any_team_member_id: None,
                     intermission_minutes: None,
                     resource_ids: None,
-                    service_variation_id: "BSOL4BB6RCMX6SH4KQIFWZDP".to_string(),
+                    service_variation_id: "BJHURKYAIAQIDMY267GZNYNW".to_string(),
                     service_variation_version:  1655427266071,
                 }]),
                 created_at: None,
@@ -811,7 +824,7 @@ mod test_bookings {
             }
         };
 
-        let res = sut.create_booking(input).await;
+        let res = sut.bookings().create(input).await;
 
         assert!(res.is_ok())
     }
@@ -825,8 +838,9 @@ mod test_bookings {
         let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
         let sut = SquareClient::new(&access_token);
 
-        let res =
-            sut.retrieve_booking("burxkwa4ot1ydg".to_string()).await;
+        let res = sut.bookings()
+            .retrieve("burxkwa4ot1ydg".to_string())
+            .await;
 
         assert!(res.is_ok())
     }
@@ -873,7 +887,7 @@ mod test_bookings {
             })
         };
 
-        let res = sut.cancel_booking(input).await;
+        let res = sut.bookings().cancel(input).await;
 
         assert!(res.is_ok())
     }
@@ -917,8 +931,9 @@ mod test_bookings {
             }
         };
 
-        let res =
-            sut.update_booking(input, "oruft3c9lh0duq".to_string()).await;
+        let res = sut.bookings()
+            .update(input, "oruft3c9lh0duq".to_string())
+            .await;
 
         assert!(res.is_ok())
     }
@@ -954,7 +969,7 @@ mod test_bookings {
             ("start_at_min".to_string(), "2022-09-12T07:20:50.52Z".to_string())
         ];
 
-        let res = sut.list_bookings(Some(input)).await;
+        let res = sut.bookings().list(Some(input)).await;
 
         assert!(res.is_ok())
     }
@@ -972,7 +987,7 @@ mod test_bookings {
             ("start_at_min".to_string(), "2022-09-12T07:20:50.52Z".to_string())
         ];
 
-        let res = sut.retrieve_business_booking_profile().await;
+        let res = sut.bookings().retrieve_business_profile().await;
 
         assert!(res.is_ok())
     }
@@ -1012,8 +1027,8 @@ mod test_bookings {
             ("location_id".to_string(), "L1JC53TYHS40Z".to_string()),
         ];
 
-        let res = sut
-            .list_team_member_booking_profiles(Some(input))
+        let res = sut.bookings()
+            .list_team_member_profiles(Some(input))
             .await;
 
         assert!(res.is_ok())
@@ -1028,8 +1043,8 @@ mod test_bookings {
         let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
         let sut = SquareClient::new(&access_token);
 
-        let res = sut
-            .retrieve_team_member_booking_profiles("TMKFnToW8ByXrcm6".to_string())
+        let res = sut.bookings()
+            .retrieve_team_member_profiles("TMKFnToW8ByXrcm6".to_string())
             .await;
 
         assert!(res.is_ok())
