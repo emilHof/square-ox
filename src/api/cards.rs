@@ -13,30 +13,18 @@ use uuid::Uuid;
 use crate::objects::enums::SortOrder;
 
 impl SquareClient {
-    /// See which [Card](Card)s are on file by requesting the information from the
-    /// [Square API](https://developer.squareup.com) and receiving them formatted as a
-    /// list of [Card](Card)s.
-    /// # Example
-    /// ```rust
-    ///use square_rs::{
-    ///    response::{SquareResponse, ResponseError},
-    ///    client::SquareClient
-    ///    };
-    ///
-    /// async {
-    ///     let locations = SquareClient::new("some_token").list_cards(None).await;
-    /// };
-    /// ```
-    pub async fn retrieve_card(&self, card_id: String)
-        -> Result<SquareResponse, SquareError> {
-        self.request(
-            Verb::GET,
-            SquareAPI::Cards(format!("/{}", card_id)),
-            None::<&Card>,
-            None,
-        ).await
+    pub fn cards(&self) -> Cards {
+        Cards {
+            client: &self,
+        }
     }
+}
 
+pub struct Cards<'a> {
+    client: &'a SquareClient,
+}
+
+impl<'a> Cards<'a> {
     /// Find a specific [Card](Card) by querying the [Square API](https://developer.squareup.com)
     /// with the card_id.
     /// # Arguments:
@@ -50,12 +38,41 @@ impl SquareClient {
     ///    };
     ///
     /// async {
-    ///     let locations = SquareClient::new("some_token").retrieve_card("some_id".to_string()).await;
+    ///     let locations = SquareClient::new("some_token")
+    ///         .cards()
+    ///         .retrieve("some_id".to_string())
+    ///         .await;
+    /// };
+    pub async fn retrieve(&self, card_id: String)
+                               -> Result<SquareResponse, SquareError> {
+        self.client.request(
+            Verb::GET,
+            SquareAPI::Cards(format!("/{}", card_id)),
+            None::<&Card>,
+            None,
+        ).await
+    }
+
+    /// See which [Card](Card)s are on file by requesting the information from the
+    /// [Square API](https://developer.squareup.com) and receiving them formatted as a
+    /// list of [Card](Card)s.
+    /// # Example
+    /// ```rust
+    ///use square_rs::{
+    ///    response::{SquareResponse, ResponseError},
+    ///    client::SquareClient
+    ///    };
+    ///
+    /// async {
+    ///     let locations = SquareClient::new("some_token")
+    ///         .cards()
+    ///         .list(None)
+    ///         .await;
     /// };
     /// ```
-    pub async fn list_cards(&self, search_query: Option<Vec<(String, String)>>)
+    pub async fn list(&self, search_query: Option<Vec<(String, String)>>)
                             -> Result<SquareResponse, SquareError> {
-        self.request(
+        self.client.request(
             Verb::GET,
             SquareAPI::Cards("".to_string()),
             None::<&Card>,
@@ -83,12 +100,15 @@ impl SquareClient {
     ///     .await
     ///     .unwrap();
     ///
-    ///     let locations = SquareClient::new("some_token").create_card(card).await;
+    ///     let locations = SquareClient::new("some_token")
+    ///         .cards()
+    ///         .create(card)
+    ///         .await;
     /// };
     /// ```
-    pub async fn create_card(&self, card: CardWrapper)
-                            -> Result<SquareResponse, SquareError> {
-        self.request(
+    pub async fn create(&self, card: CardWrapper)
+                             -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::POST,
             SquareAPI::Cards("".to_string()),
             Some(&card),
@@ -108,12 +128,15 @@ impl SquareClient {
     ///    };
     ///
     /// async {
-    ///     let locations = SquareClient::new("some_token").disable_card("some_id".to_string()).await;
+    ///     let locations = SquareClient::new("some_token")
+    ///         .cards()
+    ///         .disable("some_id".to_string())
+    ///         .await;
     /// };
     /// ```
-    pub async fn disable_card(&self, card_id: String)
-                             -> Result<SquareResponse, SquareError> {
-        self.request(
+    pub async fn disable(&self, card_id: String)
+                              -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::POST,
             SquareAPI::Cards(format!("/{}/disable", card_id)),
             None::<&Card>,
@@ -264,7 +287,7 @@ impl CardBuilder {
 }
 
 #[cfg(test)]
-mod test {
+mod test_cards {
     use super::*;
 
     #[actix_rt::test]
@@ -298,7 +321,9 @@ mod test {
             ("sort_order".to_string(), "ASC".to_string()),
         ];
 
-        let res = sut.list_cards(Some(input)).await;
+        let res = sut.cards()
+            .list(Some(input))
+            .await;
 
         assert!(res.is_ok())
 
@@ -318,8 +343,9 @@ mod test {
             ("sort_order".to_string(), "ASC".to_string()),
         ];
 
-        let res = sut
-            .retrieve_card("ccof:Es7R2xLyCWzmrKGI4GB".to_string()).await;
+        let res = sut.cards()
+            .retrieve("ccof:Es7R2xLyCWzmrKGI4GB".to_string())
+            .await;
 
         assert!(res.is_ok())
 
@@ -397,7 +423,9 @@ mod test {
             verification_token: None
         };
 
-        let res = sut.create_card(input).await;
+        let res = sut.cards()
+            .create(input)
+            .await;
 
         assert!(res.is_ok())
     }
@@ -411,8 +439,8 @@ mod test {
         let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
         let sut = SquareClient::new(&access_token);
 
-        let res = sut
-            .disable_card("ccof:ce0ogxL3KIHfNd4Z4GB".to_string())
+        let res = sut.cards()
+            .disable("ccof:ce0ogxL3KIHfNd4Z4GB".to_string())
             .await;
 
         assert!(res.is_ok())
