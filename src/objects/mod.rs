@@ -8,7 +8,7 @@ pub mod enums;
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::json_internal_vec;
-use crate::objects::enums::{BusinessAppointmentSettingsBookingLocationType, BusinessAppointmentSettingsCancellationPolicy, BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType, BusinessBookingProfileBookingPolicy, BusinessBookingProfileCustomerTimezoneChoice, CatalogCustomAttributeDefinitionType, CatalogItemProductType, CatalogObjectType, CatalogPricingType, Currency, InventoryAlertType, LocationStatus, LocationType, OrderFulfillmentFulfillmentLineItemApplication, OrderFulfillmentPickupDetailsScheduleType, OrderLineItemDiscountScope, OrderLineItemDiscountType, OrderLineItemItemType, OrderLineItemTaxScope, OrderLineItemTaxType, OrderServiceChargeCalculationPhase, OrderServiceChargeType, OrderState, RefundStatus, SortOrder, TenderCardDetailsEntryMethod, TenderCardDetailsStatus, TenderType};
+use crate::objects::enums::{BusinessAppointmentSettingsBookingLocationType, BusinessAppointmentSettingsCancellationPolicy, BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType, BusinessBookingProfileBookingPolicy, BusinessBookingProfileCustomerTimezoneChoice, CatalogCustomAttributeDefinitionType, CatalogItemProductType, CatalogObjectType, CatalogPricingType, Currency, InventoryAlertType, InventoryChangeType, InventoryState, LocationStatus, LocationType, OrderFulfillmentFulfillmentLineItemApplication, OrderFulfillmentPickupDetailsScheduleType, OrderLineItemDiscountScope, OrderLineItemDiscountType, OrderLineItemItemType, OrderLineItemTaxScope, OrderLineItemTaxType, OrderServiceChargeCalculationPhase, OrderServiceChargeType, OrderState, RefundStatus, SortOrder, TenderCardDetailsEntryMethod, TenderCardDetailsStatus, TenderType};
 
 /// The Response enum holds the variety of responses that can be returned from a
 /// [Square API](https://developer.squareup.com) call.
@@ -59,6 +59,9 @@ pub enum Response {
     Checkout(Checkout),
     PaymentLinks(Vec<PaymentLink>),
     PaymentLink(PaymentLink),
+
+    // Inventory Endpoint Responses
+    Counts(Vec<InventoryCount>)
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
@@ -1952,6 +1955,137 @@ pub struct Range {
     pub max: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub min: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct InventoryCount {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub calculated_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_object_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_object_type: Option<CatalogObjectType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_estimated: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub location_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub quantity: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub state: Option<InventoryState>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct InventoryChange {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub adjustment: Option<InventoryAdjustment>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub measurement_unit: Option<CatalogMeasurementUnit>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub measurement_unit_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub physical_count: Option<InventoryPhysicalCount>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub transfer: Option<InventoryTransfer>,
+    #[serde(rename = "type")]
+    pub inventory_change_type: InventoryChangeType,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct InventoryAdjustment {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub adjustment_group: Option<InventoryAdjustmentGroup>,
+    pub catalog_object_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_object_type: Option<CatalogObjectType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub employee_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub from_state: Option<InventoryState>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub goods_receipt_id: Option<String>,
+    pub location_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub occurred_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub purchase_order_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub quantity: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub refund_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source: Option<SourceApplication>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub team_member_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub to_state: Option<InventoryState>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_price_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub transaction_id: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct InventoryAdjustmentGroup {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub from_state: Option<InventoryState>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub root_adjustment_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub to_state: Option<InventoryState>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct InventoryPhysicalCount {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    pub catalog_object_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_object_type: Option<CatalogObjectType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    pub location_id: String,
+    pub occurred_at: String,
+    pub quantity: String, /// As decimal with up to 5 digits after the decimal point
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source: Option<SourceApplication>,
+    pub state: InventoryState,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub team_member_id: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct InventoryTransfer {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    pub catalog_object_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub catalog_object_type: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub employee_id: Option<String>,
+    pub from_location_id: String,
+    pub occurred_at: String,
+    pub quantity: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source: Option<SourceApplication>,
+    pub state: InventoryState,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub team_member_id: Option<String>,
+    pub to_location_id: String,
 }
 
 

@@ -359,4 +359,32 @@ pub enum SearchCatalogItemsRequestStockLevel {
     Low,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum InventoryState {
+    Custom,
+    InStock,
+    Sold,
+    ReturnedByCustomer,
+    ReservedForSale,
+    SoldOnline,
+    OrderedFromVendor,
+    ReceivedFromVendor,
+    InTransitTo,
+    None,
+    Waste,
+    UnlinkedReturn,
+    Composed,
+    Decomposed,
+    SupportedByNewerVersion,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum InventoryChangeType {
+    PhysicalCount,
+    Adjustment,
+    Transfer,
+}
+
 
