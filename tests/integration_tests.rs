@@ -30,7 +30,7 @@ async fn test_list_customer() {
 
     assert!(input.is_ok());
 
-    let res = sut.list_customers(input.unwrap()).await;
+    let res = sut.customers().list(input.unwrap()).await;
 
     assert!(res.is_ok());
 }

@@ -13,9 +13,23 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 impl SquareClient {
-    pub async fn list_customers(&self, list_parameters: Vec<(String, String)>)
-        -> Result<SquareResponse, SquareError> {
-        self.request(
+    pub fn customers(&self) -> Customers {
+        Customers {
+            client: &self
+        }
+    }
+}
+
+pub struct Customers<'a> {
+    client: &'a SquareClient,
+}
+
+impl<'a> Customers<'a> {
+    /// Lists customer profiles associated with a Square account.
+    /// [Open in API Reference](https://developer.squareup.com/reference/square/customers/list-customers)
+    pub async fn list(&self, list_parameters: Vec<(String, String)>)
+                      -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::GET,
             SquareAPI::Customers("".to_string()),
             None::<&Customer>,
@@ -23,9 +37,11 @@ impl SquareClient {
         ).await
     }
 
-    pub async fn create_customer(&self, customer: Customer)
-        -> Result<SquareResponse, SquareError> {
-        self.request(
+    /// Creates a new customer for a business.
+    /// [Open in API Reference](https://developer.squareup.com/reference/square/customers/create-customer)
+    pub async fn create(&self, customer: Customer)
+                        -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::POST,
             SquareAPI::Customers("".to_string()),
             Some(&customer),
@@ -33,9 +49,11 @@ impl SquareClient {
         ).await
     }
 
-    pub async fn search_customers(&self, customer_search_query: CustomerSearchQuery)
-    -> Result<SquareResponse, SquareError>{
-        self.request(
+    /// Searches the customer profiles associated with a Square account using a supported query filter.
+    /// [Open in API Reference](https://developer.squareup.com/reference/square/customers/search-customers)
+    pub async fn search(&self, customer_search_query: CustomerSearchQuery)
+                        -> Result<SquareResponse, SquareError>{
+        self.client.request(
             Verb::POST,
             SquareAPI::Customers("/search".to_string()),
             Some(&customer_search_query),
@@ -43,9 +61,11 @@ impl SquareClient {
         ).await
     }
 
-    pub async fn delete_customer(&self, customer_to_delete: CustomerDelete)
-    -> Result<SquareResponse, SquareError > {
-        self.request(
+    /// Deletes a customer profile from a business.
+    /// [Open in API Reference](https://developer.squareup.com/reference/square/customers/delete-customer)
+    pub async fn delete(&self, customer_to_delete: CustomerDelete)
+                        -> Result<SquareResponse, SquareError > {
+        self.client.request(
             Verb::DELETE,
             SquareAPI::Customers(format!("/{}", customer_to_delete.customer_id)),
             None::<&CustomerSearchQuery>,
@@ -768,7 +788,7 @@ mod test_customers {
         let input = vec![("limit".to_string(), "23".to_string()),
              ("sort_field".to_string(), "DEFAULT".to_string())];
 
-        let result = sut.list_customers(input).await;
+        let result = sut.customers().list(input).await;
 
         assert!(result.is_ok());
         println!("{:?}", result.unwrap())
@@ -846,9 +866,11 @@ mod test_customers {
         let sut = SquareClient::new(&access_token);
 
         let input = CustomerBuilder::new()
-            .given_name("Charles".to_string()).build().await.unwrap();
+            .given_name("Boyd".to_string())
+            .nickname("the coolest".to_string())
+            .build().await.unwrap();
 
-        let result = sut.create_customer(input).await;
+        let result = sut.customers().create(input).await;
 
         assert!(result.is_ok());
         println!("{:?}", result.unwrap())
@@ -880,11 +902,11 @@ mod test_customers {
         let sut = SquareClient::new(&access_token);
 
         let input = CustomerDelete {
-            customer_id: "F91CDB9574ZR9AY25C1WS9G7E8".to_string(),
+            customer_id: "WPGEDT7V38Y318JVGZ1G1C39W4".to_string(),
             version: None
         };
 
-        let res = sut.delete_customer(input).await;
+        let res = sut.customers().delete(input).await;
 
         assert!(res.is_ok());
     }
@@ -986,7 +1008,7 @@ mod test_customers {
             })
         };
 
-        let result = sut.search_customers(input).await;
+        let result = sut.customers().search(input).await;
 
         // assert!(result.is_ok() || result.err().unwrap().get().is_some())
         assert!(result.is_ok())
