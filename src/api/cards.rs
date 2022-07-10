@@ -43,7 +43,7 @@ impl<'a> Cards<'a> {
     ///         .retrieve("some_id".to_string())
     ///         .await;
     /// };
-    pub async fn retrieve(&self, card_id: String)
+    pub async fn retrieve(self, card_id: String)
                                -> Result<SquareResponse, SquareError> {
         self.client.request(
             Verb::GET,
@@ -70,7 +70,7 @@ impl<'a> Cards<'a> {
     ///         .await;
     /// };
     /// ```
-    pub async fn list(&self, search_query: Option<Vec<(String, String)>>)
+    pub async fn list(self, search_query: Option<Vec<(String, String)>>)
                             -> Result<SquareResponse, SquareError> {
         self.client.request(
             Verb::GET,
@@ -106,7 +106,7 @@ impl<'a> Cards<'a> {
     ///         .await;
     /// };
     /// ```
-    pub async fn create(&self, card: CardWrapper)
+    pub async fn create(self, card: CardWrapper)
                              -> Result<SquareResponse, SquareError> {
         self.client.request(
             Verb::POST,
@@ -134,7 +134,7 @@ impl<'a> Cards<'a> {
     ///         .await;
     /// };
     /// ```
-    pub async fn disable(&self, card_id: String)
+    pub async fn disable(self, card_id: String)
                               -> Result<SquareResponse, SquareError> {
         self.client.request(
             Verb::POST,

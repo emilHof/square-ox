@@ -96,7 +96,7 @@ async fn process_payment(
     };
 
     // Create the payment and check the response
-    match client.create_payment(payment).await {
+    match client.payments().create(payment).await {
         Ok(r) => HttpResponse::Ok()
             .set_header("Access-Control-Allow-Origin", "*")
             .json(r),

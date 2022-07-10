@@ -12,6 +12,18 @@ use crate::objects::{Address, BusinessHours, BusinessHoursPeriod, Coordinates, L
 use serde::{Deserialize, Serialize};
 
 impl SquareClient {
+    pub fn locations(&self) -> Locations {
+        Locations {
+            client: &self,
+        }
+    }
+}
+
+pub struct Locations<'a> {
+    pub client: &'a SquareClient,
+}
+
+impl<'a> Locations<'a> {
     /// See which [Location](Location)s are available by requesting the information from the
     /// [Square API](https://developer.squareup.com) and subsequently receiving them formatted as a
     /// list of [Location](Location)s.
@@ -23,11 +35,14 @@ impl SquareClient {
     ///    };
     ///
     /// async {
-    ///     let locations = SquareClient::new("some_token").list_locations().await;
+    ///     let locations = SquareClient::new("some_token")
+    ///         .locations()
+    ///         .list()
+    ///         .await;
     /// };
     /// ```
-    pub async fn list_locations(&self) -> Result<SquareResponse, SquareError> {
-        self.request(
+    pub async fn list(self) -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::GET,
             SquareAPI::Locations("".to_string()),
             None::<&Location>,
@@ -53,12 +68,15 @@ impl SquareClient {
     ///         .build()
     ///         .await
     ///         .unwrap();
-    ///     let res = SquareClient::new("some_token").create_location(location).await;
+    ///     let res = SquareClient::new("some_token")
+    ///         .locations()
+    ///         .create(location)
+    ///         .await;
     /// };
     /// ```
-    pub async fn create_location(&self, new_location: LocationCreationWrapper)
-        -> Result<SquareResponse, SquareError> {
-        self.request(
+    pub async fn create(self, new_location: LocationCreationWrapper)
+                                 -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::POST,
             SquareAPI::Locations("".to_string()),
             Some(&new_location),
@@ -86,13 +104,14 @@ impl SquareClient {
     ///         .await
     ///         .unwrap();
     ///     let res = SquareClient::new("some_token")
-    ///         .update_location(location, "foo_bar_id".to_string())
+    ///         .locations()
+    ///         .update(location, "foo_bar_id".to_string())
     ///         .await;
     /// };
     /// ```
-    pub async fn update_location(&self, updated_location: LocationCreationWrapper, location_id: String)
+    pub async fn update(self, updated_location: LocationCreationWrapper, location_id: String)
                                  -> Result<SquareResponse, SquareError> {
-        self.request(
+        self.client.request(
             Verb::PUT,
             SquareAPI::Locations(format!("/{}", location_id)),
             Some(&updated_location),
@@ -113,13 +132,14 @@ impl SquareClient {
     ///
     ///  async {
     ///     let res = SquareClient::new("some_token")
-    ///         .retrieve_location("foo_bar_id".to_string())
+    ///         .locations()
+    ///         .retrieve("foo_bar_id".to_string())
     ///         .await;
     /// };
     /// ```
-    pub async fn retrieve_location(&self, location_id: String)
-                                 -> Result<SquareResponse, SquareError> {
-        self.request(
+    pub async fn retrieve(self, location_id: String)
+                                   -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::GET,
             SquareAPI::Locations(format!("/{}", location_id)),
             None::<&LocationCreationWrapper>,
@@ -435,14 +455,17 @@ mod test_locations {
     use super::*;
 
     #[actix_rt::test]
-    async fn test_create_location_request() {
+    async fn test_list_locations() {
         use dotenv::dotenv;
         use std::env;
 
         dotenv().ok();
         let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
         let sut = SquareClient::new(&access_token);
-        let result = sut.list_locations().await;
+
+        let result = sut.locations()
+            .list()
+            .await;
         assert!(result.is_ok())
     }
 
@@ -543,7 +566,9 @@ mod test_locations {
             }
         };
 
-        let res = sut.create_location(input).await;
+        let res = sut.locations()
+            .create(input)
+            .await;
 
         assert!(res.is_ok())
     }
@@ -590,8 +615,9 @@ mod test_locations {
             }
         };
 
-        let res = sut.update_location(input,
-                                      "LBQ9DAD5WCHB0".to_string()).await;
+        let res = sut.locations()
+            .update(input,"LBQ9DAD5WCHB0".to_string())
+            .await;
 
         assert!(res.is_ok())
     }
@@ -605,8 +631,9 @@ mod test_locations {
         let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
         let sut = SquareClient::new(&access_token);
 
-        let res =
-            sut.retrieve_location("LBQ9DAD5WCHB0".to_string()).await;
+        let res = sut.locations()
+            .retrieve("LBQ9DAD5WCHB0".to_string())
+            .await;
 
         assert!(res.is_ok())
     }

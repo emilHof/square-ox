@@ -14,7 +14,8 @@ async fn test_list_locations() {
 
     let sut = square_rs::client::SquareClient::new(&access_token);
 
-    let res = sut.list_locations().await;
+    let res = sut.locations()
+        .list().await;
 
     assert!(res.is_ok())
 }
@@ -44,7 +45,9 @@ async fn test_list_catalog() {
 
     let input = catalog::CatalogListParameterBuilder::new().build().await;
 
-    let res = sut.list_catalog(Some(input)).await;
+    let res = sut.catalog()
+        .list(Some(input))
+        .await;
 
     assert!(res.is_ok());
 }

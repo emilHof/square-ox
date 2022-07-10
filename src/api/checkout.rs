@@ -35,7 +35,7 @@ impl<'a> Checkout<'a> {
     /// [CreateOrderRequestWrapper](CreateOrderRequestWrapper) created through the
     /// [CreateOrderRequestBuilder](CreateOrderRequestBuilder).
     pub async fn create_checkout(
-        &self, location_id: String,
+        self, location_id: String,
         create_order_request: CreateOrderRequestWrapper
     )
         -> Result<SquareResponse, SquareError> {
@@ -54,7 +54,7 @@ impl<'a> Checkout<'a> {
     /// through the [ListPaymentLinksSearchQueryBuilder](ListPaymentLinksSearchQueryBuilder) and in
     /// vector form.
     pub async fn list(
-        &self, search_query: Option<Vec<(String, String)>>
+        self, search_query: Option<Vec<(String, String)>>
     )
         -> Result<SquareResponse, SquareError> {
         self.client.request(
@@ -74,7 +74,7 @@ impl<'a> Checkout<'a> {
     /// that is created through the [CreatePaymentLinkBuilder](CreatePaymentLinkBuilder). The
     /// payment link must contain at least one Order or QuickPay object.
     pub async fn create(
-        &self, payment_link: CreatePaymentLinkWrapper
+        self, payment_link: CreatePaymentLinkWrapper
     )
         -> Result<SquareResponse, SquareError> {
         self.client.request(
@@ -90,7 +90,7 @@ impl<'a> Checkout<'a> {
     /// # Arguments:
     /// * `link_id` - The id of the payment link to delete.
     pub async fn delete(
-        &self, payment_link: String
+        self, payment_link: String
     )
         -> Result<SquareResponse, SquareError> {
         self.client.request(
@@ -106,7 +106,7 @@ impl<'a> Checkout<'a> {
     /// # Arguments:
     /// * `link_id` - The id of the payment link to delete.
     pub async fn retrieve(
-        &self, link_id: String
+        self, link_id: String
     )
         -> Result<SquareResponse, SquareError> {
         self.client.request(
@@ -123,7 +123,7 @@ impl<'a> Checkout<'a> {
     /// * `link_id` - The id of the payment link to update.
     /// * `payment_link` - The updated [PaymentLink](PaymentLink).
     pub async fn update(
-        &self, link_id: String, payment_link: PaymentLinkWrapper
+        self, link_id: String, payment_link: PaymentLinkWrapper
     )
         -> Result<SquareResponse, SquareError> {
         self.client.request(

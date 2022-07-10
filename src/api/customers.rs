@@ -27,7 +27,7 @@ pub struct Customers<'a> {
 impl<'a> Customers<'a> {
     /// Lists customer profiles associated with a Square account.
     /// [Open in API Reference](https://developer.squareup.com/reference/square/customers/list-customers)
-    pub async fn list(&self, list_parameters: Vec<(String, String)>)
+    pub async fn list(self, list_parameters: Vec<(String, String)>)
                       -> Result<SquareResponse, SquareError> {
         self.client.request(
             Verb::GET,
@@ -39,7 +39,7 @@ impl<'a> Customers<'a> {
 
     /// Creates a new customer for a business.
     /// [Open in API Reference](https://developer.squareup.com/reference/square/customers/create-customer)
-    pub async fn create(&self, customer: Customer)
+    pub async fn create(self, customer: Customer)
                         -> Result<SquareResponse, SquareError> {
         self.client.request(
             Verb::POST,
@@ -51,7 +51,7 @@ impl<'a> Customers<'a> {
 
     /// Searches the customer profiles associated with a Square account using a supported query filter.
     /// [Open in API Reference](https://developer.squareup.com/reference/square/customers/search-customers)
-    pub async fn search(&self, customer_search_query: CustomerSearchQuery)
+    pub async fn search(self, customer_search_query: CustomerSearchQuery)
                         -> Result<SquareResponse, SquareError>{
         self.client.request(
             Verb::POST,
@@ -63,7 +63,7 @@ impl<'a> Customers<'a> {
 
     /// Deletes a customer profile from a business.
     /// [Open in API Reference](https://developer.squareup.com/reference/square/customers/delete-customer)
-    pub async fn delete(&self, customer_to_delete: CustomerDelete)
+    pub async fn delete(self, customer_to_delete: CustomerDelete)
                         -> Result<SquareResponse, SquareError > {
         self.client.request(
             Verb::DELETE,

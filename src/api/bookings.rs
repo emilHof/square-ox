@@ -32,7 +32,7 @@ impl<'a> Bookings<'a> {
     /// # Arguments
     /// * `search_query` - A vector of search query parameter created through the
     /// [ListBookingsQueryBuilder](ListBookingsQueryBuilder)
-    pub async fn list(&self, search_query: Option<Vec<(String, String)>>)
+    pub async fn list(self, search_query: Option<Vec<(String, String)>>)
                                -> Result<SquareResponse, SquareError> {
         self.client.request(
             Verb::GET,
@@ -48,7 +48,7 @@ impl<'a> Bookings<'a> {
     /// # Arguments
     /// * `search_query` - A [SearchQuery](SearchQuery) created from the
     /// [SearchAvailabilityQueryBuilder](SearchAvailabilityQueryBuilder)
-    pub async fn search_availability(&self, search_query: SearchAvailabilityQuery)
+    pub async fn search_availability(self, search_query: SearchAvailabilityQuery)
                                      -> Result<SquareResponse, SquareError> {
         self.client.request(
             Verb::POST,
@@ -64,7 +64,7 @@ impl<'a> Bookings<'a> {
     /// # Arguments
     /// * `create_booking` - A [BookingsPost](BookingsPost) created from the
     /// [BookingsBuilder](BookingsBuilder)
-    pub async fn create(&self, booking_post: BookingsPost)
+    pub async fn create(self, booking_post: BookingsPost)
                                 -> Result<SquareResponse, SquareError> {
         self.client.request(
             Verb::POST,
@@ -80,7 +80,7 @@ impl<'a> Bookings<'a> {
     /// # Arguments
     /// * `updated_booking` - A [BookingsPost](BookingsPost) created from the
     /// [BookingsBuilder](BookingsBuilder)
-    pub async fn update(&self, updated_booking: BookingsPost, booking_id: String)
+    pub async fn update(self, updated_booking: BookingsPost, booking_id: String)
                                 -> Result<SquareResponse, SquareError> {
         self.client.request(
             Verb::PUT,
@@ -94,7 +94,7 @@ impl<'a> Bookings<'a> {
     ///
     /// # Arguments
     /// * `booking_id` - The id of the booking as a String
-    pub async fn retrieve(&self, booking_id: String)
+    pub async fn retrieve(self, booking_id: String)
                                   -> Result<SquareResponse, SquareError> {
         self.client.request(
             Verb::GET,
@@ -122,7 +122,7 @@ impl<'a> Bookings<'a> {
     }
 
     /// Retrieves a seller's booking profile at the [Square API](https://developer.squareup.com).
-    pub async fn retrieve_business_profile(&self)
+    pub async fn retrieve_business_profile(self)
                                                    -> Result<SquareResponse, SquareError> {
         self.client.request(
             Verb::GET,
@@ -137,7 +137,7 @@ impl<'a> Bookings<'a> {
     /// # Arguments
     /// * `search_query` - A search query created by the
     /// [ListTeamMemberBookingsProfileBuilder](ListTeamMemberBookingsProfileBuilder).
-    pub async fn list_team_member_profiles(&self, search_query: Option<Vec<(String, String)>>)
+    pub async fn list_team_member_profiles(self, search_query: Option<Vec<(String, String)>>)
                                                    -> Result<SquareResponse, SquareError> {
         self.client.request(
             Verb::GET,
@@ -152,7 +152,7 @@ impl<'a> Bookings<'a> {
     /// # Arguments
     /// * `team_member_id` - The id of the team member you would like to retrieve from the
     /// [Square API](https://developer.squareup.com).
-    pub async fn retrieve_team_member_profiles(&self, team_member_id: String)
+    pub async fn retrieve_team_member_profiles(self, team_member_id: String)
                                                        -> Result<SquareResponse, SquareError> {
         self.client.request(
             Verb::GET,

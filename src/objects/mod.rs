@@ -8,6 +8,7 @@ pub mod enums;
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::json_internal_vec;
+use crate::api::payment::Payments;
 use crate::objects::enums::{BusinessAppointmentSettingsBookingLocationType, BusinessAppointmentSettingsCancellationPolicy, BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType, BusinessBookingProfileBookingPolicy, BusinessBookingProfileCustomerTimezoneChoice, CatalogCustomAttributeDefinitionType, CatalogItemProductType, CatalogObjectType, CatalogPricingType, Currency, InventoryAlertType, InventoryChangeType, InventoryState, LocationStatus, LocationType, OrderFulfillmentFulfillmentLineItemApplication, OrderFulfillmentPickupDetailsScheduleType, OrderLineItemDiscountScope, OrderLineItemDiscountType, OrderLineItemItemType, OrderLineItemTaxScope, OrderLineItemTaxType, OrderServiceChargeCalculationPhase, OrderServiceChargeType, OrderState, RefundStatus, SortOrder, TenderCardDetailsEntryMethod, TenderCardDetailsStatus, TenderType};
 
 /// The Response enum holds the variety of responses that can be returned from a
@@ -16,13 +17,10 @@ use crate::objects::enums::{BusinessAppointmentSettingsBookingLocationType, Busi
 #[serde(rename_all = "snake_case")]
 #[non_exhaustive]
 pub enum Response {
-    Payment {
-        id: String,
-        status: String,
-        order_id: String,
-        receipt_number: String,
-        receipt_url: String,
-    },
+    // Payments Endpoint Responses
+    Payment(Payment),
+
+    // Orders Endpoint Responses
     Order {
         random_name: String,
     },
@@ -2086,6 +2084,15 @@ pub struct InventoryTransfer {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub team_member_id: Option<String>,
     pub to_location_id: String,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct Payment {
+    id: String,
+    status: String,
+    order_id: String,
+    receipt_number: String,
+    receipt_url: String,
 }
 
 

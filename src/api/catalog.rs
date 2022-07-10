@@ -13,10 +13,22 @@ use uuid::Uuid;
 use crate::objects::enums::{CatalogItemProductType, CatalogObjectType, SearchCatalogItemsRequestStockLevel, SortOrder};
 
 impl SquareClient {
+    pub fn catalog(&self) -> Catalog {
+        Catalog {
+            client: &self,
+        }
+    }
+}
+
+pub struct Catalog<'a> {
+    client: &'a SquareClient,
+}
+
+impl<'a> Catalog<'a> {
     /// Returns a list of all [CatalogObjects](CatalogObjects) of the specified types in the catalog.
-    pub async fn list_catalog(&self, list_parameters: Option<Vec<(String, String)>>)
+    pub async fn list(self, list_parameters: Option<Vec<(String, String)>>)
                               -> Result<SquareResponse, SquareError> {
-        self.request(
+        self.client.request(
             Verb::GET,
             SquareAPI::Catalog("/list".to_string()),
             None::<&CatalogObject>,
@@ -25,9 +37,9 @@ impl SquareClient {
     }
 
     /// Creates or updates the target [CatalogObject](CatalogObject).
-    pub async fn upsert_catalog_object(&self, object: ObjectUpsertRequest)
-        -> Result<SquareResponse, SquareError> {
-        self.request(
+    pub async fn upsert_object(self, object: ObjectUpsertRequest)
+                                       -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::POST,
             SquareAPI::Catalog("/object".to_string()),
             Some(&object),
@@ -37,9 +49,9 @@ impl SquareClient {
 
     /// Deletes a single CatalogObject based on the provided ID and returns the set of successfully
     /// deleted IDs in the response.
-    pub async fn delete_catalog_object(&self, object_id: String)
-        -> Result<SquareResponse, SquareError> {
-        self.request(
+    pub async fn delete_object(self, object_id: String)
+                                       -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::DELETE,
             SquareAPI::Catalog(format!("/object/{}", object_id)),
             None::<&ObjectUpsertRequest>,
@@ -49,13 +61,13 @@ impl SquareClient {
 
     /// Returns a single [CatalogItem](CatalogItem) as a [CatalogObject](CatalogObject) based on the
     /// provided ID.
-    pub async fn retrieve_catalog_object(
-        &self,
+    pub async fn retrieve_object(
+        self,
         object_id: String,
         parameters: Option<Vec<(String, String)>>
     )
         -> Result<SquareResponse, SquareError> {
-        self.request(
+        self.client.request(
             Verb::GET,
             SquareAPI::Catalog(format!("/object/{}", object_id)),
             None::<&ObjectUpsertRequest>,
@@ -66,9 +78,9 @@ impl SquareClient {
     /// Searches for [CatalogObject](CatalogObject) of any type by matching supported search attribute values,
     /// excluding custom attribute values on items or item variations, against one or more of
     /// the specified query filters.
-    pub async fn search_catalog_objects(&self, search_body: SearchCatalogObjectsBody)
-        -> Result<SquareResponse, SquareError> {
-        self.request(
+    pub async fn search_objects(self, search_body: SearchCatalogObjectsBody)
+                                        -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::POST,
             SquareAPI::Catalog("/search".to_string()),
             Some(&search_body),
@@ -78,9 +90,9 @@ impl SquareClient {
 
     /// Retrieves information about the [Square Catalog API](https://developer.squareup.com), such
     /// as batch size limits that can be used by the `BatchUpsertCatalogObjects` endpoint.
-    pub async fn catalog_info(&self)
-        -> Result<SquareResponse, SquareError> {
-        self.request(
+    pub async fn info(self)
+                              -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::GET,
             SquareAPI::Catalog("/info".to_string()),
             None::<&SearchCatalogObjectsBody>,
@@ -91,9 +103,9 @@ impl SquareClient {
     // TODO implement search_catalog_items
     /// Retrieves information about the [Square Catalog API](https://developer.squareup.com), such
     /// as batch size limits that can be used by the `BatchUpsertCatalogObjects` endpoint.
-    pub async fn search_catalog_items(&self, search_query: SearchCatalogItemsBody)
-        -> Result<SquareResponse, SquareError> {
-        self.request(
+    pub async fn search_items(self, search_query: SearchCatalogItemsBody)
+                                      -> Result<SquareResponse, SquareError> {
+        self.client.request(
             Verb::POST,
             SquareAPI::Catalog("/search-catalog-items".to_string()),
             Some(&search_query),
@@ -515,7 +527,9 @@ mod test_catalog {
 
         let input = vec![("types".to_string(), "ITEM,CATEGORY".to_string())];
 
-        let res = sut.list_catalog(Some(input)).await;
+        let res = sut.catalog()
+            .list(Some(input))
+            .await;
 
         assert!(res.is_ok())
     }
@@ -820,7 +834,9 @@ mod test_catalog {
             }
         };
 
-        let res = sut.upsert_catalog_object(input).await;
+        let res = sut.catalog()
+            .upsert_object(input)
+            .await;
 
         assert!(res.is_ok())
     }
@@ -836,7 +852,9 @@ mod test_catalog {
 
         let input = "S5P6A46PDZCBB42ZTRGNWOBB".to_string();
 
-        let res = sut.delete_catalog_object(input).await;
+        let res = sut.catalog()
+            .delete_object(input)
+            .await;
 
         assert!(res.is_ok())
     }
@@ -871,12 +889,12 @@ mod test_catalog {
             ("catalog_version".to_string(), 1655427266071_i64.to_string()),
         ];
 
-        let res =
-            sut.retrieve_catalog_object(
-                "RQITYDA5N7WZDMMJK23HLBHK".to_string(),
-                Some(input)
+        let res = sut.catalog()
+            .retrieve_object(
+            "RQITYDA5N7WZDMMJK23HLBHK".to_string(),
+            Some(input)
             )
-                .await;
+            .await;
 
         assert!(res.is_ok())
     }
@@ -925,7 +943,9 @@ mod test_catalog {
             query: None
         };
 
-        let res = sut.search_catalog_objects(input).await;
+        let res = sut.catalog()
+            .search_objects(input)
+            .await;
 
         assert!(res.is_ok())
     }
@@ -939,7 +959,9 @@ mod test_catalog {
         let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
         let sut = SquareClient::new(&access_token);
 
-        let res = sut.catalog_info().await;
+        let res = sut.catalog()
+            .info()
+            .await;
 
         assert!(res.is_ok())
     }
@@ -986,7 +1008,9 @@ mod test_catalog {
             text_filter: None
         };
 
-        let res = sut.search_catalog_items(input).await;
+        let res = sut.catalog()
+            .search_items(input)
+            .await;
 
         assert!(res.is_ok())
     }

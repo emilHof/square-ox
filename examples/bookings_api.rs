@@ -80,7 +80,7 @@ async fn list_availability(
         }
     };
 
-    match client.search_availability(search_query).await {
+    match client.bookings().search_availability(search_query).await {
         Ok(r) => HttpResponse::Ok()
             .set_header("Access-Control-Allow-Origin", "*")
             .json(r),
@@ -112,7 +112,7 @@ async fn list_locations(
 
     let client = &state.client;
 
-    match client.list_locations().await {
+    match client.locations().list().await {
         Ok(r) => {
             println!("{:?}", &r);
             match r.response.unwrap() {
