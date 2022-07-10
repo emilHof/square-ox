@@ -15,6 +15,18 @@ use crate::objects::{self, Address, ChargeRequestAdditionalRecipient, CheckoutOp
 use crate::objects::enums::Currency;
 
 impl SquareClient {
+    pub fn checkout(&self) -> Checkout {
+        Checkout {
+            client: &self
+        }
+    }
+}
+
+pub struct Checkout<'a> {
+    client: &'a SquareClient,
+}
+
+impl<'a> Checkout<'a> {
     /// Link a checkout id to a checkout page in order to redirect customers
     ///
     /// # Arguments:
@@ -27,7 +39,7 @@ impl SquareClient {
         create_order_request: CreateOrderRequestWrapper
     )
         -> Result<SquareResponse, SquareError> {
-        self.request(
+        self.client.request(
             Verb::POST,
             SquareAPI::Locations(format!("/{}/checkouts", location_id)),
             Some(&create_order_request),
@@ -41,11 +53,11 @@ impl SquareClient {
     /// * `search_query` - The parameters restricting the listing of payment links. They are build
     /// through the [ListPaymentLinksSearchQueryBuilder](ListPaymentLinksSearchQueryBuilder) and in
     /// vector form.
-    pub async fn list_payment_links(
+    pub async fn list(
         &self, search_query: Option<Vec<(String, String)>>
     )
         -> Result<SquareResponse, SquareError> {
-        self.request(
+        self.client.request(
             Verb::GET,
             SquareAPI::Checkout("/payment-links".to_string()),
             None::<&CreateOrderRequestWrapper>,
@@ -61,11 +73,11 @@ impl SquareClient {
     /// being added. This body is wrapped by a [CreatePaymentLinkWrapper](CreatePaymentLinkWrapper)
     /// that is created through the [CreatePaymentLinkBuilder](CreatePaymentLinkBuilder). The
     /// payment link must contain at least one Order or QuickPay object.
-    pub async fn create_payment_link(
+    pub async fn create(
         &self, payment_link: CreatePaymentLinkWrapper
     )
         -> Result<SquareResponse, SquareError> {
-        self.request(
+        self.client.request(
             Verb::POST,
             SquareAPI::Checkout("/payment-links".to_string()),
             Some(&payment_link),
@@ -77,11 +89,11 @@ impl SquareClient {
     ///
     /// # Arguments:
     /// * `link_id` - The id of the payment link to delete.
-    pub async fn delete_payment_link(
+    pub async fn delete(
         &self, payment_link: String
     )
         -> Result<SquareResponse, SquareError> {
-        self.request(
+        self.client.request(
             Verb::DELETE,
             SquareAPI::Checkout(format!("/payment-links/{}", payment_link)),
             None::<&CreateOrderRequestWrapper>,
@@ -93,11 +105,11 @@ impl SquareClient {
     ///
     /// # Arguments:
     /// * `link_id` - The id of the payment link to delete.
-    pub async fn retrieve_payment_link(
+    pub async fn retrieve(
         &self, link_id: String
     )
         -> Result<SquareResponse, SquareError> {
-        self.request(
+        self.client.request(
             Verb::GET,
             SquareAPI::Checkout(format!("/payment-links/{}", link_id)),
             None::<&CreateOrderRequestWrapper>,
@@ -110,11 +122,11 @@ impl SquareClient {
     /// # Arguments:
     /// * `link_id` - The id of the payment link to update.
     /// * `payment_link` - The updated [PaymentLink](PaymentLink).
-    pub async fn update_payment_link(
+    pub async fn update(
         &self, link_id: String, payment_link: PaymentLinkWrapper
     )
         -> Result<SquareResponse, SquareError> {
-        self.request(
+        self.client.request(
             Verb::PUT,
             SquareAPI::Checkout(format!("/payment-links/{}", link_id)),
             Some(&payment_link),
@@ -122,6 +134,7 @@ impl SquareClient {
         ).await
     }
 }
+
 #[derive(Clone, Serialize, Debug, Deserialize)]
 pub struct CreateOrderRequestWrapper {
     idempotency_key: String,
@@ -635,7 +648,7 @@ mod test_checkout {
             note: None
         };
 
-        let res = sut
+        let res = sut.checkout()
             .create_checkout("L1JC53TYHS40Z".to_string(), input)
             .await;
 
@@ -669,8 +682,8 @@ mod test_checkout {
 
         let input = vec![("limit".to_string(), "10".to_string())];
 
-        let res = sut
-            .list_payment_links(Some(input))
+        let res = sut.checkout()
+            .list(Some(input))
             .await;
 
         assert!(res.is_ok());
@@ -733,8 +746,8 @@ mod test_checkout {
             payment_note: None
         };
 
-        let res = sut
-            .create_payment_link(input)
+        let res = sut.checkout()
+            .create(input)
             .await;
 
         assert!(res.is_ok());
@@ -751,8 +764,8 @@ mod test_checkout {
 
         let input = "PLEJUTGT4VLUKUY2".to_string();
 
-        let res = sut
-            .delete_payment_link(input)
+        let res = sut.checkout()
+            .delete(input)
             .await;
 
         assert!(res.is_ok());
@@ -769,8 +782,8 @@ mod test_checkout {
 
         let input = "PN43H2RUILBXIX2H".to_string();
 
-        let res = sut
-            .retrieve_payment_link(input)
+        let res = sut.checkout()
+            .retrieve(input)
             .await;
 
         assert!(res.is_ok());
@@ -802,8 +815,8 @@ mod test_checkout {
                 }
             });
 
-        let res = sut
-            .update_payment_link(input.0, input.1)
+        let res = sut.checkout()
+            .update(input.0, input.1)
             .await;
 
         assert!(res.is_ok());
