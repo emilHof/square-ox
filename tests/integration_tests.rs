@@ -4,8 +4,7 @@ use actix_rt;
 use dotenv::dotenv;
 use std::env;
 use square_rs::api::catalog;
-use square_rs::api::customers::{CustomerListParametersBuilder, CustomerSearchQueryBuilder};
-use square_rs::response::ResponseError;
+use square_rs::api::customers::CustomerListParametersBuilder;
 
 #[actix_rt::test]
 async fn test_list_locations() {

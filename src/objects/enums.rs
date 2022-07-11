@@ -387,4 +387,136 @@ pub enum InventoryChangeType {
     Transfer,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum PaymentType {
+    Check,
+    BankTransfer,
+    OtherGiftCard,
+    Crypto,
+    SquareCash,
+    Social,
+    External,
+    Emoney,
+    Card,
+    StoredBalance,
+    FoodVoucher,
+    Other,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ApplicationDetailsExternalSquareProduct {
+    Appointments,
+    EcommerceApi,
+    Invoices,
+    OnlineStore,
+    Other,
+    Restaurants,
+    Retail,
+    SquarePos,
+    TerminalApi,
+    VirtualTerminal,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum BankAccountOwnershipType {
+    Individual,
+    Company,
+    Unknown
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum BankAccountType {
+    Checking,
+    Savings,
+    Unknown,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum BuyNowPayLaterBrand {
+    Afterpay,
+    Unknown
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum CCVStatus {
+    CvvAccepted,
+    CvvRejected,
+    CvvNotChecked,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum PaymentStatus {
+    Authorized,
+    Captured,
+    Voided,
+    Failed
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum PaymentVerificationResults {
+    Success,
+    Failure,
+    Unknown
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum PaymentVerificationMethod {
+    Pin,
+    Signature,
+    PinAndSignature,
+    OnDevice,
+    None
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ProcessingFeeType {
+    Initial,
+    Adjustment,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum RiskEvaluationRiskLevel {
+    Pending,
+    Normal,
+    Moderate,
+    High,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum PaymentSourceType {
+    BankAccount,
+    Wallet,
+    BuyNowPayLater,
+    Cash,
+    Card,
+    External,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum DigitalWalletBrand {
+    CashApp,
+    Unknown
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum DigitalWalletStatus {
+    Authorized,
+    Captured,
+    Voided,
+    Failed,
+}
 

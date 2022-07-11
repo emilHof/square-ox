@@ -9,7 +9,23 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::json_internal_vec;
 use crate::api::payment::Payments;
-use crate::objects::enums::{BusinessAppointmentSettingsBookingLocationType, BusinessAppointmentSettingsCancellationPolicy, BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType, BusinessBookingProfileBookingPolicy, BusinessBookingProfileCustomerTimezoneChoice, CatalogCustomAttributeDefinitionType, CatalogItemProductType, CatalogObjectType, CatalogPricingType, Currency, InventoryAlertType, InventoryChangeType, InventoryState, LocationStatus, LocationType, OrderFulfillmentFulfillmentLineItemApplication, OrderFulfillmentPickupDetailsScheduleType, OrderLineItemDiscountScope, OrderLineItemDiscountType, OrderLineItemItemType, OrderLineItemTaxScope, OrderLineItemTaxType, OrderServiceChargeCalculationPhase, OrderServiceChargeType, OrderState, RefundStatus, SortOrder, TenderCardDetailsEntryMethod, TenderCardDetailsStatus, TenderType};
+use crate::objects::enums::{
+    ApplicationDetailsExternalSquareProduct, BankAccountOwnershipType,
+    BusinessAppointmentSettingsBookingLocationType, BusinessAppointmentSettingsCancellationPolicy,
+    BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType, BusinessBookingProfileBookingPolicy,
+    BusinessBookingProfileCustomerTimezoneChoice, BuyNowPayLaterBrand,
+    CatalogCustomAttributeDefinitionType, CatalogItemProductType, CatalogObjectType,
+    CatalogPricingType, CCVStatus, Currency, DigitalWalletBrand, DigitalWalletStatus,
+    InventoryAlertType, InventoryChangeType, InventoryState, LocationStatus, LocationType,
+    OrderFulfillmentFulfillmentLineItemApplication, OrderFulfillmentPickupDetailsScheduleType,
+    OrderLineItemDiscountScope, OrderLineItemDiscountType, OrderLineItemItemType,
+    OrderLineItemTaxScope, OrderLineItemTaxType, OrderServiceChargeCalculationPhase,
+    OrderServiceChargeType, OrderState, PaymentSourceType, PaymentStatus, PaymentType,
+    PaymentVerificationMethod, PaymentVerificationResults, ProcessingFeeType, RefundStatus,
+    RiskEvaluationRiskLevel, SortOrder, TenderCardDetailsEntryMethod, TenderCardDetailsStatus,
+    TenderType
+};
+use crate::response::ResponseError;
 
 /// The Response enum holds the variety of responses that can be returned from a
 /// [Square API](https://developer.squareup.com) call.
@@ -2086,13 +2102,246 @@ pub struct InventoryTransfer {
     pub to_location_id: String,
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default)]
 pub struct Payment {
-    id: String,
-    status: String,
-    order_id: String,
-    receipt_number: String,
-    receipt_url: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub amount_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub app_fee_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub application_details: Option<ApplicationDetails>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub approved_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bank_account_details: Option<BankAccountPaymentDetails>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub billing_address: Option<Address>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub buy_now_pay_later_details: Option<BuyNowPayLaterDetails>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub buyer_email_address: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub capabilities: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub card_details: Option<CardPaymentDetails>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cash_details: Option<CashPaymentDetails>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub customer_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub delay_action: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub delay_duration: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub delayed_until: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub device_details: Option<DeviceDetails>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub external_details: Option<ExternalPaymentDetails>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub location_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub note: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub order_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub processing_fee: Option<ProcessingFee>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub receipt_number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub receipt_url: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub refund_ids: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub refunded_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub risk_evaluation: Option<RiskEvaluation>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub shipping_address: Option<Address>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_type: Option<PaymentSourceType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub statement_description_identifier: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub team_member_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tip_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub total_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub updated_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub version_token: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub wallet_details: Option<DigitalWalletDetails>
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CashPaymentDetails {
+    pub buyer_supplied_money: Money,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub change_back_money: Option<Money>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct ExternalPaymentDetails {
+    pub source: String,
+    #[serde(rename = "type")]
+    pub payment_type: PaymentType,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_fee_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_id: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct ApplicationDetails {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub application_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub square_product: Option<ApplicationDetailsExternalSquareProduct>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct BankAccountPaymentDetails {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub account_ownership_type: Option<BankAccountOwnershipType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ach_details: Option<ACHDetails>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bank_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub country: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub errors: Option<Vec<ResponseError>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fingerprint: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub statement_description: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub transfer_type: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct ACHDetails {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub account_number_suffix: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub account_type: Option<BankAccountOwnershipType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub routing_number: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct BuyNowPayLaterDetails {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub afterpay_details: Option<AfterpayDetails>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub brand: Option<BuyNowPayLaterBrand>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct AfterpayDetails {
+    pub email_address: String,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CardPaymentDetails {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub application_cryptogram: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub application_identifier: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub application_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub auth_result_code: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub avs_status: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub card: Option<Card>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub card_payment_timeline: Option<CardPaymentTimeline>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cvv_status: Option<CCVStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub entry_method: Option<TenderCardDetailsEntryMethod>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub errors: Option<Vec<ResponseError>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub refund_requires_card_presence: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub statement_description: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub status: Option<PaymentStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub verification_method: Option<PaymentVerificationMethod>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub verification_results: Option<PaymentVerificationResults>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CardPaymentTimeline {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub authorized_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub captured_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub voided_at: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct DeviceDetails {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub device_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub device_installation_id: Option<String>,
+    pub device_name: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct ProcessingFee {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub amount_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub effective_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fee_type: Option<ProcessingFeeType>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct RiskEvaluation {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub risk_level: Option<RiskEvaluationRiskLevel>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct DigitalWalletDetails {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    brand: Option<DigitalWalletBrand>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    cash_app_details: Option<CashPaymentDetails>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    status: Option<DigitalWalletStatus>
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct CashAppDetails {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub buyer_cashtag: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub buyer_country_code: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub buyer_full_name: Option<String>,
 }
 
 

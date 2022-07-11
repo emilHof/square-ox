@@ -23,7 +23,7 @@ use std::fmt::write;
 /// for which we have implemented some of the functionality.
 #[non_exhaustive]
 pub enum SquareAPI {
-    Payments,
+    Payments(String),
     Bookings(String),
     Locations(String),
     Catalog(String),
@@ -49,7 +49,7 @@ pub enum Verb {
 impl fmt::Display for SquareAPI {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            SquareAPI::Payments => write!(f, "payments"),
+            SquareAPI::Payments(path) => write!(f, "payments{}", path),
             SquareAPI::Bookings(path) => write!(f, "bookings{}", path),  // TODO Implement Bookings
             SquareAPI::Locations(path) => write!(f, "locations{}", path),
             SquareAPI::Catalog(path) => write!(f, "catalog{}", path),  // TODO Implement Catalog
