@@ -387,7 +387,6 @@ impl PaymentLinkBuilder {
 #[cfg(test)]
 mod test_checkout {
     use crate::objects::enums::OrderLineItemItemType;
-    use crate::objects::Response::PaymentLink;
     use super::*;
 
     #[actix_rt::test]

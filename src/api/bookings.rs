@@ -983,10 +983,6 @@ mod test_bookings {
         let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
         let sut = SquareClient::new(&access_token);
 
-        let input = vec![
-            ("start_at_min".to_string(), "2022-09-12T07:20:50.52Z".to_string())
-        ];
-
         let res = sut.bookings().retrieve_business_profile().await;
 
         assert!(res.is_ok())

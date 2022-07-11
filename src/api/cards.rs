@@ -338,11 +338,6 @@ mod test_cards {
         let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
         let sut = SquareClient::new(&access_token);
 
-        let input = vec![
-            ("include_disabled".to_string(), "false".to_string()),
-            ("sort_order".to_string(), "ASC".to_string()),
-        ];
-
         let res = sut.cards()
             .retrieve("ccof:Es7R2xLyCWzmrKGI4GB".to_string())
             .await;
