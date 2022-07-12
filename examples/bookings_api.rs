@@ -1,12 +1,12 @@
-use square_rs::client::SquareClient;
-use square_rs::errors::SearchQueryBuildError;
-use square_rs::api::bookings::SearchAvailabilityQueryBuilder;
+use square_ox::client::SquareClient;
+use square_ox::errors::SearchQueryBuildError;
+use square_ox::api::bookings::SearchAvailabilityQueryBuilder;
 
 use actix_web::{middleware::Logger, post, get, web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
 use std::env;
 use dotenv;
-use square_rs::objects::{Response, Address, Location};
+use square_ox::objects::{Response, Address, Location};
 
 
 #[actix_web::main]

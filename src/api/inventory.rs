@@ -17,7 +17,7 @@ impl SquareClient {
     /// the Inventory endpoint of the [Square API](https://developer.squareup.com).
     /// # Example: Using the inventory endpoint to make a retrieve_count request.
     /// ```rust
-    /// use square_rs::{
+    /// use square_ox::{
     ///     response::{SquareResponse, ResponseError},
     ///     client::SquareClient,
     ///     api::inventory::Inventory,
@@ -283,7 +283,7 @@ mod test_inventory {
         assert_eq!(format!("{:?}",expected), format!("{:?}",actual));
     }
 
-    #[actix_rt::test]
+    // #[actix_rt::test]
     async fn test_batch_change() {
         use dotenv::dotenv;
         use std::env;

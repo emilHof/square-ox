@@ -6,8 +6,12 @@ use crate::client::SquareClient;
 use crate::api::{Verb, SquareAPI};
 use crate::errors::{SquareError, LocationsBuildError, LocationBuildError};
 use crate::response::SquareResponse;
-use crate::objects::{Address, BusinessHours, BusinessHoursPeriod, Coordinates, Location, TaxIds,
-                     enums::{Currency, LocationStatus, LocationType}};
+use crate::objects::{
+    Address, BusinessHours, BusinessHoursPeriod, Coordinates, Location, TaxIds,
+    enums::{
+        Currency, LocationStatus, LocationType
+    }
+};
 
 use serde::{Deserialize, Serialize};
 
@@ -29,7 +33,7 @@ impl<'a> Locations<'a> {
     /// list of [Location](Location)s.
     /// # Example
     /// ```rust
-    ///use square_rs::{
+    ///use square_ox::{
     ///    response::{SquareResponse, ResponseError},
     ///    client::SquareClient
     ///    };
@@ -56,7 +60,7 @@ impl<'a> Locations<'a> {
     /// the [LocationBuilder](LocationBuilder).
     /// # Example
     /// ```rust
-    /// use square_rs::{
+    /// use square_ox::{
     ///    response::{SquareResponse, ResponseError},
     ///    client::SquareClient,
     ///    api::locations::LocationBuilder
@@ -91,7 +95,7 @@ impl<'a> Locations<'a> {
     /// * `location_id` - The id of the location that is to be updated.
     /// # Example
     /// ```rust
-    /// use square_rs::{
+    /// use square_ox::{
     ///    response::{SquareResponse, ResponseError},
     ///    client::SquareClient,
     ///    api::locations::LocationBuilder
@@ -125,7 +129,7 @@ impl<'a> Locations<'a> {
     /// * `location_id` - The id of the location that is to be retrieved.
     /// # Example
     /// ```rust
-    /// use square_rs::{
+    /// use square_ox::{
     ///    response::{SquareResponse, ResponseError},
     ///    client::SquareClient
     ///    };
@@ -404,7 +408,7 @@ impl LocationBuilder {
     /// # Example: Build a [LocationCreationWrapper](LocationCreationWrapper)
     /// ```
     /// async {
-    ///     let builder = square_rs::api::locations::LocationBuilder::new()
+    ///     let builder = square_ox::api::locations::LocationBuilder::new()
     ///     .name("The Foo Bar".to_string())
     ///     .build()
     ///     .await;

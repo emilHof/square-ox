@@ -32,7 +32,7 @@ impl<'a> Cards<'a> {
     ///
     /// # Example
     /// ```rust
-    ///use square_rs::{
+    ///use square_ox::{
     ///    response::{SquareResponse, ResponseError},
     ///    client::SquareClient
     ///    };
@@ -58,7 +58,7 @@ impl<'a> Cards<'a> {
     /// list of [Card](Card)s.
     /// # Example
     /// ```rust
-    ///use square_rs::{
+    ///use square_ox::{
     ///    response::{SquareResponse, ResponseError},
     ///    client::SquareClient
     ///    };
@@ -86,11 +86,11 @@ impl<'a> Cards<'a> {
     ///
     /// # Example
     /// ```rust
-    ///use square_rs::{
+    ///use square_ox::{
     ///    response::{SquareResponse, ResponseError},
     ///    client::SquareClient
     ///    };
-    /// use square_rs::api::cards::{CardBuilder, CardWrapper};
+    /// use square_ox::api::cards::{CardBuilder, CardWrapper};
     ///
     /// async {
     ///     let card = CardBuilder::new()
@@ -122,7 +122,7 @@ impl<'a> Cards<'a> {
     ///
     /// # Example
     /// ```rust
-    ///use square_rs::{
+    ///use square_ox::{
     ///    response::{SquareResponse, ResponseError},
     ///    client::SquareClient
     ///    };

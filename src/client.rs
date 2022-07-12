@@ -10,7 +10,7 @@ application you are wanting to use.
 ```rust
  const ACCESS_TOKEN:&str = "your_square_access_token";
 
-use square_rs::client::SquareClient;
+use square_ox::client::SquareClient;
 let client = SquareClient::new(ACCESS_TOKEN);
 ```
 After creating a client you will be able to use all of the clients methods.
@@ -55,7 +55,7 @@ impl SquareClient {
     /// # Example: Create a new client
     /// ```
     /// const ACCESS_TOKEN:&str = "your_square_access_token";
-    /// use square_rs::client::SquareClient;
+    /// use square_ox::client::SquareClient;
     ///
     /// let client = SquareClient::new(ACCESS_TOKEN);
     /// ```
@@ -75,7 +75,7 @@ impl SquareClient {
     /// ```
     /// const ACCESS_TOKEN:&str = "your_square_access_token";
     ///
-    /// use square_rs::client::SquareClient;
+    /// use square_ox::client::SquareClient;
     /// let client = SquareClient::new(ACCESS_TOKEN).production();
     /// ```
     pub fn production(self) -> Self {
@@ -94,12 +94,12 @@ impl SquareClient {
     /// # Example:
     /// ```
     /// async {
-    ///     use square_rs::{api::{Verb, SquareAPI, payment}, client};
+    ///     use square_ox::{api::{Verb, SquareAPI, payment}, client};
     ///     const ACCESS_TOKEN:&str = "your_square_access_token";
     ///     let payment = payment::PaymentBuilder::new().build().await;
     ///
     ///     let client = client::SquareClient::new(ACCESS_TOKEN);
-    ///     client.request( Verb::POST, SquareAPI::Payments, Some(&payment), None).await.expect("");
+    ///     client.request( Verb::POST, SquareAPI::Payments("".to_string()), Some(&payment), None).await.expect("");
     /// };
     ///
     /// ```

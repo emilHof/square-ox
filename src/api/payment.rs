@@ -662,7 +662,7 @@ mod test_payments {
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
     }
 
-    #[actix_rt::test]
+    // #[actix_rt::test]
     async fn test_update_payment() {
         use dotenv::dotenv;
         use std::env;
@@ -723,7 +723,7 @@ mod test_payments {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    // #[actix_rt::test]
     async fn test_cancel_payment() {
         use dotenv::dotenv;
         use std::env;

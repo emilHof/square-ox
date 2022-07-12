@@ -75,7 +75,10 @@ pub enum Response {
     PaymentLink(PaymentLink),
 
     // Inventory Endpoint Responses
-    Counts(Vec<InventoryCount>)
+    Counts(Vec<InventoryCount>),
+
+    // Sites Endpoint Responses
+    Sites(Vec<Site>)
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
@@ -2342,6 +2345,22 @@ pub struct CashAppDetails {
     pub buyer_country_code: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub buyer_full_name: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct Site {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub domain: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub is_published: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub site_title: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub updated_at: Option<String>,
 }
 
 

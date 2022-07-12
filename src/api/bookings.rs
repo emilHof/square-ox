@@ -367,8 +367,8 @@ pub struct BookingsPost {
 /// # Example: Build a [BookingPost](BookingPost)
 /// ```
 /// async {
-///     use square_rs::objects::AppointmentSegment;
-///     let builder = square_rs::api::bookings::BookingsPostBuilder::new()
+///     use square_ox::objects::AppointmentSegment;
+///     let builder = square_ox::api::bookings::BookingsPostBuilder::new()
 ///     .customer_id("some_id".to_string())
 ///     .location_id("some_id".to_string())
 ///     .start_at("some_start_at_date_time".to_string())
@@ -386,7 +386,7 @@ impl BookingsPostBuilder {
     ///
     /// # Example: Create a new client
     /// ```
-    /// let builder = square_rs::api::bookings::BookingsPostBuilder::new();
+    /// let builder = square_ox::api::bookings::BookingsPostBuilder::new();
     /// ```
     pub fn new() -> Self {
         let mut booking = Booking::default();
@@ -402,7 +402,7 @@ impl BookingsPostBuilder {
     ///
     /// # Example: Set the customer id
     /// ```
-    /// let builder = square_rs::api::bookings::BookingsPostBuilder::new()
+    /// let builder = square_ox::api::bookings::BookingsPostBuilder::new()
     /// .customer_id("some_id".to_string());
     /// ```
     pub fn customer_id(mut self, customer_id: String) -> Self {
@@ -418,7 +418,7 @@ impl BookingsPostBuilder {
     ///
     /// # Example: Set the customer id
     /// ```
-    /// let builder = square_rs::api::bookings::BookingsPostBuilder::new()
+    /// let builder = square_ox::api::bookings::BookingsPostBuilder::new()
     /// .location_id("some_id".to_string());
     /// ```
     pub fn location_id(mut self, location_id: String) -> Self {
@@ -468,8 +468,8 @@ impl BookingsPostBuilder {
     /// # Example: Build a [BookingPost](BookingPost)
     /// ```
     /// async {
-    ///     use square_rs::objects::AppointmentSegment;
-    ///     let builder = square_rs::api::bookings::BookingsPostBuilder::new()
+    ///     use square_ox::objects::AppointmentSegment;
+    ///     let builder = square_ox::api::bookings::BookingsPostBuilder::new()
     ///     .customer_id("some_id".to_string())
     ///     .location_id("some_id".to_string())
     ///     .start_at("some_start_at_date_time".to_string())
