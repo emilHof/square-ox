@@ -7,7 +7,6 @@ with the [Square API](https://developer.squareup.com)'s response pattern more ma
  */
 
 use serde::{Deserialize, Serialize};
-use crate::objects::CatalogObject;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[non_exhaustive]
@@ -17,7 +16,7 @@ use crate::objects::CatalogObject;
 /// [Square API](https://developer.squareup.com).
 pub struct SquareResponse {
     #[serde(flatten)]
-    pub response: Option<crate::objects::Response>,
+    pub response: crate::objects::Response,
     #[serde(flatten)]
     pub opt_response01: Option<crate::objects::Response>,
     #[serde(flatten)]

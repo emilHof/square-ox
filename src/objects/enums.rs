@@ -1,5 +1,5 @@
 use std::fmt;
-use std::fmt::{Formatter, write};
+use std::fmt::{Formatter};
 use serde::{Deserialize, Serialize};
 
 // TODO change the implementation of existing Response Object fields to use the right enums
@@ -518,5 +518,34 @@ pub enum DigitalWalletStatus {
     Captured,
     Voided,
     Failed,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ActionCancelReason {
+    BuyerCanceled,
+    SellerCanceled,
+    TimedOut,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum CheckoutOptionsPaymentType {
+    CardPresent,
+    ManualCardEntry,
+    FelicaId,
+    FelicaQuicpay,
+    FelicaTransportationGroup,
+    FelicaAll,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum TerminalCheckoutStatus {
+    Pending,
+    InProgress,
+    CancelRequested,
+    Canceled,
+    Completed,
 }
 

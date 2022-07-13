@@ -7,24 +7,9 @@ pub mod enums;
 
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use serde_json::json_internal_vec;
-use crate::api::payment::Payments;
-use crate::objects::enums::{
-    ApplicationDetailsExternalSquareProduct, BankAccountOwnershipType,
-    BusinessAppointmentSettingsBookingLocationType, BusinessAppointmentSettingsCancellationPolicy,
-    BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType, BusinessBookingProfileBookingPolicy,
-    BusinessBookingProfileCustomerTimezoneChoice, BuyNowPayLaterBrand,
-    CatalogCustomAttributeDefinitionType, CatalogItemProductType, CatalogObjectType,
-    CatalogPricingType, CCVStatus, Currency, DigitalWalletBrand, DigitalWalletStatus,
-    InventoryAlertType, InventoryChangeType, InventoryState, LocationStatus, LocationType,
-    OrderFulfillmentFulfillmentLineItemApplication, OrderFulfillmentPickupDetailsScheduleType,
-    OrderLineItemDiscountScope, OrderLineItemDiscountType, OrderLineItemItemType,
-    OrderLineItemTaxScope, OrderLineItemTaxType, OrderServiceChargeCalculationPhase,
-    OrderServiceChargeType, OrderState, PaymentSourceType, PaymentStatus, PaymentType,
-    PaymentVerificationMethod, PaymentVerificationResults, ProcessingFeeType, RefundStatus,
-    RiskEvaluationRiskLevel, SortOrder, TenderCardDetailsEntryMethod, TenderCardDetailsStatus,
-    TenderType
-};
+use crate::api::customers::TimeRange;
+use crate::api::terminal::Terminal;
+use crate::objects::enums::{ActionCancelReason, ApplicationDetailsExternalSquareProduct, BankAccountOwnershipType, BusinessAppointmentSettingsBookingLocationType, BusinessAppointmentSettingsCancellationPolicy, BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType, BusinessBookingProfileBookingPolicy, BusinessBookingProfileCustomerTimezoneChoice, BuyNowPayLaterBrand, CatalogCustomAttributeDefinitionType, CatalogItemProductType, CatalogObjectType, CatalogPricingType, CCVStatus, CheckoutOptionsPaymentType, Currency, DigitalWalletBrand, DigitalWalletStatus, InventoryAlertType, InventoryChangeType, InventoryState, LocationStatus, LocationType, OrderFulfillmentFulfillmentLineItemApplication, OrderFulfillmentPickupDetailsScheduleType, OrderLineItemDiscountScope, OrderLineItemDiscountType, OrderLineItemItemType, OrderLineItemTaxScope, OrderLineItemTaxType, OrderServiceChargeCalculationPhase, OrderServiceChargeType, OrderState, PaymentSourceType, PaymentStatus, PaymentType, PaymentVerificationMethod, PaymentVerificationResults, ProcessingFeeType, RefundStatus, RiskEvaluationRiskLevel, SortOrder, TenderCardDetailsEntryMethod, TenderCardDetailsStatus, TenderType, TerminalCheckoutStatus};
 use crate::response::ResponseError;
 
 /// The Response enum holds the variety of responses that can be returned from a
@@ -70,7 +55,7 @@ pub enum Response {
     Card(Card),
 
     // Checkout Endpoint Responses
-    Checkout(Checkout),
+    Checkout(CheckoutEnum), // Also a possible Terminals Endpoint Response
     PaymentLinks(Vec<PaymentLink>),
     PaymentLink(PaymentLink),
 
@@ -78,7 +63,19 @@ pub enum Response {
     Counts(Vec<InventoryCount>),
 
     // Sites Endpoint Responses
-    Sites(Vec<Site>)
+    Sites(Vec<Site>),
+
+    // Terminal Endpoint Responses
+    Checkouts(Vec<TerminalCheckout>),
+}
+
+// Since both the Checkout and Terminal endpoint can return a field tagged with checkout it is
+// necessary to define this return field as an untagged enum
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum CheckoutEnum {
+    Checkout(Checkout),
+    TerminalCheckout(TerminalCheckout),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
@@ -2361,6 +2358,169 @@ pub struct Site {
     pub site_title: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub updated_at: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct TerminalCheckout {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    pub amount_money: Option<Money>,
+    pub device_options: Option<DeviceCheckoutOptions>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub app_fee_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub app_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cancel_reason: Option<ActionCancelReason>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub customer_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub deadline_duration: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub location_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub note: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub order_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub payment_ids: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub payment_options: Option<PaymentOptions>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub payment_type: Option<CheckoutOptionsPaymentType>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub status: Option<TerminalCheckoutStatus>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub updated_at: Option<String>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct DeviceCheckoutOptions {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub device_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub collect_signature: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub show_itemized_cart: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub skip_receipt_screen: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tip_settings: Option<TipSettings>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct TipSettings {
+    /// Indicates whether tipping is enabled for this checkout. Defaults to false.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub allow_tipping: Option<bool>,
+    /// Indicates whether custom tip amounts are allowed during the checkout flow. Defaults to false.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub custom_tip_field: Option<bool>,
+    /// Indicates whether tip options should be presented on the screen before presenting the
+    /// signature screen during card payment. Defaults to false.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub separate_tip_screen: Option<bool>,
+    /// Enables the "Smart Tip Amounts" behavior. Exact tipping options depend on the region in which
+    /// the Square seller is active. <br/>
+    /// For payments under 10.00, in the Australia, Canada, Ireland, United Kingdom, and United
+    /// States, tipping options are presented as no tip, .50, 1.00 or 2.00. <br/>
+    /// For payment amounts of 10.00 or greater, tipping options are presented as the following
+    /// percentages: 0%, 5%, 10%, 15%.
+    /// If set to true, the `tip_percentages` settings is ignored. Defaults to false.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub smart_tipping: Option<bool>,
+    /// A list of tip percentages that should be presented during the checkout flow, specified as up
+    /// to 3 non-negative integers from 0 to 100 (inclusive). Defaults to 15, 20, and 25.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tip_percentages: Option<Vec<i32>>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct PaymentOptions {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub accept_partial_authorization: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub autocomplete: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub delay_duration: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct TerminalCheckoutQuery {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filter: Option<TerminalCheckoutQueryFilter>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sort: Option<TerminalCheckoutQuerySort>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct TerminalCheckoutQueryFilter {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<TimeRange>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub device_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub status: Option<TerminalCheckoutStatus>
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct TerminalCheckoutQuerySort {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sort_order: Option<SortOrder>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+pub struct TerminalRefund {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub amount_money: Option<Money>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub device_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub payment_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub app_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cancel_reason: Option<ActionCancelReason>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub deadline_duration: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub location_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub order_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub refund_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub updated_at: Option<TerminalCheckoutStatus>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+pub struct TerminalRefundQuery {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filter: Option<TerminalRefundQueryFilter>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sort: Option<TerminalCheckoutQuerySort>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+pub struct TerminalRefundQueryFilter {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<TimeRange>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub device_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub status: Option<TerminalCheckoutStatus>,
 }
 
 

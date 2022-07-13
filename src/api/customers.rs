@@ -764,7 +764,7 @@ mod test_customers {
 
     #[actix_rt::test]
     async fn test_list_parameter_builder() {
-        let mut sut = CustomerListParametersBuilder::new();
+        let sut = CustomerListParametersBuilder::new();
         let expected =  vec![
             ("limit".to_string(), "4".to_string()),
             ("sort_field".to_string(), "DEFAULT".to_string())

@@ -2,17 +2,16 @@
 Checkout functionality of the [Square API](https://developer.squareup.com).
  */
 
-use std::ops::Add;
 use crate::client::SquareClient;
 use crate::api::{Verb, SquareAPI};
 use crate::errors::{CreateOrderRequestBuildError, CreatePaymentLinkBuildError, PaymentLinkBuildError, SquareError};
 use crate::response::SquareResponse;
 
 use serde::{Deserialize, Serialize};
-use serde_json::json_internal_vec;
 use uuid::Uuid;
-use crate::objects::{self, Address, ChargeRequestAdditionalRecipient, CheckoutOptions, CreateOrderRequest, Money, Order, OrderLineItem, PaymentLink, PrePopulatedData, QuickPay};
-use crate::objects::enums::Currency;
+use crate::objects::{self, Address, ChargeRequestAdditionalRecipient, CheckoutOptions,
+                     CreateOrderRequest, Order, OrderLineItem, PaymentLink, PrePopulatedData,
+                     QuickPay};
 
 impl SquareClient {
     pub fn checkout(&self) -> Checkout {
@@ -181,7 +180,7 @@ impl CreateOrderRequestBuilder {
         self
     }
 
-    pub async fn build(mut self) -> Result<CreateOrderRequestWrapper, CreateOrderRequestBuildError> {
+    pub async fn build(self) -> Result<CreateOrderRequestWrapper, CreateOrderRequestBuildError> {
         let order = self.order;
         if order.location_id.is_none() {
             Err(CreateOrderRequestBuildError)
@@ -227,7 +226,7 @@ impl ListPaymentLinksSearchQueryBuilder {
         self
     }
 
-    pub async fn build(mut self) -> Vec<(String, String)> {
+    pub async fn build(self) -> Vec<(String, String)> {
         let ListPaymentLinksSearchQueryBuilder {
             cursor,
             limit,
@@ -324,7 +323,7 @@ impl CreatePaymentLinkBuilder {
         self
     }
 
-    pub async fn build(mut self) -> Result<CreatePaymentLinkWrapper, CreatePaymentLinkBuildError> {
+    pub async fn build(self) -> Result<CreatePaymentLinkWrapper, CreatePaymentLinkBuildError> {
         if self.order.is_none() && self.quick_pay.is_none() {
             Err(CreatePaymentLinkBuildError)
         } else {
@@ -375,7 +374,7 @@ impl PaymentLinkBuilder {
         self
     }
 
-    pub async fn build(mut self) -> Result<PaymentLinkWrapper, PaymentLinkBuildError> {
+    pub async fn build(self) -> Result<PaymentLinkWrapper, PaymentLinkBuildError> {
         if self.payment_link.version < 1 {
             Err(PaymentLinkBuildError)
         } else {
@@ -386,7 +385,7 @@ impl PaymentLinkBuilder {
 
 #[cfg(test)]
 mod test_checkout {
-    use crate::objects::enums::OrderLineItemItemType;
+    use crate::objects::{enums::{OrderLineItemItemType, Currency}, Money};
     use super::*;
 
     #[actix_rt::test]

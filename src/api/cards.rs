@@ -270,7 +270,7 @@ impl CardBuilder {
         self
     } 
     
-    pub async fn build(mut self) -> Result<CardWrapper, CardBuildError> {
+    pub async fn build(self) -> Result<CardWrapper, CardBuildError> {
         if self.source_id.is_none() || self.card.customer_id.is_none() {
             Err(CardBuildError)
         } else {

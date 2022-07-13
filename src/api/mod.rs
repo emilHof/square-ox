@@ -14,11 +14,11 @@ pub mod cards;
 pub mod checkout;
 pub mod inventory;
 pub mod sites;
+pub mod terminal;
 
 use crate::client::ClientMode;
 use crate::client::SquareClient;
 use std::fmt;
-use std::fmt::write;
 
 /// All of the endpoints of the [Square API](https://developer.squareup.com)
 /// for which we have implemented some of the functionality.
@@ -33,6 +33,7 @@ pub enum SquareAPI {
     Checkout(String),
     Inventory(String),
     Sites(String),
+    Terminals(String),
 }
 
 /// All of the HTTP verbs that have been implemented and are accepted by the different
@@ -52,14 +53,15 @@ impl fmt::Display for SquareAPI {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             SquareAPI::Payments(path) => write!(f, "payments{}", path),
-            SquareAPI::Bookings(path) => write!(f, "bookings{}", path),  // TODO Implement Bookings
+            SquareAPI::Bookings(path) => write!(f, "bookings{}", path),
             SquareAPI::Locations(path) => write!(f, "locations{}", path),
-            SquareAPI::Catalog(path) => write!(f, "catalog{}", path),  // TODO Implement Catalog
-            SquareAPI::Customers(path) => write!(f, "customers{}", path),  // TODO Implement Customers
+            SquareAPI::Catalog(path) => write!(f, "catalog{}", path),
+            SquareAPI::Customers(path) => write!(f, "customers{}", path),
             SquareAPI::Cards(path) => write!(f, "cards{}", path),
             SquareAPI::Checkout(path) => write!(f, "online-checkout{}", path),
             SquareAPI::Inventory(path) => write!(f, "inventory{}", path),
             SquareAPI::Sites(path) => write!(f, "sites{}", path),
+            SquareAPI::Terminals(path) => write!(f, "terminals{}", path),
         }
     }
 }

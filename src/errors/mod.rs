@@ -108,3 +108,12 @@ pub struct ObjectUpsertRequestBuildError;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct InventoryChangeBodyBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DeviceOptionsBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreateTerminalCheckoutBodyBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreateTerminalRefundBodyBuildError;

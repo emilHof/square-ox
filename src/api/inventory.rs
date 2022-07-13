@@ -6,11 +6,13 @@ use crate::client::SquareClient;
 use crate::api::{Verb, SquareAPI};
 use crate::errors::{InventoryChangeBodyBuildError, SquareError};
 use crate::response::SquareResponse;
+use crate::objects::{CatalogObject, InventoryAdjustment, InventoryChange, InventoryPhysicalCount,
+                     InventoryTransfer};
+use crate::objects::enums::InventoryChangeType;
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::objects::{CatalogObject, InventoryAdjustment, InventoryChange, InventoryPhysicalCount, InventoryTransfer};
-use crate::objects::enums::InventoryChangeType;
+
 
 impl SquareClient {
     /// Returns an [Inventory](Inventory) object through which you can make calls specifically to
@@ -153,7 +155,7 @@ impl InventoryChangeBodyBuilder {
         }
     }
 
-    pub async fn build(mut self) -> Result<InventoryChangeBody, InventoryChangeBodyBuildError> {
+    pub async fn build(self) -> Result<InventoryChangeBody, InventoryChangeBodyBuildError> {
         if self.changes.len() == 0 {
             return Err(InventoryChangeBodyBuildError)
         } else {
@@ -196,7 +198,7 @@ impl InventoryChangeObjectBuilder {
         self
     }
     
-    pub async fn into_body(mut self) -> InventoryChangeBodyBuilder {
+    pub async fn into_builder(self) -> InventoryChangeBodyBuilder {
         self.inventory_change_body_builder.change(self.inventory_change)
     }
 }
@@ -272,7 +274,7 @@ mod test_inventory {
                 state: InventoryState::InStock,
                 team_member_id: None
             })
-            .into_body()
+            .into_builder()
             .await
             .build()
             .await

@@ -234,7 +234,7 @@ impl ListPaymentsParametersBuilder {
         self
     }
 
-    pub async fn build(mut self) -> Vec<(String,String)> {
+    pub async fn build(self) -> Vec<(String,String)> {
         let ListPaymentsParametersBuilder {
             begin_time,
             end_time,
@@ -379,7 +379,7 @@ impl PaymentBuilder {
         self
     }
 
-    pub async fn build(mut self) -> Result<PaymentRequest, PaymentBuildError> {
+    pub async fn build(self) -> Result<PaymentRequest, PaymentBuildError> {
         let source_id = match self.source_id {
             Some(n) => n,
             None => return Err(PaymentBuildError),
@@ -475,7 +475,7 @@ impl UpdatePaymentBodyBuilder {
         self
     }
 
-    pub async fn build(mut self) -> UpdatePaymentBody {
+    pub async fn build(self) -> UpdatePaymentBody {
         UpdatePaymentBody {
             idempotency_key: Uuid::new_v4().to_string(),
             payment: self.payment

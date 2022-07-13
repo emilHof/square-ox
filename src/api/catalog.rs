@@ -247,7 +247,7 @@ impl ObjectUpsertRequestBuilder {
 
     pub fn add_variations(mut self, variation: CatalogObjectVariation) -> Self {
         if let Some(mut item_data) = self.object.item_data.as_mut() {
-            if let Some(mut variations) = item_data.variations.as_mut() {
+            if let Some(variations) = item_data.variations.as_mut() {
                 variations.push(variation)
             } else {
                 item_data.variations = Some(vec![variation])
@@ -276,7 +276,7 @@ impl ObjectUpsertRequestBuilder {
         self
     }
 
-    pub async fn build(mut self) -> Result<ObjectUpsertRequest, ObjectUpsertRequestBuildError> {
+    pub async fn build(self) -> Result<ObjectUpsertRequest, ObjectUpsertRequestBuildError> {
         if self.object.id.is_none() ||
             self.object.type_name.is_none() {
             Err(ObjectUpsertRequestBuildError)
@@ -318,7 +318,7 @@ impl ObjectRetrieveParameterBuilder {
         self
     }
 
-    pub async fn build(mut self) -> Vec<(String, String)> {
+    pub async fn build(self) -> Vec<(String, String)> {
         let ObjectRetrieveParameterBuilder {
             include_related_objects,
             catalog_version,
@@ -413,7 +413,7 @@ impl SearchCatalogObjectsBodyBuilder {
     }
 
     pub fn add_object_type(mut self, object_type: CatalogObjectType) -> Self {
-        if let Some(mut object_types) = self.object_types.as_mut() {
+        if let Some(object_types) = self.object_types.as_mut() {
             object_types.push(object_type)
         } else {
             self.object_types = Some(vec![object_type])
@@ -428,7 +428,7 @@ impl SearchCatalogObjectsBodyBuilder {
         self
     }
 
-    pub async fn build(mut self) -> SearchCatalogObjectsBody {
+    pub async fn build(self) -> SearchCatalogObjectsBody {
         SearchCatalogObjectsBody {
             begin_time: self.begin_time,
             cursor: self.cursor,
@@ -474,7 +474,7 @@ impl SearchCatalogItemsBodyBuilder {
     }
 
     pub fn low_stock_level(mut self) -> Self {
-        if let Some(mut vec) = self.stock_levels.as_mut() {
+        if let Some(vec) = self.stock_levels.as_mut() {
             vec.push(SearchCatalogItemsRequestStockLevel::Low)
         } else {
             self.stock_levels = Some(vec![SearchCatalogItemsRequestStockLevel::Low])
@@ -483,7 +483,7 @@ impl SearchCatalogItemsBodyBuilder {
         self
     }
 
-    pub async fn build(mut self) -> SearchCatalogItemsBody {
+    pub async fn build(self) -> SearchCatalogItemsBody {
         SearchCatalogItemsBody {
             category_ids: self.category_ids,
             cursor: self.cursor,

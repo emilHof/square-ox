@@ -237,7 +237,7 @@ impl ListBookingsQueryBuilder {
         self
     }
 
-    pub async fn build(mut self) -> Vec<(String, String)> {
+    pub async fn build(self) -> Vec<(String, String)> {
         let ListBookingsQueryBuilder {
             limit,
             cursor,
@@ -321,7 +321,7 @@ impl ListTeamMemberBookingsProfileBuilder {
         self
     }
 
-    pub async fn build(mut self) -> Vec<(String, String)> {
+    pub async fn build(self) -> Vec<(String, String)> {
         let ListTeamMemberBookingsProfileBuilder {
             limit,
             cursor,
@@ -478,7 +478,7 @@ impl BookingsPostBuilder {
     ///     .await;
     /// };
     /// ```
-    pub async fn build(mut self) -> Result<BookingsPost, BookingsPostBuildError> {
+    pub async fn build(self) -> Result<BookingsPost, BookingsPostBuildError> {
 
         let booking = self.0;
 

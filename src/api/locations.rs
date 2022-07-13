@@ -4,7 +4,7 @@ Customers functionality of the [Square API](https://developer.squareup.com).
 
 use crate::client::SquareClient;
 use crate::api::{Verb, SquareAPI};
-use crate::errors::{SquareError, LocationsBuildError, LocationBuildError};
+use crate::errors::{SquareError, LocationBuildError};
 use crate::response::SquareResponse;
 use crate::objects::{
     Address, BusinessHours, BusinessHoursPeriod, Coordinates, Location, TaxIds,
