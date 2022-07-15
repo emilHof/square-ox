@@ -549,3 +549,29 @@ pub enum TerminalCheckoutStatus {
     Completed,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum OrderFulfillmentState {
+    Proposed,
+    Preserved,
+    Prepared,
+    Completed,
+    Canceled,
+    Failed
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum OrderFulfillmentType {
+    Pickup,
+    Shipment,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum SearchOrdersSortField {
+    CreatedAt,
+    UpdatedAt,
+    ClosedAt,
+}
+

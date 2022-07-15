@@ -117,3 +117,9 @@ pub struct CreateTerminalCheckoutBodyBuildError;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CreateTerminalRefundBodyBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ValidationError;

@@ -15,6 +15,7 @@ pub mod checkout;
 pub mod inventory;
 pub mod sites;
 pub mod terminal;
+pub mod orders;
 
 use crate::client::ClientMode;
 use crate::client::SquareClient;
@@ -34,6 +35,7 @@ pub enum SquareAPI {
     Inventory(String),
     Sites(String),
     Terminals(String),
+    Orders(String),
 }
 
 /// All of the HTTP verbs that have been implemented and are accepted by the different
@@ -62,6 +64,7 @@ impl fmt::Display for SquareAPI {
             SquareAPI::Inventory(path) => write!(f, "inventory{}", path),
             SquareAPI::Sites(path) => write!(f, "sites{}", path),
             SquareAPI::Terminals(path) => write!(f, "terminals{}", path),
+            SquareAPI::Orders(path) => write!(f, "orders{}", path),
         }
     }
 }

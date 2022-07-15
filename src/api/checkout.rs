@@ -424,7 +424,8 @@ mod test_checkout {
                         total_tax_money: None,
                         uid: None,
                         variation_name: None,
-                        variation_total_price_money: None
+                        variation_total_price_money: None,
+                        api_reference_ids: None
                     },
                     OrderLineItem {
                         quantity: "2".to_string(),
@@ -449,7 +450,8 @@ mod test_checkout {
                         total_tax_money: None,
                         uid: None,
                         variation_name: None,
-                        variation_total_price_money: None
+                        variation_total_price_money: None,
+                        api_reference_ids: None
                     }]),
                 metadata: None,
                 net_amounts: None,
@@ -508,7 +510,8 @@ mod test_checkout {
                 total_tax_money: None,
                 uid: None,
                 variation_name: None,
-                variation_total_price_money: None
+                variation_total_price_money: None,
+                api_reference_ids: None
             })
             .add_order_item(OrderLineItem {
                 quantity: "2".to_string(),
@@ -533,7 +536,8 @@ mod test_checkout {
                 total_tax_money: None,
                 uid: None,
                 variation_name: None,
-                variation_total_price_money: None
+                variation_total_price_money: None,
+                api_reference_ids: None
             })
             .build()
             .await
@@ -587,7 +591,8 @@ mod test_checkout {
                         total_tax_money: None,
                         uid: None,
                         variation_name: None,
-                        variation_total_price_money: None
+                        variation_total_price_money: None,
+                        api_reference_ids: None
                     },
                     OrderLineItem {
                         quantity: "2".to_string(),
@@ -612,7 +617,8 @@ mod test_checkout {
                         total_tax_money: None,
                         uid: None,
                         variation_name: None,
-                        variation_total_price_money: None
+                        variation_total_price_money: None,
+                        api_reference_ids: None
                     }]),
                 metadata: None,
                 net_amounts: None,
