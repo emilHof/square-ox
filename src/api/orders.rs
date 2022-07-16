@@ -7,7 +7,7 @@ use crate::client::SquareClient;
 use crate::errors::{SquareError, ValidationError};
 use crate::objects::{Customer, Order, OrderServiceCharge, SearchOrdersQuery};
 use crate::response::SquareResponse;
-use crate::builder::{Builder, ParentBuilder, Nil, Validate, BackIntoBuilder};
+use crate::builder::{Builder, ParentBuilder, Nil, Validate, BackIntoBuilder, AddField};
 
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
@@ -106,18 +106,12 @@ impl<T: ParentBuilder> Builder<CreateOrderBody, T> {
 
 // implements the necessary traits to release an OrderServiceCharge builder from a CreateOrderBody
 // builder
-impl<T: ParentBuilder> BackIntoBuilder<OrderServiceCharge, Builder<CreateOrderBody, T>>
-for  Builder<CreateOrderBody, T>
-{
-    fn add_field(self, field: OrderServiceCharge) -> Self {
-        self.add_service_charge(field)
-    }
-
-    fn sub_builder_from(self, body: OrderServiceCharge)
-        -> Builder<OrderServiceCharge, Builder<CreateOrderBody, T>> {
-        Builder {
-            body,
-            builder: Some(self)
+impl AddField<OrderServiceCharge> for CreateOrderBody {
+    fn add_field(&mut self, field: OrderServiceCharge) {
+        if let Some(service_charges) = self.order.service_charges.as_mut() {
+            service_charges.push(field);
+        } else {
+            self.order.service_charges = Some(vec![field]);
         }
     }
 }
@@ -182,19 +176,9 @@ impl<T: ParentBuilder> Builder<SearchOrderBody, T> {
 
 // implements the necessary traits to release an SearchOrdersQuery builder from a SearchOrderBody
 // builder
-impl<T: ParentBuilder> BackIntoBuilder<SearchOrdersQuery, Builder<SearchOrderBody, T>>
-for  Builder<SearchOrderBody, T>
-{
-    fn add_field(self, field: SearchOrdersQuery) -> Self {
-        self.query(field)
-    }
-
-    fn sub_builder_from(self, body: SearchOrdersQuery)
-                        -> Builder<SearchOrdersQuery, Builder<SearchOrderBody, T>> {
-        Builder {
-            body,
-            builder: Some(self)
-        }
+impl AddField<SearchOrdersQuery> for SearchOrderBody {
+    fn add_field(&mut self, field: SearchOrdersQuery) {
+        self.query = Some(field);
     }
 }
 
@@ -208,7 +192,7 @@ mod test_orders {
 
     #[test]
     fn test_builder_from_create_order_body() {
-        let expected = Builder{ body: CreateOrderBody::default(), builder: None::<Nil> };
+        let expected = Builder{ body: CreateOrderBody::default(), parent_builder: None::<Nil> };
 
         let actual = Builder::from(CreateOrderBody::default());
     }
