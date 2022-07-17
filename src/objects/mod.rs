@@ -2394,7 +2394,7 @@ pub struct Site {
     pub updated_at: Option<String>,
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default)]
 pub struct TerminalCheckout {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
@@ -2432,7 +2432,7 @@ pub struct TerminalCheckout {
     pub updated_at: Option<String>,
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default)]
 pub struct DeviceCheckoutOptions {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub device_id: Option<String>,
@@ -2483,7 +2483,7 @@ pub struct PaymentOptions {
     pub delay_duration: Option<String>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct TerminalCheckoutQuery {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub filter: Option<TerminalCheckoutQueryFilter>,

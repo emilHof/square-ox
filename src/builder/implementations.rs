@@ -1,6 +1,7 @@
+use crate::api::customers::TimeRange;
 use super::*;
-use crate::objects::{Money, Order, OrderLineItem, OrderServiceCharge, SearchOrdersFilter, SearchOrdersQuery, SearchOrdersSort};
-use crate::objects::enums::{OrderServiceChargeCalculationPhase, SearchOrdersSortField, SortOrder};
+use crate::objects::{DeviceCheckoutOptions, Money, Order, OrderLineItem, OrderServiceCharge, SearchOrdersFilter, SearchOrdersQuery, SearchOrdersSort, TerminalCheckoutQuery, TerminalCheckoutQueryFilter, TerminalCheckoutQuerySort, TerminalRefundQuery, TerminalRefundQueryFilter, TipSettings};
+use crate::objects::enums::{OrderServiceChargeCalculationPhase, SearchOrdersSortField, SortOrder, TerminalCheckoutStatus};
 
 // -------------------------------------------------------------------------------------------------
 // OrderServiceCharge builder implementation
@@ -176,5 +177,236 @@ impl AddField<OrderLineItem> for Order {
         } else {
             self.line_items = Some(vec![field]);
         }
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// DeviceCheckoutOptions builder implementation
+// -------------------------------------------------------------------------------------------------
+impl Validate for DeviceCheckoutOptions {
+    fn validate(self) -> Result<Self, ValidationError> where Self: Sized {
+        if self.device_id.is_some() {
+            Ok(self)
+        } else {
+            Err(ValidationError)
+        }
+    }
+}
+
+impl<T: ParentBuilder> Builder<DeviceCheckoutOptions, T> {
+    pub fn device_id(mut self, device_id: String) -> Self {
+        self.body.device_id = Some(device_id);
+
+        self
+    }
+
+    pub fn collect_signature(mut self) -> Self {
+        self.body.collect_signature = Some(true);
+
+        self
+    }
+
+    pub fn show_itemized_cart(mut self) -> Self {
+        self.body.show_itemized_cart = Some(true);
+
+        self
+    }
+
+    pub fn skip_receipt_screen(mut self) -> Self {
+        self.body.skip_receipt_screen = Some(true);
+
+        self
+    }
+
+    pub fn tip_settings(mut self, tip_settings: TipSettings) -> Self {
+        self.body.tip_settings = Some(tip_settings);
+
+        self
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// TerminalCheckoutQuery builder implementation
+// -------------------------------------------------------------------------------------------------
+impl Validate for TerminalCheckoutQuery {
+    fn validate(self) -> Result<Self, ValidationError> where Self: Sized {
+        Ok(self)
+    }
+}
+
+impl<T: ParentBuilder> Builder<TerminalCheckoutQuery, T> {
+    pub fn sort_ascending(mut self) -> Self {
+        self.body.sort = Some(TerminalCheckoutQuerySort { sort_order: Some(SortOrder::Asc) });
+
+        self
+    }
+
+    pub fn sort_descending(mut self) -> Self {
+        self.body.sort = Some(TerminalCheckoutQuerySort { sort_order: Some(SortOrder::Desc) });
+
+        self
+    }
+
+    pub fn created_at(mut self, created_at: TimeRange) -> Self {
+        if let Some(filter) = self.body.filter.as_mut() {
+            filter.created_at = Some(created_at);
+        } else {
+            self.body.filter = Some(TerminalCheckoutQueryFilter {
+                created_at: Some(created_at),
+                device_id: None,
+                status: None
+            })
+        };
+
+        self
+    }
+
+    pub fn device_id(mut self, device_id: String) -> Self {
+        if let Some(filter) = self.body.filter.as_mut() {
+            filter.device_id = Some(device_id);
+        } else {
+            self.body.filter = Some(TerminalCheckoutQueryFilter {
+                created_at: None,
+                device_id: Some(device_id),
+                status: None
+            })
+        };
+
+        self
+    }
+
+    pub fn status(mut self, status: TerminalCheckoutStatus) -> Self {
+        if let Some(filter) = self.body.filter.as_mut() {
+            filter.status = Some(status);
+        } else {
+            self.body.filter = Some(TerminalCheckoutQueryFilter {
+                created_at: None,
+                device_id: None,
+                status: Some(status)
+            })
+        };
+
+        self
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// SearchOrdersQuery builder implementation
+// -------------------------------------------------------------------------------------------------
+impl Validate for TerminalRefundQuery {
+    fn validate(self) -> Result<Self, ValidationError> where Self: Sized {
+        Ok(self)
+    }
+}
+
+impl<T: ParentBuilder> Builder<TerminalRefundQuery, T> {
+    pub fn created_at(mut self, created_at: TimeRange) -> Self {
+        if let Some(filter) = self.body.filter.as_mut() {
+            filter.created_at = Some(created_at)
+        } else {
+            self.body.filter = Some(TerminalRefundQueryFilter {
+                created_at: Some(created_at),
+                device_id: None,
+                status: None
+            })
+        }
+
+        self
+    }
+
+    pub fn device_id(mut self, device_id: String) -> Self {
+        if let Some(filter) = self.body.filter.as_mut() {
+            filter.device_id = Some(device_id)
+        } else {
+            self.body.filter = Some(TerminalRefundQueryFilter {
+                created_at: None,
+                device_id: Some(device_id),
+                status: None
+            })
+        }
+
+        self
+    }
+
+    pub fn pending(mut self) -> Self {
+        if let Some(filter) = self.body.filter.as_mut() {
+            filter.status = Some(TerminalCheckoutStatus::Pending)
+        } else {
+            self.body.filter = Some(TerminalRefundQueryFilter {
+                created_at: None,
+                device_id: None,
+                status: Some(TerminalCheckoutStatus::Pending)
+            })
+        }
+
+        self
+    }
+
+    pub fn in_progress(mut self) -> Self {
+        if let Some(filter) = self.body.filter.as_mut() {
+            filter.status = Some(TerminalCheckoutStatus::InProgress)
+        } else {
+            self.body.filter = Some(TerminalRefundQueryFilter {
+                created_at: None,
+                device_id: None,
+                status: Some(TerminalCheckoutStatus::InProgress)
+            })
+        }
+
+        self
+    }
+
+    pub fn cancel_requested(mut self) -> Self {
+        if let Some(filter) = self.body.filter.as_mut() {
+            filter.status = Some(TerminalCheckoutStatus::CancelRequested)
+        } else {
+            self.body.filter = Some(TerminalRefundQueryFilter {
+                created_at: None,
+                device_id: None,
+                status: Some(TerminalCheckoutStatus::CancelRequested)
+            })
+        }
+
+        self
+    }
+
+    pub fn canceled(mut self) -> Self {
+        if let Some(filter) = self.body.filter.as_mut() {
+            filter.status = Some(TerminalCheckoutStatus::Canceled)
+        } else {
+            self.body.filter = Some(TerminalRefundQueryFilter {
+                created_at: None,
+                device_id: None,
+                status: Some(TerminalCheckoutStatus::Canceled)
+            })
+        }
+
+        self
+    }
+
+    pub fn completed(mut self) -> Self {
+        if let Some(filter) = self.body.filter.as_mut() {
+            filter.status = Some(TerminalCheckoutStatus::Completed)
+        } else {
+            self.body.filter = Some(TerminalRefundQueryFilter {
+                created_at: None,
+                device_id: None,
+                status: Some(TerminalCheckoutStatus::Completed)
+            })
+        }
+
+        self
+    }
+
+    pub fn sort_ascending(mut self) -> Self {
+        self.body.sort = Some(TerminalCheckoutQuerySort{ sort_order: Some(SortOrder::Asc) });
+
+        self
+    }
+
+    pub fn sort_descending(mut self) -> Self {
+        self.body.sort = Some(TerminalCheckoutQuerySort{ sort_order: Some(SortOrder::Desc) });
+
+        self
     }
 }
