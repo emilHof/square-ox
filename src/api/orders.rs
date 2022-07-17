@@ -102,6 +102,7 @@ impl<'a> Orders<'a> {
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct CreateOrderBody {
+    #[serde(skip_serializing_if = "Option::is_none")]
     idempotency_key: Option<String>,
     order: Order,
 }
@@ -155,10 +156,15 @@ impl AddField<OrderServiceCharge> for CreateOrderBody {
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct SearchOrderBody {
+    #[serde(skip_serializing_if = "Option::is_none")]
     cursor: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     limit: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     location_ids: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     query: Option<SearchOrdersQuery>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     return_entries: Option<bool>
 }
 
@@ -252,6 +258,8 @@ impl<T: ParentBuilder> Builder<OrderUpdateBody, T> {
     }
 }
 
+// implements the necessary traits to release an Order builder from a OrderUpdateBody
+// builder
 impl AddField<Order> for OrderUpdateBody {
     fn add_field(&mut self, field: Order) {
         self.order = Some(field);
@@ -332,17 +340,21 @@ impl<T: ParentBuilder> Builder<OrderCalculateBody, T> {
     }
 }
 
+// implements the necessary traits to release an Order builder from a OrderCalculateBody
+// builder
 impl AddField<Order> for OrderCalculateBody {
     fn add_field(&mut self, field: Order) {
         self.order = Some(field)
     }
 }
 
+// implements the necessary traits to release an OrderReward builder from a OrderCalculateBody
+// builder
 impl AddField<OrderReward> for OrderCalculateBody {
     fn add_field(&mut self, field: OrderReward) {
         match self.proposed_rewards.as_mut() {
             Some(rewards) => rewards.push(field),
-            None => self.body.proposed_rewards = Some(vec![field])
+            None => self.proposed_rewards = Some(vec![field])
         }
     }
 }
@@ -351,6 +363,7 @@ impl AddField<OrderReward> for OrderCalculateBody {
 mod test_orders {
     use crate::api::bookings::QueryBody;
     use crate::builder::Nil;
+    use crate::objects;
     use crate::objects::enums::{Currency, OrderServiceChargeCalculationPhase, SortOrder, SearchOrdersSortField};
     use crate::objects::{Money, SearchOrdersSort};
     use super::*;
@@ -422,7 +435,7 @@ mod test_orders {
             .amount_money(Money { amount: Some(10), currency: Currency::USD })
             .name("some name".to_string())
             .total_phase()
-            .into_builder()
+            .into_parent_builder()
             .unwrap()
             .build()
             .await
@@ -443,7 +456,7 @@ mod test_orders {
             .sub_builder_from(OrderServiceCharge::default())
             .amount_money(Money { amount: Some(10), currency: Currency::USD })
             .total_phase()
-            .into_builder();
+            .into_parent_builder();
 
         assert!(actual.is_err());
     }
@@ -459,7 +472,7 @@ mod test_orders {
 
         let input = CreateOrderBody {
             idempotency_key: None,
-            order: Order {
+            order: objects::Order {
                 id: None,
                 location_id: Some("L1JC53TYHS40Z".to_string()),
                 close_at: None,
@@ -528,7 +541,7 @@ mod test_orders {
                     sort_order: Some(SortOrder::Asc)
                 })
             }),
-            return_entries: Some(false)
+            return_entries: Some(true)
         };
 
         let mut actual = Builder::from(SearchOrderBody::default())
@@ -538,7 +551,7 @@ mod test_orders {
             .limit(10)
             .sub_builder_from(SearchOrdersQuery::default())
             .sort_ascending()
-            .into_builder()
+            .into_parent_builder()
             .unwrap()
             .no_return_entries()
             .build()
@@ -603,12 +616,12 @@ mod test_orders {
                 .fields_to_clear(vec!["a_field".to_string(), "another_field".to_string()])
                 .sub_builder_from(Order::default())
                 .location_id("L1JC53TYHS40Z".to_string())
-                .into_builder(),
+                .into_parent_builder(),
             Builder::from(OrderUpdateBody::default())
                 .fields_to_clear(vec!["a_field".to_string(), "another_field".to_string()])
                 .sub_builder_from(Order::default())
                 .version(2)
-                .into_builder(),
+                .into_parent_builder(),
         ];
 
         res_vec.into_iter().for_each(|res| assert!(res.is_err()))
@@ -726,7 +739,7 @@ mod test_orders {
                         catalog_object_id: None,
                         catalog_version: None,
                         metadata: None,
-                        name: Some("some_name".to_string()),
+                        name: Some("some name".to_string()),
                         percentage: None,
                         taxable: None,
                         total_money: None,
@@ -746,19 +759,100 @@ mod test_orders {
                 total_tax_money: None,
                 total_tip_money: None,
                 updated_at: None,
-                version: None
+                version: Some(3)
             }),
             proposed_rewards: None
         };
 
-        let mut actual = Builder::from(PayOrderBody::default())
-            .oder_version(3)
-            .payment_ids(vec!["some_id".to_string()])
+        let mut actual = Builder::from(OrderCalculateBody::default())
+            .sub_builder_from(Order::default())
+            .location_id("location_id".to_string())
+            .sub_builder_from(OrderServiceCharge::default())
+            .amount_money(Money { amount: Some(20), currency: Currency::USD })
+            .name("some name".to_string())
+            .total_phase()
+            .into_parent_builder()
+            .unwrap()
+            .version(3)
+            .into_parent_builder()
+            .unwrap()
             .build()
             .await
             .unwrap();
 
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
+    }
+
+    #[tokio::test]
+    async fn test_calculate_order() {
+        use dotenv::dotenv;
+        use std::env;
+
+        dotenv().ok();
+        let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
+        let sut = SquareClient::new(&access_token);
+
+        let input = OrderCalculateBody {
+            order: Some(Order {
+                id: None,
+                location_id: Some("L1JC53TYHS40Z".to_string()),
+                close_at: None,
+                created_at: None,
+                customer_id: None,
+                discounts: None,
+                fulfillments: None,
+                line_items: None,
+                metadata: None,
+                net_amounts: None,
+                pricing_options: None,
+                reference_id: None,
+                refunds: None,
+                return_amounts: None,
+                returns: None,
+                rewards: None,
+                rounding_adjustment: None,
+                service_charges: Some(vec![
+                    OrderServiceCharge {
+                        amount_money: Some(Money {
+                            amount: Some(20),
+                            currency: Currency::USD
+                        }),
+                        applied_money: None,
+                        applied_taxes: None,
+                        calculation_phase: Some(OrderServiceChargeCalculationPhase::TotalPhase),
+                        catalog_object_id: None,
+                        catalog_version: None,
+                        metadata: None,
+                        name: Some("some name".to_string()),
+                        percentage: None,
+                        taxable: None,
+                        total_money: None,
+                        total_tax_money: None,
+                        service_charge_type: None,
+                        uid: None
+                    }
+                ]),
+                source: None,
+                state: None,
+                taxes: None,
+                tenders: None,
+                ticket_name: None,
+                total_discount_money: None,
+                total_money: None,
+                total_service_charge_money: None,
+                total_tax_money: None,
+                total_tip_money: None,
+                updated_at: None,
+                version: Some(3)
+            }),
+            proposed_rewards: None
+        };
+
+        let res = sut.orders()
+            .calculate(input)
+            .await;
+
+        assert!(res.is_ok())
     }
 }
 

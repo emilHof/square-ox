@@ -56,7 +56,7 @@ impl<T: Validate, U: ParentBuilder> Builder<T, U> {
 // the builder it is holding while also validating and adding its content to the body of the parent
 // builder.
 impl<T: Validate, V: ParentBuilder + BackIntoBuilder<T, V>> Builder<T, V> {
-    pub fn into_builder(self) -> Result<V, BuildError> {
+    pub fn into_parent_builder(self) -> Result<V, BuildError> {
         match self.body.validate() {
             Ok(body) => {
                 Ok(self.parent_builder.unwrap().add_field(body))

@@ -11,8 +11,10 @@ impl Validate for OrderServiceCharge {
         if self.amount_money.is_some() &&
             self.name.is_some() &&
             self.calculation_phase.is_some() {
+            println!("no error");
             Ok(self)
         } else {
+            println!("error");
             Err(ValidationError)
         }
     }
