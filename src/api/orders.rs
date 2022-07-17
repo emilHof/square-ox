@@ -615,11 +615,6 @@ mod test_orders {
             Builder::from(OrderUpdateBody::default())
                 .fields_to_clear(vec!["a_field".to_string(), "another_field".to_string()])
                 .sub_builder_from(Order::default())
-                .location_id("L1JC53TYHS40Z".to_string())
-                .into_parent_builder(),
-            Builder::from(OrderUpdateBody::default())
-                .fields_to_clear(vec!["a_field".to_string(), "another_field".to_string()])
-                .sub_builder_from(Order::default())
                 .version(2)
                 .into_parent_builder(),
         ];

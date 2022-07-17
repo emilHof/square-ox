@@ -1,5 +1,5 @@
 use super::*;
-use crate::objects::{Money, Order, OrderServiceCharge, SearchOrdersFilter, SearchOrdersQuery, SearchOrdersSort};
+use crate::objects::{Money, Order, OrderLineItem, OrderServiceCharge, SearchOrdersFilter, SearchOrdersQuery, SearchOrdersSort};
 use crate::objects::enums::{OrderServiceChargeCalculationPhase, SearchOrdersSortField, SortOrder};
 
 // -------------------------------------------------------------------------------------------------
@@ -117,8 +117,7 @@ impl<T: ParentBuilder> Builder<SearchOrdersQuery, T> {
 // -------------------------------------------------------------------------------------------------
 impl Validate for Order {
     fn validate(self) -> Result<Self, ValidationError> where Self: Sized {
-        if self.location_id.is_some() &&
-            self.version.is_some() {
+        if self.location_id.is_some(){
             Ok(self)
         } else {
             Err(ValidationError)
@@ -138,6 +137,26 @@ impl<T: ParentBuilder> Builder<Order, T> {
 
         self
     }
+
+    pub fn add_service_charge(mut self, service_charge: OrderServiceCharge) -> Self {
+        if let Some(service_charges) = self.body.service_charges.as_mut() {
+            service_charges.push(service_charge);
+        } else {
+            self.body.service_charges = Some(vec![service_charge])
+        };
+
+        self
+    }
+
+    pub fn add_order_item(mut self, order_item: OrderLineItem) -> Self {
+        if let Some(line_items) = self.body.line_items.as_mut() {
+            line_items.push(order_item);
+        } else {
+            self.body.line_items = Some(vec![order_item])
+        };
+
+        self
+    }
 }
 
 impl AddField<OrderServiceCharge> for Order {
@@ -146,6 +165,16 @@ impl AddField<OrderServiceCharge> for Order {
             service_charges.push(field);
         } else {
             self.service_charges = Some(vec![field]);
+        }
+    }
+}
+
+impl AddField<OrderLineItem> for Order {
+    fn add_field(&mut self, field: OrderLineItem) {
+        if let Some(line_items) = self.line_items.as_mut() {
+            line_items.push(field);
+        } else {
+            self.line_items = Some(vec![field]);
         }
     }
 }
