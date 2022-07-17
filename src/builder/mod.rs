@@ -58,7 +58,9 @@ impl<T: Validate, U: ParentBuilder> Builder<T, U> {
 impl<T: Validate, V: ParentBuilder + BackIntoBuilder<T, V>> Builder<T, V> {
     pub fn into_builder(self) -> Result<V, BuildError> {
         match self.body.validate() {
-            Ok(body) => Ok(self.parent_builder.unwrap().add_field(body)),
+            Ok(body) => {
+                Ok(self.parent_builder.unwrap().add_field(body))
+            },
             Err(_) => Err(BuildError)
         }
     }

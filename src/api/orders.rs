@@ -5,7 +5,7 @@ Orders functionality of the [Square API](https://developer.squareup.com).
 use crate::api::{SquareAPI, Verb};
 use crate::client::SquareClient;
 use crate::errors::{SquareError, ValidationError};
-use crate::objects::{Customer, Order, OrderServiceCharge, SearchOrdersQuery};
+use crate::objects::{Customer, Order, OrderReward, OrderServiceCharge, SearchOrdersQuery};
 use crate::response::SquareResponse;
 use crate::builder::{Builder, ParentBuilder, Nil, Validate, BackIntoBuilder, AddField};
 
@@ -58,6 +58,43 @@ impl<'a> Orders<'a> {
             Verb::GET,
             SquareAPI::Orders(format!("/{}", id)),
             None::<&SearchOrderBody>,
+            None,
+        ).await
+    }
+
+    /// Retrieves an [Order](Order) by ID.
+    /// [Open in API Reference](https://developer.squareup.com/reference/square/orders/retrieve-order).
+    pub async fn update(self, id: String, body: OrderUpdateBody)
+                      -> Result<SquareResponse, SquareError> {
+        self.client.request(
+            Verb::PUT,
+            SquareAPI::Orders(format!("/{}", id)),
+            Some(&body),
+            None,
+        ).await
+    }
+
+    /// Pay for an [Order](Order) using one or more approved payments or settle an order with a
+    /// total of 0.
+    /// [Open in API Reference](https://developer.squareup.com/reference/square/orders/pay-order).
+    pub async fn pay(self, id: String, body: PayOrderBody)
+                      -> Result<SquareResponse, SquareError> {
+        self.client.request(
+            Verb::POST,
+            SquareAPI::Orders(format!("/{}/pay", id)),
+            Some(&body),
+            None,
+        ).await
+    }
+
+    /// Enables applications to preview [Order](Order) pricing without creating an order.
+    /// [Open in API Reference](https://developer.squareup.com/reference/square/orders/calculate-order).
+    pub async fn calculate(self, body: OrderCalculateBody)
+                      -> Result<SquareResponse, SquareError> {
+        self.client.request(
+            Verb::POST,
+            SquareAPI::Orders("/calculate".to_string()),
+            Some(&body),
             None,
         ).await
     }
@@ -182,6 +219,134 @@ impl AddField<SearchOrdersQuery> for SearchOrderBody {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Default)]
+pub struct OrderUpdateBody {
+    fields_to_clear: Option<Vec<String>>,
+    idempotency_key: Option<String>,
+    order: Option<Order>,
+}
+
+impl Validate for OrderUpdateBody {
+    fn validate(mut self) -> Result<Self, ValidationError> where Self: Sized {
+        if self.order.is_none() {
+            Err(ValidationError)
+        } else {
+            self.idempotency_key = Some(Uuid::new_v4().to_string());
+
+            Ok(self)
+        }
+    }
+}
+
+impl<T: ParentBuilder> Builder<OrderUpdateBody, T> {
+    pub fn fields_to_clear(mut self, fields: Vec<String>) -> Self {
+        self.body.fields_to_clear = Some(fields);
+
+        self
+    }
+
+    pub fn order(mut self, order: Order) -> Self {
+        self.body.order = Some(order);
+
+        self
+    }
+}
+
+impl AddField<Order> for OrderUpdateBody {
+    fn add_field(&mut self, field: Order) {
+        self.order = Some(field);
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Default)]
+pub struct PayOrderBody {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    idempotency_key: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    order_version: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    payment_ids: Option<Vec<String>>,
+}
+
+impl Validate for PayOrderBody {
+    fn validate(mut self) -> Result<Self, ValidationError> where Self: Sized {
+        self.idempotency_key = Some(Uuid::new_v4().to_string());
+
+        if self.order_version.is_some() &&
+            self.payment_ids.is_some() {
+            Ok(self)
+        } else {
+            Err(ValidationError)
+        }
+
+
+    }
+}
+
+impl<T: ParentBuilder> Builder<PayOrderBody, T> {
+    fn oder_version(mut self, version: i64) -> Self {
+        self.body.order_version = Some(version);
+
+        self
+    }
+
+    fn payment_ids(mut self, ids: Vec<String>) -> Self {
+        self.body.payment_ids = Some(ids);
+
+        self
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Default)]
+pub struct OrderCalculateBody {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    order: Option<Order>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    proposed_rewards: Option<Vec<OrderReward>>,
+}
+
+impl Validate for OrderCalculateBody {
+    fn validate(mut self) -> Result<Self, ValidationError> where Self: Sized {
+        if self.order.is_some() {
+            Ok(self)
+        } else {
+            Err(ValidationError)
+        }
+    }
+}
+
+impl<T: ParentBuilder> Builder<OrderCalculateBody, T> {
+    fn order(mut self, order: Order) -> Self {
+        self.body.order = Some(order);
+
+        self
+    }
+
+    fn add_proposed_reward(mut self, reward: OrderReward) -> Self {
+        match self.body.proposed_rewards.as_mut() {
+            Some(rewards) => rewards.push(reward),
+            None => self.body.proposed_rewards = Some(vec![reward])
+        }
+
+        self
+    }
+}
+
+impl AddField<Order> for OrderCalculateBody {
+    fn add_field(&mut self, field: Order) {
+        self.order = Some(field)
+    }
+}
+
+impl AddField<OrderReward> for OrderCalculateBody {
+    fn add_field(&mut self, field: OrderReward) {
+        match self.proposed_rewards.as_mut() {
+            Some(rewards) => rewards.push(field),
+            None => self.body.proposed_rewards = Some(vec![field])
+        }
+    }
+}
+
 #[cfg(test)]
 mod test_orders {
     use crate::api::bookings::QueryBody;
@@ -197,7 +362,7 @@ mod test_orders {
         let actual = Builder::from(CreateOrderBody::default());
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_create_order_body_builder() {
         let expected = CreateOrderBody {
             idempotency_key: None,
@@ -270,7 +435,7 @@ mod test_orders {
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual))
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_create_order_body_builder_fail() {
         let mut actual = Builder::from(CreateOrderBody::default())
             .location_id("location_id".to_string())
@@ -283,7 +448,7 @@ mod test_orders {
         assert!(actual.is_err());
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_create_order() {
         use dotenv::dotenv;
         use std::env;
@@ -350,7 +515,7 @@ mod test_orders {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_search_order_body_builder() {
         let expected = SearchOrderBody {
             cursor: None,
@@ -383,7 +548,7 @@ mod test_orders {
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual))
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_search_orders() {
         use dotenv::dotenv;
         use std::env;
@@ -413,7 +578,7 @@ mod test_orders {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_retrieve_order() {
         use dotenv::dotenv;
         use std::env;
@@ -428,6 +593,172 @@ mod test_orders {
             .await;
 
         assert!(res.is_ok())
+    }
+
+    #[tokio::test]
+    async fn test_update_order_body_fail() {
+
+        let res_vec = vec![
+            Builder::from(OrderUpdateBody::default())
+                .fields_to_clear(vec!["a_field".to_string(), "another_field".to_string()])
+                .sub_builder_from(Order::default())
+                .location_id("L1JC53TYHS40Z".to_string())
+                .into_builder(),
+            Builder::from(OrderUpdateBody::default())
+                .fields_to_clear(vec!["a_field".to_string(), "another_field".to_string()])
+                .sub_builder_from(Order::default())
+                .version(2)
+                .into_builder(),
+        ];
+
+        res_vec.into_iter().for_each(|res| assert!(res.is_err()))
+    }
+
+    // #[tokio::test]
+    async fn test_update_order() {
+        use dotenv::dotenv;
+        use std::env;
+
+        dotenv().ok();
+        let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
+        let sut = SquareClient::new(&access_token);
+
+        let input = OrderUpdateBody {
+            fields_to_clear: None,
+            idempotency_key: Some(Uuid::new_v4().to_string()),
+            order: Some(Order {
+                id: None,
+                location_id: Some("L1JC53TYHS40Z".to_string()),
+                close_at: None,
+                created_at: None,
+                customer_id: None,
+                discounts: None,
+                fulfillments: None,
+                line_items: None,
+                metadata: None,
+                net_amounts: None,
+                pricing_options: None,
+                reference_id: None,
+                refunds: None,
+                return_amounts: None,
+                returns: None,
+                rewards: None,
+                rounding_adjustment: None,
+                service_charges: None,
+                source: None,
+                state: None,
+                taxes: None,
+                tenders: None,
+                ticket_name: None,
+                total_discount_money: None,
+                total_money: None,
+                total_service_charge_money: None,
+                total_tax_money: None,
+                total_tip_money: None,
+                updated_at: None,
+                version: Some(2)
+            })
+        };
+
+        println!("{:?}", &input);
+
+        let res = sut.orders()
+            .update("TJn1daLZuaMmPGL8vbeFGSdxB9HZY".to_string(), input)
+            .await;
+
+        assert!(res.is_ok())
+    }
+
+    #[tokio::test]
+    async fn test_pay_order_body_builder() {
+
+        let expected = PayOrderBody {
+            idempotency_key: None,
+            order_version: Some(3),
+            payment_ids: Some(vec!["some_id".to_string()])
+        };
+
+        let mut actual = Builder::from(PayOrderBody::default())
+            .oder_version(3)
+            .payment_ids(vec!["some_id".to_string()])
+            .build()
+            .await
+            .unwrap();
+
+        assert!(actual.idempotency_key.is_some());
+
+        actual.idempotency_key = None;
+
+        assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
+    }
+
+    #[tokio::test]
+    async fn test_order_calculate_body_builder() {
+
+        let expected = OrderCalculateBody {
+            order: Some(Order {
+                id: None,
+                location_id: Some("location_id".to_string()),
+                close_at: None,
+                created_at: None,
+                customer_id: None,
+                discounts: None,
+                fulfillments: None,
+                line_items: None,
+                metadata: None,
+                net_amounts: None,
+                pricing_options: None,
+                reference_id: None,
+                refunds: None,
+                return_amounts: None,
+                returns: None,
+                rewards: None,
+                rounding_adjustment: None,
+                service_charges: Some(vec![
+                    OrderServiceCharge {
+                        amount_money: Some(Money {
+                            amount: Some(20),
+                            currency: Currency::USD
+                        }),
+                        applied_money: None,
+                        applied_taxes: None,
+                        calculation_phase: Some(OrderServiceChargeCalculationPhase::TotalPhase),
+                        catalog_object_id: None,
+                        catalog_version: None,
+                        metadata: None,
+                        name: Some("some_name".to_string()),
+                        percentage: None,
+                        taxable: None,
+                        total_money: None,
+                        total_tax_money: None,
+                        service_charge_type: None,
+                        uid: None
+                    }
+                ]),
+                source: None,
+                state: None,
+                taxes: None,
+                tenders: None,
+                ticket_name: None,
+                total_discount_money: None,
+                total_money: None,
+                total_service_charge_money: None,
+                total_tax_money: None,
+                total_tip_money: None,
+                updated_at: None,
+                version: None
+            }),
+            proposed_rewards: None
+        };
+
+        let mut actual = Builder::from(PayOrderBody::default())
+            .oder_version(3)
+            .payment_ids(vec!["some_id".to_string()])
+            .build()
+            .await
+            .unwrap();
+
+        assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
     }
 }
 

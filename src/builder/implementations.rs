@@ -1,5 +1,5 @@
 use super::*;
-use crate::objects::{Money, OrderServiceCharge, SearchOrdersFilter, SearchOrdersQuery, SearchOrdersSort};
+use crate::objects::{Money, Order, OrderServiceCharge, SearchOrdersFilter, SearchOrdersQuery, SearchOrdersSort};
 use crate::objects::enums::{OrderServiceChargeCalculationPhase, SearchOrdersSortField, SortOrder};
 
 // -------------------------------------------------------------------------------------------------
@@ -108,5 +108,42 @@ impl<T: ParentBuilder> Builder<SearchOrdersQuery, T> {
         }
 
         self
+    }
+}
+// -------------------------------------------------------------------------------------------------
+// Order builder implementation
+// -------------------------------------------------------------------------------------------------
+impl Validate for Order {
+    fn validate(self) -> Result<Self, ValidationError> where Self: Sized {
+        if self.location_id.is_some() &&
+            self.version.is_some() {
+            Ok(self)
+        } else {
+            Err(ValidationError)
+        }
+    }
+}
+
+impl<T: ParentBuilder> Builder<Order, T> {
+    pub fn location_id(mut self, location_id: String) -> Self {
+        self.body.location_id = Some(location_id);
+
+        self
+    }
+
+    pub fn version(mut self, version: i64) -> Self {
+        self.body.version = Some(version);
+
+        self
+    }
+}
+
+impl AddField<OrderServiceCharge> for Order {
+    fn add_field(&mut self, field: OrderServiceCharge) {
+        if let Some(service_charges) = self.service_charges.as_mut() {
+            service_charges.push(field);
+        } else {
+            self.service_charges = Some(vec![field]);
+        }
     }
 }
