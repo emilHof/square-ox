@@ -25,7 +25,7 @@ pub struct Catalog<'a> {
 }
 
 impl<'a> Catalog<'a> {
-    /// Returns a list of all [CatalogObjects](CatalogObjects) of the specified types in the catalog.
+    /// Returns a list of all [CatalogObjects](crate::objects::CatalogObject)s of the specified types in the catalog.
     pub async fn list(self, list_parameters: Option<Vec<(String, String)>>)
                               -> Result<SquareResponse, SquareError> {
         self.client.request(
@@ -36,7 +36,7 @@ impl<'a> Catalog<'a> {
         ).await
     }
 
-    /// Creates or updates the target [CatalogObject](CatalogObject).
+    /// Creates or updates the target [CatalogObject](crate::objects::CatalogObject).
     pub async fn upsert_object(self, object: ObjectUpsertRequest)
                                        -> Result<SquareResponse, SquareError> {
         self.client.request(
@@ -59,8 +59,8 @@ impl<'a> Catalog<'a> {
         ).await
     }
 
-    /// Returns a single [CatalogItem](CatalogItem) as a [CatalogObject](CatalogObject) based on the
-    /// provided ID.
+    /// Returns a single [CatalogItem](crate::objects::CatalogItem) as a
+    /// [CatalogObject](crate::objects::CatalogObject) based on the provided ID.
     pub async fn retrieve_object(
         self,
         object_id: String,
@@ -75,9 +75,9 @@ impl<'a> Catalog<'a> {
         ).await
     }
 
-    /// Searches for [CatalogObject](CatalogObject) of any type by matching supported search attribute values,
-    /// excluding custom attribute values on items or item variations, against one or more of
-    /// the specified query filters.
+    /// Searches for [CatalogObject](crate::objects::CatalogObject) of any type by matching
+    /// supported search attribute values, excluding custom attribute values on items or item
+    /// variations, against one or more of the specified query filters.
     pub async fn search_objects(self, search_body: SearchCatalogObjectsBody)
                                         -> Result<SquareResponse, SquareError> {
         self.client.request(

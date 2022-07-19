@@ -26,7 +26,7 @@ pub struct Bookings<'a> {
 }
 
 impl<'a> Bookings<'a> {
-    /// Search for availability with the given [SearchQuery](SearchQuery) to the Square API
+    /// Search for availability with the given search query to the Square API
     /// and get the response back.
     ///
     /// # Arguments
@@ -42,12 +42,11 @@ impl<'a> Bookings<'a> {
         ).await
     }
 
-    /// Search for availability with the given [SearchQuery](SearchQuery) to the Square API
+    /// Search for availability with the given search query to the Square API
     /// and get the response back.
     ///
     /// # Arguments
-    /// * `search_query` - A [SearchQuery](SearchQuery) created from the
-    /// [SearchAvailabilityQueryBuilder](SearchAvailabilityQueryBuilder)
+    /// * `search_query` - A search query.
     pub async fn search_availability(self, search_query: SearchAvailabilityQuery)
                                      -> Result<SquareResponse, SquareError> {
         self.client.request(
@@ -62,8 +61,7 @@ impl<'a> Bookings<'a> {
     /// and get the response back.
     ///
     /// # Arguments
-    /// * `create_booking` - A [BookingsPost](BookingsPost) created from the
-    /// [BookingsBuilder](BookingsBuilder)
+    /// * `create_booking` - A [BookingsPost](BookingsPost)
     pub async fn create(self, booking_post: BookingsPost)
                                 -> Result<SquareResponse, SquareError> {
         self.client.request(
@@ -78,8 +76,7 @@ impl<'a> Bookings<'a> {
     /// and get the response back.
     ///
     /// # Arguments
-    /// * `updated_booking` - A [BookingsPost](BookingsPost) created from the
-    /// [BookingsBuilder](BookingsBuilder)
+    /// * `updated_booking` - A [BookingsPost](BookingsPost).
     pub async fn update(self, updated_booking: BookingsPost, booking_id: String)
                                 -> Result<SquareResponse, SquareError> {
         self.client.request(
@@ -456,16 +453,15 @@ impl BookingsPostBuilder {
 
         self
     }
-    /// Build a [BookingPost](BookingPost)
+    /// Build a [BookingsPost](BookingsPost)
     ///
-    /// To build a valid BookingPost and to avoid returning a
-    /// [BookingsPostBuildError](BookingsPostBuildError) one must previously call:
+    /// To build a valid BookingPost one must previously call:
     /// * `.customer_id()`
     /// * `.location_id()`
     /// * `.add_appointment_segment()`
     /// * `.start_at()`
     ///
-    /// # Example: Build a [BookingPost](BookingPost)
+    /// # Example: Build a [BookingsPost](BookingsPost)
     /// ```
     /// async {
     ///     use square_ox::objects::AppointmentSegment;

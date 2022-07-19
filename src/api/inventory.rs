@@ -63,8 +63,8 @@ impl<'a> Inventory<'a> {
         ).await
     }
 
-    /// Retrieves the current calculated stock count for a given [CatalogObject](CatalogObject) at
-    /// a given set of [Location](Location)s.
+    /// Retrieves the current calculated stock count for a given [CatalogObject](crate::objects::CatalogObject) at
+    /// a given set of [Location](crate::objects::Location)s.
     /// [Open in API Reference](https://developer.squareup.com/reference/square/inventory/retrieve-inventory-count)
     pub async fn retrieve_count(self, object_id: String, location_id: Option<String>)
         -> Result<SquareResponse, SquareError>{

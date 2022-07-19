@@ -32,8 +32,7 @@ impl<'a> Checkout<'a> {
     /// # Arguments:
     /// * `location_id` - The id of the location you would like to link to the checkout page.
     /// * `create_order_request`- The request body of the create_checkout call wrapped in a
-    /// [CreateOrderRequestWrapper](CreateOrderRequestWrapper) created through the
-    /// [CreateOrderRequestBuilder](CreateOrderRequestBuilder).
+    /// [CreateOrderRequestWrapper](CreateOrderRequestWrapper).
     pub async fn create_checkout(
         self, location_id: String,
         create_order_request: CreateOrderRequestWrapper
@@ -70,9 +69,8 @@ impl<'a> Checkout<'a> {
     ///
     /// # Arguments:
     /// * `payment_link` - The body of the quest, holding the details of the payment link that is
-    /// being added. This body is wrapped by a [CreatePaymentLinkWrapper](CreatePaymentLinkWrapper)
-    /// that is created through the [CreatePaymentLinkBuilder](CreatePaymentLinkBuilder). The
-    /// payment link must contain at least one Order or QuickPay object.
+    /// being added. This body is wrapped by a [CreatePaymentLinkWrapper](CreatePaymentLinkWrapper).
+    /// The payment link must contain at least one Order or QuickPay object.
     pub async fn create(
         self, payment_link: CreatePaymentLinkWrapper
     )

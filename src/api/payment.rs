@@ -46,7 +46,7 @@ impl<'a> Payments<'a> {
     /// and get the response back
     ///
     /// # Arguments
-    /// * `payment` - A [Payment](Payment) created from the [PaymentBuilder](PaymentBuilder)
+    /// * `payment` - A [Payment](Payment)
     pub async fn create(self, payment: PaymentRequest) -> Result<SquareResponse, SquareError> {
         self.client.request(
             Verb::POST,

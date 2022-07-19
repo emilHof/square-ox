@@ -57,8 +57,7 @@ impl<'a> Locations<'a> {
 
     /// Create a new [Location](Location) at the [Square API](https://developer.squareup.com).
     /// # Arguments
-    /// * `new_location` - A [LocationCreationWrapper](LocationCreationWrapper) that is build by the
-    /// the [LocationBuilder](LocationBuilder).
+    /// * `new_location` - A [LocationCreationWrapper](LocationCreationWrapper).
     /// # Example
     /// ```rust
     ///use square_ox::{
@@ -92,8 +91,7 @@ impl<'a> Locations<'a> {
 
     /// Update an existing [Location](Location) at the [Square API](https://developer.squareup.com).
     /// # Arguments
-    /// * `updated_location` - A [LocationCreationWrapper](LocationCreationWrapper) that is build by the
-    /// the [LocationBuilder](LocationBuilder).
+    /// * `updated_location` - A [LocationCreationWrapper](LocationCreationWrapper).
     /// * `location_id` - The id of the location that is to be updated.
     /// # Example
     /// ```rust
