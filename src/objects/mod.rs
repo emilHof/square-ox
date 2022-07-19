@@ -82,7 +82,7 @@ pub enum CheckoutEnum {
 pub struct Location {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
-    pub name: String,
+    pub name: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub business_email: Option<String>,
     pub address: Option<Address>,

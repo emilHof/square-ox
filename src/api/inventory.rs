@@ -118,6 +118,9 @@ impl<'a> Inventory<'a> {
     }
 }
 
+// -------------------------------------------------------------------------------------------------
+// InventoryChangeBody builder implementation
+// -------------------------------------------------------------------------------------------------
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct InventoryChangeBody {
     idempotency_key: Option<String>,
