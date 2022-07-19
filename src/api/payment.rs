@@ -4,13 +4,14 @@ Payment functionality of the [Square API](https://developer.squareup.com).
 
 use crate::client::SquareClient;
 use crate::api::{Verb, SquareAPI};
-use crate::errors::PaymentBuildError;
+use crate::errors::{PaymentBuildError, ValidationError};
 use crate::errors::SquareError;
 use crate::objects::{Address, CashPaymentDetails, enums::Currency, ExternalPaymentDetails, Money, Payment};
 use crate::response::SquareResponse;
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use crate::builder::{Builder, ParentBuilder, Validate};
 use crate::objects::enums::SortOrder;
 
 impl SquareClient {
@@ -137,6 +138,9 @@ impl<'a> Payments<'a> {
     }
 }
 
+// -------------------------------------------------------------------------------------------------
+// ListPaymentsParametersBuilder implementation
+// -------------------------------------------------------------------------------------------------
 #[derive(Default)]
 pub struct ListPaymentsParametersBuilder {
     begin_time: Option<String>,
@@ -283,203 +287,131 @@ impl ListPaymentsParametersBuilder {
     }
 }
 
+// -------------------------------------------------------------------------------------------------
+// PaymentRequest implementation
+// -------------------------------------------------------------------------------------------------
 /// The representation of a payment to the square API
-#[derive(Serialize, Debug, Deserialize)]
+#[derive(Serialize, Debug, Deserialize, Default)]
 pub struct PaymentRequest {
-    #[serde(rename(serialize = "source_id"))]
-    source_id: String,
-    idempotency_key: String,
-    amount_money: Money,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    accept_partial_authorization: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    app_fee_money: Option<Money>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    autocomplete: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    billing_address: Option<Address>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    buyer_email_address: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    cash_details: Option<CashPaymentDetails>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    customer_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    delay_action: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    delay_duration: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    external_details: Option<ExternalPaymentDetails>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    location_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    note: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    order_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    reference_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    shipping_address: Option<Address>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    statement_description_identifier: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    team_member_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    tip_money: Option<Money>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    verification_token: Option<String>,
-}
-
-/// The [PaymentBuilder](PaymentBuilder)
-#[derive(Default)]
-pub struct PaymentBuilder {
+    #[serde(rename(serialize = "source_id"), skip_serializing_if = "Option::is_none")]
     source_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    idempotency_key: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     amount_money: Option<Money>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     accept_partial_authorization: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     app_fee_money: Option<Money>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     autocomplete: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     billing_address: Option<Address>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     buyer_email_address: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     cash_details: Option<CashPaymentDetails>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     customer_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     delay_action: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     delay_duration: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     external_details: Option<ExternalPaymentDetails>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     location_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     note: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     order_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     reference_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     shipping_address: Option<Address>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     statement_description_identifier: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     team_member_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     tip_money: Option<Money>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     verification_token: Option<String>,
 }
 
-impl PaymentBuilder {
-    pub fn new() -> Self {
-        Default::default()
-    }
+impl Validate for PaymentRequest {
+    fn validate(mut self) -> Result<Self, ValidationError> where Self: Sized {
+        if self.source_id.is_some() &&
+            self.amount_money.is_some() {
+            self.idempotency_key = Some(Uuid::new_v4().to_string());
 
-    pub fn source_id(mut self, source_id: String) -> Self {
-        self.source_id = Some(source_id);
-
-        self
-    }
-
-    pub fn amount(mut self, amount: i64, currency: Currency) -> Self {
-        self.amount_money = Some(Money { amount: Some(amount), currency });
-
-        self
-    }
-
-    pub fn verification_token(mut self, token: String) -> Self {
-        self.verification_token = Some(token);
-
-        self
-    }
-
-    pub async fn build(self) -> Result<PaymentRequest, PaymentBuildError> {
-        let source_id = match self.source_id {
-            Some(n) => n,
-            None => return Err(PaymentBuildError),
-        };
-        let amount_money = match self.amount_money {
-            Some(n) => n,
-            None => return Err(PaymentBuildError),
-        };
-
-        Ok(PaymentRequest {
-            source_id,
-            // The idempotency key just needs to be a random string
-            // it is advised to use a v4 uuid by stripe
-            idempotency_key: Uuid::new_v4().to_string(),
-            amount_money,
-            accept_partial_authorization: self.accept_partial_authorization,
-            app_fee_money: self.app_fee_money,
-            autocomplete: self.autocomplete,
-            billing_address: self.billing_address,
-            buyer_email_address: self.buyer_email_address,
-            cash_details: self.cash_details,
-            customer_id: self.customer_id,
-            delay_action: self.delay_action,
-            delay_duration: self.delay_duration,
-            external_details: self.external_details,
-            location_id: self.location_id,
-            note: self.note,
-            order_id: self.order_id,
-            reference_id: self.reference_id,
-            shipping_address: self.shipping_address,
-            statement_description_identifier: self.statement_description_identifier,
-            team_member_id: self.team_member_id,
-            tip_money: self.tip_money,
-            verification_token: self.verification_token,
-        })
+            Ok(self)
+        } else {
+            Err(ValidationError)
+        }
     }
 }
 
+// -------------------------------------------------------------------------------------------------
+// CancelByIdempotencyKey implementation
+// -------------------------------------------------------------------------------------------------
 #[derive(Serialize, Debug, Deserialize)]
 struct CancelByIdempotencyKey {
     idempotency_key: String,
 }
 
-#[derive(Serialize, Debug, Deserialize)]
+// -------------------------------------------------------------------------------------------------
+// UpdatePaymentBody implementation
+// -------------------------------------------------------------------------------------------------
+#[derive(Serialize, Debug, Deserialize, Default)]
 pub struct UpdatePaymentBody {
-    idempotency_key: String,
+    idempotency_key: Option<String>,
     payment: Payment
 }
 
-#[derive(Default)]
-pub struct UpdatePaymentBodyBuilder {
-    payment: Payment,
+impl Validate for UpdatePaymentBody {
+    fn validate(mut self) -> Result<Self, ValidationError> where Self: Sized {
+        self.idempotency_key = Some(Uuid::new_v4().to_string());
+
+        Ok(self)
+    }
 }
 
-impl UpdatePaymentBodyBuilder {
-    pub fn new() -> Self {
-        Default::default()
-    }
-
+impl<T: ParentBuilder> Builder<UpdatePaymentBody, T> {
     pub fn amount_money(mut self, amount_money: Money) -> Self {
-        self.payment.amount_money = Some(amount_money);
+        self.body.payment.amount_money = Some(amount_money);
 
         self
     }
 
     pub fn app_fee_money(mut self, app_fee_money: Money) -> Self {
-        self.payment.app_fee_money = Some(app_fee_money);
+        self.body.payment.app_fee_money = Some(app_fee_money);
 
         self
     }
 
     pub fn approved_money(mut self, approved_money: Money) -> Self {
-        self.payment.approved_money = Some(approved_money);
+        self.body.payment.approved_money = Some(approved_money);
 
         self
     }
 
     pub fn cash_details(mut self, cash_details: CashPaymentDetails) -> Self {
-        self.payment.cash_details = Some(cash_details);
+        self.body.payment.cash_details = Some(cash_details);
 
         self
     }
 
     pub fn tip_money(mut self, tip_money: Money) -> Self {
-        self.payment.tip_money = Some(tip_money);
+        self.body.payment.tip_money = Some(tip_money);
 
         self
     }
 
     pub fn version_token(mut self, version_token: String) -> Self {
-        self.payment.version_token = Some(version_token);
+        self.body.payment.version_token = Some(version_token);
 
         self
-    }
-
-    pub async fn build(self) -> UpdatePaymentBody {
-        UpdatePaymentBody {
-            idempotency_key: Uuid::new_v4().to_string(),
-            payment: self.payment
-        }
     }
 }
 
@@ -502,9 +434,9 @@ mod test_payments {
         let sut = SquareClient::new(&access_token);
         
         let input = PaymentRequest {
-            source_id: "cnon:card-nonce-ok".to_string(),
-            idempotency_key: Uuid::new_v4().to_string(),
-            amount_money: Money { amount: Some(10), currency: Currency::USD },
+            source_id: Some("cnon:card-nonce-ok".to_string()),
+            idempotency_key: Some(Uuid::new_v4().to_string()),
+            amount_money: Some(Money { amount: Some(10), currency: Currency::USD }),
             accept_partial_authorization: None,
             app_fee_money: None,
             autocomplete: None,
@@ -608,7 +540,7 @@ mod test_payments {
     #[actix_rt::test]
     async fn test_update_payment_body_builder() {
         let expected = UpdatePaymentBody {
-            idempotency_key: "".to_string(),
+            idempotency_key: None,
             payment: Payment {
                 id: None,
                 amount_money: Some(Money { amount: Some(30), currency: Currency::USD }),
@@ -652,12 +584,15 @@ mod test_payments {
             }
         };
 
-        let mut actual = UpdatePaymentBodyBuilder::new()
+        let mut actual = Builder::from(UpdatePaymentBody::default())
             .amount_money(Money { amount: Some(30), currency: Currency::USD })
             .build()
-            .await;
+            .await
+            .unwrap();
 
-        actual.idempotency_key = "".to_string();
+        assert!(actual.idempotency_key.is_some());
+
+        actual.idempotency_key = None;
 
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
     }
@@ -672,7 +607,7 @@ mod test_payments {
         let sut = SquareClient::new(&access_token);
 
         let input = UpdatePaymentBody {
-            idempotency_key: Uuid::new_v4().to_string(),
+            idempotency_key: Some(Uuid::new_v4().to_string()),
             payment: Payment {
                 id: None,
                 amount_money: Some(Money { amount: Some(30), currency: Currency::USD }),
