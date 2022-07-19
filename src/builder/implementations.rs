@@ -1,6 +1,6 @@
 use super::*;
-use crate::objects::{TimeRange, DeviceCheckoutOptions, Money, Order, OrderLineItem, OrderServiceCharge, SearchOrdersFilter, SearchOrdersQuery, SearchOrdersSort, TerminalCheckoutQuery, TerminalCheckoutQueryFilter, TerminalCheckoutQuerySort, TerminalRefundQuery, TerminalRefundQueryFilter, TipSettings};
-use crate::objects::enums::{OrderServiceChargeCalculationPhase, SearchOrdersSortField, SortOrder, TerminalCheckoutStatus};
+use crate::objects::{TimeRange, DeviceCheckoutOptions, Money, Order, OrderLineItem, OrderServiceCharge, SearchOrdersFilter, SearchOrdersQuery, SearchOrdersSort, TerminalCheckoutQuery, TerminalCheckoutQueryFilter, TerminalCheckoutQuerySort, TerminalRefundQuery, TerminalRefundQueryFilter, TipSettings, InventoryChange, InventoryPhysicalCount, InventoryAdjustment, InventoryTransfer};
+use crate::objects::enums::{InventoryChangeType, OrderServiceChargeCalculationPhase, SearchOrdersSortField, SortOrder, TerminalCheckoutStatus};
 
 // -------------------------------------------------------------------------------------------------
 // OrderServiceCharge builder implementation
@@ -405,6 +405,41 @@ impl<T: ParentBuilder> Builder<TerminalRefundQuery, T> {
 
     pub fn sort_descending(mut self) -> Self {
         self.body.sort = Some(TerminalCheckoutQuerySort{ sort_order: Some(SortOrder::Desc) });
+
+        self
+    }
+}
+
+// -------------------------------------------------------------------------------------------------
+// SearchOrdersQuery builder implementation
+// -------------------------------------------------------------------------------------------------
+impl Validate for InventoryChange {
+    fn validate(self) -> Result<Self, ValidationError> where Self: Sized {
+        Ok(self)
+    }
+}
+
+impl<T: ParentBuilder> Builder<InventoryChange, T> {
+    pub fn change_type(mut self, change_type: InventoryChangeType) -> Self {
+        self.body.inventory_change_type = change_type;
+
+        self
+    }
+
+    pub fn physical_count(mut self, physical_count: InventoryPhysicalCount) -> Self {
+        self.body.physical_count = Some(physical_count);
+
+        self
+    }
+
+    pub fn adjustment(mut self, adjustment: InventoryAdjustment) -> Self {
+        self.body.adjustment = Some(adjustment);
+
+        self
+    }
+
+    pub fn transfer(mut self, transfer: InventoryTransfer) -> Self {
+        self.body.transfer = Some(transfer);
 
         self
     }

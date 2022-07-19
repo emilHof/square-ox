@@ -2022,7 +2022,7 @@ pub struct InventoryCount {
     pub state: Option<InventoryState>,
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default)]
 pub struct InventoryChange {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub adjustment: Option<InventoryAdjustment>,

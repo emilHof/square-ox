@@ -387,6 +387,12 @@ pub enum InventoryChangeType {
     Transfer,
 }
 
+impl Default for InventoryChangeType {
+    fn default() -> Self {
+        InventoryChangeType::PhysicalCount
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum PaymentType {
