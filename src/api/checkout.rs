@@ -4,14 +4,14 @@ Checkout functionality of the [Square API](https://developer.squareup.com).
 
 use crate::client::SquareClient;
 use crate::api::{Verb, SquareAPI};
-use crate::errors::{CreateOrderRequestBuildError, CreatePaymentLinkBuildError, PaymentLinkBuildError, SquareError, ValidationError};
+use crate::errors::{SquareError, ValidationError};
 use crate::response::SquareResponse;
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use crate::builder::{AddField, Builder, ParentBuilder, Validate};
 use crate::objects::{self, Address, ChargeRequestAdditionalRecipient, CheckoutOptions,
-                     CreateOrderRequest, Order, OrderLineItem, PaymentLink, PrePopulatedData,
+                     CreateOrderRequest, Order, PaymentLink, PrePopulatedData,
                      QuickPay};
 
 impl SquareClient {
@@ -390,7 +390,7 @@ impl<T: ParentBuilder> Builder<UpdatePaymentLinkWrapper, T> {
 #[cfg(test)]
 mod test_checkout {
     use crate::builder::BackIntoBuilder;
-    use crate::objects::{enums::{OrderLineItemItemType, Currency}, Money};
+    use crate::objects::{enums::{OrderLineItemItemType, Currency}, Money, OrderLineItem};
     use super::*;
 
     #[tokio::test]

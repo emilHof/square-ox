@@ -1,6 +1,5 @@
-use crate::api::customers::TimeRange;
 use super::*;
-use crate::objects::{DeviceCheckoutOptions, Money, Order, OrderLineItem, OrderServiceCharge, SearchOrdersFilter, SearchOrdersQuery, SearchOrdersSort, TerminalCheckoutQuery, TerminalCheckoutQueryFilter, TerminalCheckoutQuerySort, TerminalRefundQuery, TerminalRefundQueryFilter, TipSettings};
+use crate::objects::{TimeRange, DeviceCheckoutOptions, Money, Order, OrderLineItem, OrderServiceCharge, SearchOrdersFilter, SearchOrdersQuery, SearchOrdersSort, TerminalCheckoutQuery, TerminalCheckoutQueryFilter, TerminalCheckoutQuerySort, TerminalRefundQuery, TerminalRefundQueryFilter, TipSettings};
 use crate::objects::enums::{OrderServiceChargeCalculationPhase, SearchOrdersSortField, SortOrder, TerminalCheckoutStatus};
 
 // -------------------------------------------------------------------------------------------------

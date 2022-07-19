@@ -4,14 +4,15 @@ Terminals functionality of the [Square API](https://developer.squareup.com).
 
 use crate::api::{SquareAPI, Verb};
 use crate::client::SquareClient;
-use crate::errors::{CreateTerminalCheckoutBodyBuildError, CreateTerminalRefundBodyBuildError, DeviceOptionsBuildError, SquareError, ValidationError};
-use crate::objects::{DeviceCheckoutOptions, Money, PaymentOptions, TerminalCheckout, TerminalCheckoutQuery, TerminalCheckoutQueryFilter, TerminalCheckoutQuerySort, TerminalRefund, TerminalRefundQuery, TerminalRefundQueryFilter, TipSettings};
+use crate::errors::{SquareError, ValidationError};
+use crate::objects::{DeviceCheckoutOptions, Money, PaymentOptions, TerminalCheckout,
+                     TerminalCheckoutQuery, TerminalRefund, TerminalRefundQuery};
 use crate::objects::enums::{CheckoutOptionsPaymentType, SortOrder, TerminalCheckoutStatus};
 use crate::response::SquareResponse;
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::api::customers::TimeRange;
+use crate::objects::TimeRange;
 use crate::builder::{AddField, Builder, ParentBuilder, Validate};
 
 impl SquareClient {
@@ -540,6 +541,7 @@ mod test_terminals {
 
     #[tokio::test]
     async fn test_search_terminal_refund_body_builder() {
+        use crate::objects::TerminalRefundQueryFilter;
         let expected = SearchTerminalRefundBody {
             cursor: Some("some cursor".to_string()),
             limit: Some(10),
