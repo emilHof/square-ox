@@ -9,7 +9,25 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use crate::api::orders::Orders;
 use crate::api::terminal::Terminal;
-use crate::objects::enums::{ActionCancelReason, ApplicationDetailsExternalSquareProduct, BankAccountOwnershipType, BusinessAppointmentSettingsBookingLocationType, BusinessAppointmentSettingsCancellationPolicy, BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType, BusinessBookingProfileBookingPolicy, BusinessBookingProfileCustomerTimezoneChoice, BuyNowPayLaterBrand, CatalogCustomAttributeDefinitionType, CatalogItemProductType, CatalogObjectType, CatalogPricingType, CCVStatus, CheckoutOptionsPaymentType, Currency, CustomerCreationSource, DigitalWalletBrand, DigitalWalletStatus, InventoryAlertType, InventoryChangeType, InventoryState, LocationStatus, LocationType, OrderFulfillmentFulfillmentLineItemApplication, OrderFulfillmentPickupDetailsScheduleType, OrderFulfillmentState, OrderFulfillmentType, OrderLineItemDiscountScope, OrderLineItemDiscountType, OrderLineItemItemType, OrderLineItemTaxScope, OrderLineItemTaxType, OrderServiceChargeCalculationPhase, OrderServiceChargeType, OrderState, PaymentSourceType, PaymentStatus, PaymentType, PaymentVerificationMethod, PaymentVerificationResults, ProcessingFeeType, RefundStatus, RiskEvaluationRiskLevel, SearchOrdersSortField, SortOrder, TenderCardDetailsEntryMethod, TenderCardDetailsStatus, TenderType, TerminalCheckoutStatus};
+use crate::objects::enums::{
+    ActionCancelReason, ApplicationDetailsExternalSquareProduct,
+    BankAccountOwnershipType, BusinessAppointmentSettingsBookingLocationType,
+    BusinessAppointmentSettingsCancellationPolicy,
+    BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType,
+    BusinessBookingProfileBookingPolicy, BusinessBookingProfileCustomerTimezoneChoice,
+    BuyNowPayLaterBrand, CatalogCustomAttributeDefinitionType, CatalogItemProductType,
+    CatalogObjectType, CatalogPricingType, CCVStatus, CheckoutOptionsPaymentType, Currency,
+    CustomerCreationSource, DigitalWalletBrand, DigitalWalletStatus, InventoryAlertType,
+    InventoryChangeType, InventoryState, LocationStatus, LocationType,
+    OrderFulfillmentFulfillmentLineItemApplication, OrderFulfillmentPickupDetailsScheduleType,
+    OrderFulfillmentState, OrderFulfillmentType, OrderLineItemDiscountScope,
+    OrderLineItemDiscountType, OrderLineItemItemType, OrderLineItemTaxScope,
+    OrderLineItemTaxType, OrderServiceChargeCalculationPhase, OrderServiceChargeType,
+    OrderState, PaymentSourceType, PaymentStatus, PaymentType, PaymentVerificationMethod,
+    PaymentVerificationResults, ProcessingFeeType, RefundStatus, RiskEvaluationRiskLevel,
+    SearchOrdersSortField, SortOrder, TenderCardDetailsEntryMethod, TenderCardDetailsStatus,
+    TenderType, TerminalCheckoutStatus
+};
 use crate::response::ResponseError;
 
 /// The Response enum holds the variety of responses that can be returned from a
@@ -2686,4 +2704,29 @@ pub struct CreationSource {
     pub rule: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub values: Option<Vec<CustomerCreationSource>>,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct StartAtRange {
+    pub end_at: String,
+    pub start_at: String,
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct SegmentFilter {
+    pub service_variation_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub team_member_id_filter: Option<FilterValue>,
+}
+
+#[derive(Serialize, Debug, Deserialize, Default)]
+pub struct AvailabilityQueryFilter {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub start_at_range: Option<StartAtRange>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub booking_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub location_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub segment_filters: Option<Vec<SegmentFilter>>
 }
