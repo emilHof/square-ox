@@ -326,7 +326,7 @@ pub struct FilterValue {
     pub none: Option<Vec<String>>,
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default)]
 pub struct CatalogObject {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
