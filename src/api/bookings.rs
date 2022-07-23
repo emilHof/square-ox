@@ -364,9 +364,14 @@ impl ListTeamMemberBookingsProfileBuilder {
 ///
 /// # Example: Build a [BookingPost](BookingPost)
 /// ```
+/// use square_ox::{
+///     objects::AppointmentSegment,
+///     builder::Builder,
+///     api::bookings::BookingsPost,
+/// };
+///
 /// async {
-///     use square_ox::objects::AppointmentSegment;
-///     let builder = square_ox::api::bookings::BookingsPostBuilder::new()
+///     let builder = Builder::from(BookingsPost::default())
 ///     .customer_id("some_id".to_string())
 ///     .location_id("some_id".to_string())
 ///     .start_at("some_start_at_date_time".to_string())
@@ -404,8 +409,13 @@ impl<T: ParentBuilder> Builder<BookingsPost, T> {
     ///
     /// # Example: Set the customer id
     /// ```
-    /// let builder = square_ox::api::bookings::BookingsPostBuilder::new()
-    /// .customer_id("some_id".to_string());
+    ///  use square_ox::{
+    ///     api::bookings::BookingsPost,
+    ///     builder::Builder,
+    ///  };
+    ///
+    ///  let builder = Builder::from(BookingsPost::default())
+    ///  .customer_id("some_id".to_string());
     /// ```
     pub fn customer_id(mut self, customer_id: String) -> Self {
         self.body.booking.customer_id = Some(customer_id);
@@ -420,7 +430,12 @@ impl<T: ParentBuilder> Builder<BookingsPost, T> {
     ///
     /// # Example: Set the customer id
     /// ```
-    /// let builder = square_ox::api::bookings::BookingsPostBuilder::new()
+    /// use square_ox::{
+    ///     builder::Builder,
+    ///     api::bookings::BookingsPost,
+    /// };
+    ///
+    /// let builder = Builder::from(BookingsPost::default())
     /// .location_id("some_id".to_string());
     /// ```
     pub fn location_id(mut self, location_id: String) -> Self {
@@ -583,7 +598,7 @@ pub struct QueryBody {
 mod test_bookings {
     use super::*;
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_search_query_builder() {
         let expected = SearchAvailabilityQuery {
             query: QueryBody {
@@ -611,7 +626,7 @@ mod test_bookings {
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual))
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_search_availability() {
         use dotenv::dotenv;
         use std::env;
@@ -633,7 +648,7 @@ mod test_bookings {
         assert!(result.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_booking_post_builder() {
         let actual = Builder::from(BookingsPost::default())
             .start_at("2022-10-11T16:30:00Z".to_string())
@@ -682,7 +697,7 @@ mod test_bookings {
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual.unwrap().booking))
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_booking_post_builder_fail() {
         let res = Builder::from(BookingsPost::default())
             .start_at("2022-10-11T16:30:00Z".to_string())
@@ -702,7 +717,7 @@ mod test_bookings {
         assert!(res.is_err());
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_create_booking() {
         use dotenv::dotenv;
         use std::env;
@@ -746,7 +761,7 @@ mod test_bookings {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_retrieve_booking() {
         use dotenv::dotenv;
         use std::env;
@@ -762,7 +777,7 @@ mod test_bookings {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_bookings_cancel_builder() {
         let expected = BookingsCancel {
             booking_id: Some("9uv6i3p5x5ao1p".to_string()),
@@ -779,7 +794,7 @@ mod test_bookings {
                    format!("{:?}", actual.unwrap().booking_id));
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_bookings_cancel_builder_fail() {
 
         let res = Builder::from(BookingsCancel::default()).build().await;
@@ -787,7 +802,7 @@ mod test_bookings {
         assert!(res.is_err());
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_cancel_booking() {
         use dotenv::dotenv;
         use std::env;
@@ -809,7 +824,7 @@ mod test_bookings {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_update_booking() {
         use dotenv::dotenv;
         use std::env;
@@ -855,7 +870,7 @@ mod test_bookings {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_bookings_query_builder() {
         let expected = vec![
             ("location_id".to_string(), "L1JC53TYHS40Z".to_string()),
@@ -873,7 +888,7 @@ mod test_bookings {
 
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_bookings() {
         use dotenv::dotenv;
         use std::env;
@@ -891,7 +906,7 @@ mod test_bookings {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_retrieve_business_booking_profile() {
         use dotenv::dotenv;
         use std::env;
@@ -905,7 +920,7 @@ mod test_bookings {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_team_member_booking_profile_query_builder() {
         let expected = vec![
             ("limit".to_string(), "10".to_string()),
@@ -925,7 +940,7 @@ mod test_bookings {
 
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_team_member_booking_profiles() {
         use dotenv::dotenv;
         use std::env;
@@ -947,7 +962,7 @@ mod test_bookings {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_retrieve_team_member_booking_profile() {
         use dotenv::dotenv;
         use std::env;

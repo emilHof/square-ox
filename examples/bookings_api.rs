@@ -1,12 +1,12 @@
 use square_ox::client::SquareClient;
-use square_ox::errors::SearchQueryBuildError;
-use square_ox::api::bookings::SearchAvailabilityQueryBuilder;
+use square_ox::api::bookings::SearchAvailabilityQuery;
 
 use actix_web::{middleware::Logger, post, get, web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
 use std::env;
 use dotenv;
-use square_ox::objects::{Response, Address, Location};
+use square_ox::builder::Builder;
+use square_ox::objects::{Response, Address};
 
 
 #[actix_web::main]
@@ -66,7 +66,7 @@ async fn list_availability(
 
     let query_params = form.into_inner();
 
-    let search_query = match SearchAvailabilityQueryBuilder::new()
+    let search_query = match Builder::from(SearchAvailabilityQuery::default())
         .location_id(location_id.clone())
         .start_at_range(query_params.start_at, query_params.end_at)
         .segment_filters(query_params.segment_id)
@@ -121,7 +121,7 @@ async fn list_locations(
                         .set_header("Access-Control-Allow-Origin", "*")
                         .json(FrontendLocationsSchema {
                             locations: locations.into_iter().map(|location| FrontendLocationSchema {
-                                name: location.name,
+                                name: location.name.unwrap(),
                                 address: location.address.unwrap(),
                                 capabilities: location.capabilities,
                                 website_url: location.website_url,

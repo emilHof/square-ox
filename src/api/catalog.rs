@@ -431,7 +431,7 @@ mod test_catalog {
     use crate::objects::enums::{CatalogItemProductType, CatalogObjectType, CatalogPricingType, Currency};
     use super::*;
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_parameter_builder() {
         let expected = vec![("types".to_string(), "ITEM%2CCATEGORY".to_string())];
         let actual = CatalogListParameterBuilder::new()
@@ -443,7 +443,7 @@ mod test_catalog {
         assert_eq!(expected, actual)
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_catalog() {
         use dotenv::dotenv;
         use std::env;
@@ -461,7 +461,7 @@ mod test_catalog {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_upsert_object_request_builder() {
         let expected = ObjectUpsertRequest {
             idempotency_key: None,
@@ -651,7 +651,7 @@ mod test_catalog {
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual))
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_upsert_object() {
         use dotenv::dotenv;
         use std::env;
@@ -770,7 +770,7 @@ mod test_catalog {
         assert!(res.is_ok())
     }
 
-    // #[actix_rt::test]
+    // #[tokio::test]
     async fn test_delete_object() {
         use dotenv::dotenv;
         use std::env;
@@ -788,7 +788,7 @@ mod test_catalog {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_object_retrieve_parameter_builder() {
         let expected = vec![
             ("include_related_objects".to_string(), false.to_string()),
@@ -804,7 +804,7 @@ mod test_catalog {
         assert_eq!(expected, actual);
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_retrieve_object() {
         use dotenv::dotenv;
         use std::env;
@@ -828,7 +828,7 @@ mod test_catalog {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_search_catalog_object_body_builder() {
         let expected = SearchCatalogObjectsBody {
             begin_time: Some("some time".to_string()),
@@ -854,7 +854,7 @@ mod test_catalog {
         assert_eq!(format!("{:?}",expected), format!("{:?}",actual));
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_search_objects() {
         use dotenv::dotenv;
         use std::env;
@@ -880,7 +880,7 @@ mod test_catalog {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_catalog_info() {
         use dotenv::dotenv;
         use std::env;
@@ -896,7 +896,7 @@ mod test_catalog {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_search_catalog_items_body_builder() {
         let expected = SearchCatalogItemsBody {
             category_ids: None,
@@ -918,7 +918,7 @@ mod test_catalog {
         assert_eq!(format!("{:?}",expected), format!("{:?}",actual));
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_search_items() {
         use dotenv::dotenv;
         use std::env;

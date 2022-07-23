@@ -87,14 +87,15 @@ impl<'a> Cards<'a> {
     ///
     /// # Example
     /// ```rust
-    ///use square_ox::{
-    ///    response::{SquareResponse, ResponseError},
-    ///    client::SquareClient
-    ///    };
-    /// use square_ox::api::cards::{CardBuilder, CardWrapper};
+    ///  use square_ox::{
+    ///     response::{SquareResponse, ResponseError},
+    ///     client::SquareClient,
+    ///     api::cards::CardWrapper,
+    ///     builder::Builder
+    ///  };
     ///
     /// async {
-    ///     let card = CardBuilder::new()
+    ///     let card = Builder::from(CardWrapper::default())
     ///     .source_id("some_id".to_string())
     ///     .customer_id("some_id".to_string())
     ///     .build()
@@ -277,7 +278,7 @@ impl<T: ParentBuilder> Builder<CardWrapper, T> {
 mod test_cards {
     use super::*;
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_cards_query_builder() {
         let expected = vec![
             ("cursor".to_string(), "dwcsdaw2390rec92".to_string()),
@@ -294,7 +295,7 @@ mod test_cards {
         assert_eq!(expected, actual)
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_cards() {
         use dotenv::dotenv;
         use std::env;
@@ -316,7 +317,7 @@ mod test_cards {
 
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_retrieve_card() {
         use dotenv::dotenv;
         use std::env;
@@ -333,7 +334,7 @@ mod test_cards {
 
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_card_builder() {
         let expected = CardWrapper {
             card: Card {
@@ -374,7 +375,7 @@ mod test_cards {
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
     }
 
-    // #[actix_rt::test]
+    // #[tokio::test]
     async fn test_create_card() {
         use dotenv::dotenv;
         use std::env;
@@ -415,7 +416,7 @@ mod test_cards {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_disable_card() {
         use dotenv::dotenv;
         use std::env;

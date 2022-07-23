@@ -68,7 +68,7 @@ impl<'a> Locations<'a> {
     ///     };
     ///
     ///  async {
-    ///     let location = Builder::from(LocationCreationWrapper)
+    ///     let location = Builder::from(LocationCreationWrapper::default())
     ///         .name("The Foo Bar".to_string())
     ///         .build()
     ///         .await
@@ -103,7 +103,7 @@ impl<'a> Locations<'a> {
     ///     };
     ///
     ///  async {
-    ///     let location = Builder::from(LocationCreationWrapper)
+    ///     let location = Builder::from(LocationCreationWrapper::default())
     ///         .name("The New Foo Bar".to_string())
     ///         .build()
     ///         .await
@@ -383,7 +383,7 @@ impl<T: ParentBuilder> Builder<LocationCreationWrapper, T> {
 mod test_locations {
     use super::*;
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_locations() {
         use dotenv::dotenv;
         use std::env;
@@ -398,7 +398,7 @@ mod test_locations {
         assert!(result.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_location_builder() {
         let expected = Location {
             id: None,
@@ -442,7 +442,7 @@ mod test_locations {
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual.unwrap().location))
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_location_builder_fail() {
         let res = Builder::from(LocationCreationWrapper::default())
             .facebook_url("some_url".to_string())
@@ -453,7 +453,7 @@ mod test_locations {
         assert!(res.is_err());
     }
 
-    // #[actix_rt::test]
+    // #[tokio::test]
     async fn test_create_location() {
         use dotenv::dotenv;
         use std::env;
@@ -502,7 +502,7 @@ mod test_locations {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_update_location() {
         use dotenv::dotenv;
         use std::env;
@@ -551,7 +551,7 @@ mod test_locations {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_retrieve_location() {
         use dotenv::dotenv;
         use std::env;

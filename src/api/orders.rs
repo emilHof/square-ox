@@ -7,7 +7,7 @@ use crate::client::SquareClient;
 use crate::errors::{SquareError, ValidationError};
 use crate::objects::{Customer, Order, OrderReward, OrderServiceCharge, SearchOrdersQuery};
 use crate::response::SquareResponse;
-use crate::builder::{Builder, ParentBuilder, Nil, Validate, BackIntoBuilder, AddField};
+use crate::builder::{Builder, ParentBuilder, Validate, BackIntoBuilder, AddField};
 
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
@@ -361,19 +361,11 @@ impl AddField<OrderReward> for OrderCalculateBody {
 
 #[cfg(test)]
 mod test_orders {
-    use crate::api::bookings::QueryBody;
     use crate::builder::Nil;
     use crate::objects;
     use crate::objects::enums::{Currency, OrderServiceChargeCalculationPhase, SortOrder, SearchOrdersSortField};
     use crate::objects::{Money, SearchOrdersSort};
     use super::*;
-
-    #[test]
-    fn test_builder_from_create_order_body() {
-        let expected = Builder{ body: CreateOrderBody::default(), parent_builder: None::<Nil> };
-
-        let actual = Builder::from(CreateOrderBody::default());
-    }
 
     #[tokio::test]
     async fn test_create_order_body_builder() {
@@ -450,7 +442,7 @@ mod test_orders {
 
     #[tokio::test]
     async fn test_create_order_body_builder_fail() {
-        let mut actual = Builder::from(CreateOrderBody::default())
+        let actual = Builder::from(CreateOrderBody::default())
             .location_id("location_id".to_string())
             .customer_id("customer_id".to_string())
             .sub_builder_from(OrderServiceCharge::default())
@@ -544,7 +536,7 @@ mod test_orders {
             return_entries: Some(true)
         };
 
-        let mut actual = Builder::from(SearchOrderBody::default())
+        let actual = Builder::from(SearchOrderBody::default())
             .add_location_id("e23icos".to_string())
             .add_location_id("daiooaa".to_string())
             .add_location_id("pßasmxaskm".to_string())

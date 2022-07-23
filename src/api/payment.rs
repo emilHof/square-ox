@@ -352,6 +352,26 @@ impl Validate for PaymentRequest {
     }
 }
 
+impl<T: ParentBuilder> Builder<PaymentRequest, T> {
+    pub fn source_id(mut self, source_id: String) -> Self {
+        self.body.source_id = Some(source_id);
+
+        self
+    }
+
+    pub fn amount(mut self, amount: i64, currency: Currency) -> Self {
+        self.body.amount_money = Some(Money { amount: Some(amount), currency });
+
+        self
+    }
+
+    pub fn verification_token(mut self, token: String) -> Self {
+        self.body.verification_token = Some(token);
+
+        self
+    }
+}
+
 // -------------------------------------------------------------------------------------------------
 // CancelByIdempotencyKey implementation
 // -------------------------------------------------------------------------------------------------
@@ -424,7 +444,7 @@ struct CompletePaymentBody {
 mod test_payments {
     use super::*;
     
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_create_payment() {
         use dotenv::dotenv;
         use std::env;
@@ -465,7 +485,7 @@ mod test_payments {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_payments_parameters_builder() {
         let expected = vec![
             ("sort_order".to_string(), "ASC".to_string()),
@@ -485,7 +505,7 @@ mod test_payments {
         assert_eq!(expected, actual);
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_payments() {
         use dotenv::dotenv;
         use std::env;
@@ -505,7 +525,7 @@ mod test_payments {
         assert!(res.is_ok())
     }
 
-    // #[actix_rt::test]
+    // #[tokio::test]
     async fn test_cancel_by_idempotency_key() {
         use dotenv::dotenv;
         use std::env;
@@ -521,7 +541,7 @@ mod test_payments {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_get_payment() {
         use dotenv::dotenv;
         use std::env;
@@ -537,7 +557,7 @@ mod test_payments {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_update_payment_body_builder() {
         let expected = UpdatePaymentBody {
             idempotency_key: None,
@@ -597,7 +617,7 @@ mod test_payments {
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
     }
 
-    // #[actix_rt::test]
+    // #[tokio::test]
     async fn test_update_payment() {
         use dotenv::dotenv;
         use std::env;
@@ -658,7 +678,7 @@ mod test_payments {
         assert!(res.is_ok())
     }
 
-    // #[actix_rt::test]
+    // #[tokio::test]
     async fn test_cancel_payment() {
         use dotenv::dotenv;
         use std::env;
@@ -675,7 +695,7 @@ mod test_payments {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_complete_payment() {
         use dotenv::dotenv;
         use std::env;

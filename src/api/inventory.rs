@@ -6,7 +6,7 @@ use crate::client::SquareClient;
 use crate::api::{Verb, SquareAPI};
 use crate::errors::{InventoryChangeBodyBuildError, SquareError, ValidationError};
 use crate::response::SquareResponse;
-use crate::objects::{CatalogObject, InventoryAdjustment, InventoryChange, InventoryPhysicalCount,
+use crate::objects::{CatalogObject, InventoryChange, InventoryPhysicalCount,
                      InventoryTransfer};
 use crate::objects::enums::InventoryChangeType;
 
@@ -160,7 +160,7 @@ mod test_inventory {
     use crate::objects::enums::InventoryState;
     use super::*;
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_retrieve_count() {
         use dotenv::dotenv;
         use std::env;
@@ -181,7 +181,7 @@ mod test_inventory {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_change_body_builder() {
         let expected = InventoryChangeBody {
             idempotency_key: None,
@@ -239,7 +239,7 @@ mod test_inventory {
         assert_eq!(format!("{:?}",expected), format!("{:?}",actual));
     }
 
-    // #[actix_rt::test]
+    // #[tokio::test]
     async fn test_batch_change() {
         use dotenv::dotenv;
         use std::env;

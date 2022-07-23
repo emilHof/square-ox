@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 /// [Square API](https://developer.squareup.com).
 pub struct SquareResponse {
     #[serde(flatten)]
-    pub response: crate::objects::Response,
+    pub response: Option<crate::objects::Response>,
     #[serde(flatten)]
     pub opt_response01: Option<crate::objects::Response>,
     #[serde(flatten)]

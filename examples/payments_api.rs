@@ -1,11 +1,12 @@
 use square_ox::client::SquareClient;
 use square_ox::errors::PaymentBuildError;
 use square_ox::objects::enums::Currency;
-use square_ox::api::payment::PaymentBuilder;
+use square_ox::api::payment::PaymentRequest;
 
 use actix_web::{middleware::Logger, post, web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
 use std::env;
+use square_ox::builder::Builder;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -79,7 +80,7 @@ async fn process_payment(
     let amount = payment_form.get_price() * 100;
 
     // Build a payment using the information from the form
-    let payment = match PaymentBuilder::new()
+    let payment = match Builder::from(PaymentRequest::default())
         .amount(amount as i64, Currency::GBP)
         .source_id(payment_form.source_id)
         .build()
