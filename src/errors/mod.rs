@@ -90,3 +90,36 @@ pub struct CustomerDeleteBuildError;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct LocationBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CardBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreateOrderRequestBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreatePaymentLinkBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PaymentLinkBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ObjectUpsertRequestBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct InventoryChangeBodyBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DeviceOptionsBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreateTerminalCheckoutBodyBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CreateTerminalRefundBodyBuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct BuildError;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ValidationError;

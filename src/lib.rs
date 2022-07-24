@@ -7,7 +7,7 @@
 //! projects `Cargo.toml`.
 //! ```toml
 //! [dependencies]
-//! square-rs = "0.3.0"
+//! square-ox = "0.1.0"
 //! ```
 //! # Examples
 //! For examples of how this library can be used, see the `examples` directory in the repository.
@@ -21,3 +21,4 @@ pub mod api;
 pub mod errors;
 pub mod response;
 pub mod objects;
+pub mod builder;

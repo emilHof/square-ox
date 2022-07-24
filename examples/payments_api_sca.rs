@@ -1,12 +1,13 @@
-use square_rs::client::SquareClient;
-use square_rs::errors::PaymentBuildError;
-use square_rs::objects::enums::Currency;
-use square_rs::api::payment::PaymentBuilder;
+use square_ox::client::SquareClient;
+use square_ox::errors::PaymentBuildError;
+use square_ox::objects::enums::Currency;
+use square_ox::api::payment::PaymentRequest;
 
 use actix_web::{middleware::Logger, post, web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
 use std::env;
 use dotenv::dotenv;
+use square_ox::builder::Builder;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -81,7 +82,7 @@ async fn process_payment(
     let amount = payment_form.get_price() * 100;
 
     // Buld a payment using the infomation from the form
-    let payment = PaymentBuilder::new()
+    let payment = Builder::from(PaymentRequest::default())
         .amount(amount as i64, Currency::GBP)
         .source_id(payment_form.source_id);
 
@@ -96,7 +97,7 @@ async fn process_payment(
     };
 
     // Create the payment and check the response
-    match client.create_payment(payment).await {
+    match client.payments().create(payment).await {
         Ok(r) => HttpResponse::Ok()
             .set_header("Access-Control-Allow-Origin", "*")
             .json(r),

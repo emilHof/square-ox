@@ -17,12 +17,28 @@ use serde::{Deserialize, Serialize};
 pub struct SquareResponse {
     #[serde(flatten)]
     pub response: Option<crate::objects::Response>,
+    #[serde(flatten)]
+    pub opt_response01: Option<crate::objects::Response>,
+    #[serde(flatten)]
+    pub opt_response02: Option<crate::objects::Response>,
+    #[serde(flatten)]
+    pub opt_response03: Option<crate::objects::Response>,
     #[serde(default)]
     pub errors: Option<Vec<ResponseError>>,
     #[serde(default)]
     pub cursor: Option<String>,
     #[serde(default)]
     pub id_mapping: Option<Vec<(String, String)>>,
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub cancelled_order_id: Option<String>,
+    #[serde(default)]
+    pub deleted_object_ids: Option<Vec<String>>,
+    #[serde(default)]
+    pub deleted_at: Option<String>,
+    #[serde(default)]
+    pub latest_time: Option<String>,
 }
 
 

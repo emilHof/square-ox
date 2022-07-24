@@ -10,7 +10,7 @@ application you are wanting to use.
 ```rust
  const ACCESS_TOKEN:&str = "your_square_access_token";
 
-use square_rs::client::SquareClient;
+use square_ox::client::SquareClient;
 let client = SquareClient::new(ACCESS_TOKEN);
 ```
 After creating a client you will be able to use all of the clients methods.
@@ -55,7 +55,7 @@ impl SquareClient {
     /// # Example: Create a new client
     /// ```
     /// const ACCESS_TOKEN:&str = "your_square_access_token";
-    /// use square_rs::client::SquareClient;
+    /// use square_ox::client::SquareClient;
     ///
     /// let client = SquareClient::new(ACCESS_TOKEN);
     /// ```
@@ -75,7 +75,7 @@ impl SquareClient {
     /// ```
     /// const ACCESS_TOKEN:&str = "your_square_access_token";
     ///
-    /// use square_rs::client::SquareClient;
+    /// use square_ox::client::SquareClient;
     /// let client = SquareClient::new(ACCESS_TOKEN).production();
     /// ```
     pub fn production(self) -> Self {
@@ -85,21 +85,28 @@ impl SquareClient {
         }
     }
 
-    /// Sends a request to a given [SquareEndpoint](SquareEndpoint)
+    /// Sends a request to a given [SquareAPI](crate::api::SquareAPI)
     /// # Arguments
-    /// * `api` - The [SquareEndpoint](crate::api::SquareEndpoint) to send the request to
+    /// * `api` - The [SquareAPI](crate::api::SquareAPI) to send the request to
     /// * `body` - The json that will be included in the request.
     /// All types that meet the conditions to be deserialized to JSON are accepted.
     ///
     /// # Example:
     /// ```
-    /// async {
-    ///     use square_rs::{api::{Verb, SquareAPI, payment}, client};
+    /// use env_logger::Builder;
+    ///  async {
+    ///     use square_ox::{
+    ///         api::{
+    ///             Verb, SquareAPI, payment::PaymentRequest
+    ///         },
+    ///         client,
+    ///         builder::Builder
+    ///     };
     ///     const ACCESS_TOKEN:&str = "your_square_access_token";
-    ///     let payment = payment::PaymentBuilder::new().build().await;
+    ///     let payment = Builder::from(PaymentRequest::default()).build().await;
     ///
     ///     let client = client::SquareClient::new(ACCESS_TOKEN);
-    ///     client.request( Verb::POST, SquareAPI::Payments, Some(&payment), None).await.expect("");
+    ///     client.request( Verb::POST, SquareAPI::Payments("".to_string()), Some(&payment), None).await.expect("");
     /// };
     ///
     /// ```
@@ -126,6 +133,8 @@ impl SquareClient {
         // Create a client with the appropriate headers
         let client = Client::builder().default_headers(headers).build()?;
 
+        println!("url: {}", &url);
+
         // Send the request to the Square API, and get the response
         let mut builder = match verb {
             Verb::GET => client.get(&url),
@@ -146,15 +155,16 @@ impl SquareClient {
         }
 
         // Deserialize the response into a SquareResponse
-        // let response = builder.send().await?.json().await?;
+        // let response: SquareResponse = builder.send().await?.json().await?;
 
         // TODO remove the debug code!
         let response = builder.send().await?.text().await?;
 
-        println!("{}", response);
+        println!("{:?}", response);
 
         let response: SquareResponse = serde_json::from_str(&response)?;
 
+        println!("{:?}", response);
 
         // handle the possibility of an error being returned by the Square API
         if response.errors.is_some() && response.errors.as_ref().unwrap().len() > 0 {

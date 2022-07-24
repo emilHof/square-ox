@@ -1,12 +1,12 @@
-use square_rs::client::SquareClient;
-use square_rs::errors::SearchQueryBuildError;
-use square_rs::api::bookings::SearchQueryBuilder;
+use square_ox::client::SquareClient;
+use square_ox::api::bookings::SearchAvailabilityQuery;
 
 use actix_web::{middleware::Logger, post, get, web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
 use std::env;
 use dotenv;
-use square_rs::objects::{Response, Address, Location};
+use square_ox::builder::Builder;
+use square_ox::objects::{Response, Address};
 
 
 #[actix_web::main]
@@ -66,7 +66,7 @@ async fn list_availability(
 
     let query_params = form.into_inner();
 
-    let search_query = match SearchQueryBuilder::new()
+    let search_query = match Builder::from(SearchAvailabilityQuery::default())
         .location_id(location_id.clone())
         .start_at_range(query_params.start_at, query_params.end_at)
         .segment_filters(query_params.segment_id)
@@ -80,7 +80,7 @@ async fn list_availability(
         }
     };
 
-    match client.search_availability(search_query).await {
+    match client.bookings().search_availability(search_query).await {
         Ok(r) => HttpResponse::Ok()
             .set_header("Access-Control-Allow-Origin", "*")
             .json(r),
@@ -112,7 +112,7 @@ async fn list_locations(
 
     let client = &state.client;
 
-    match client.list_locations().await {
+    match client.locations().list().await {
         Ok(r) => {
             println!("{:?}", &r);
             match r.response.unwrap() {
@@ -121,7 +121,7 @@ async fn list_locations(
                         .set_header("Access-Control-Allow-Origin", "*")
                         .json(FrontendLocationsSchema {
                             locations: locations.into_iter().map(|location| FrontendLocationSchema {
-                                name: location.name,
+                                name: location.name.unwrap(),
                                 address: location.address.unwrap(),
                                 capabilities: location.capabilities,
                                 website_url: location.website_url,
