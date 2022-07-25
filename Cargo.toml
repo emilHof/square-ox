@@ -6,10 +6,15 @@ edition = "2018"
 readme = "README.md"
 license-file = "LICENSE"
 repository = "https://github.com/emilHof/square-ox"
-categories = ["api-bindings","asynchronous", "web-programming::http-client"]
+categories = ["api-bindings", "asynchronous", "web-programming::http-client"]
 keywords = ["square", "finance", "payment", "card-processing"]
-description = "An easy and idiomatic way of interacting with the Square API, following standard Rust conventions."
-exclude = ["examples/**/*"]
+description = "An easy, idiomatic, and flexible way of interacting with the Square API, following Rust conventions."
+exclude = [
+    "examples/**/*",
+    ".env",
+    ".idea/**",
+    "oxidized-sqaure.md"
+]
 
 
 
