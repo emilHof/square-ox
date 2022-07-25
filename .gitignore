@@ -2,3 +2,5 @@ target/**
 **/.DS_Store
 **/Cargo.lock
 .idea/**
+.env
+oxidized-square.md

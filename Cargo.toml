@@ -11,9 +11,6 @@ keywords = ["square", "finance", "payment", "card-processing"]
 description = "An easy, idiomatic, and flexible way of interacting with the Square API, following Rust conventions."
 exclude = [
     "examples/**/*",
-    ".env",
-    ".idea/**",
-    "oxidized-sqaure.md"
 ]
 
 
