@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::env;
 use dotenv;
 use square_ox::builder::Builder;
+use square_ox::errors::ValidationError;
 use square_ox::objects::{Response, Address};
 
 
@@ -86,7 +87,7 @@ async fn list_availability(
             .json(r),
         Err(_) => {
             println!("Failed to create payment");
-            HttpResponse::BadRequest().json(SearchQueryBuildError)
+            HttpResponse::BadRequest().json(ValidationError)
         }
     }
 }
