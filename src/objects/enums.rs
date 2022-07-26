@@ -335,7 +335,7 @@ pub enum CatalogCustomAttributeDefinitionType {
 pub enum CatalogItemProductType {
     Regular,
     GiftCard,  /// Deprecated
-    AppointmentServices,
+    AppointmentsService,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

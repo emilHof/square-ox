@@ -8,7 +8,7 @@ use crate::errors::{InventoryChangeBodyBuildError, SquareError, ValidationError}
 use crate::response::SquareResponse;
 use crate::objects::{CatalogObject, InventoryChange, InventoryPhysicalCount,
                      InventoryTransfer};
-use crate::objects::enums::InventoryChangeType;
+use crate::objects::enums::{InventoryChangeType, InventoryState};
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -116,6 +116,19 @@ impl<'a> Inventory<'a> {
             None,
         ).await
     }
+
+    /// Returns current counts for the provided [CatalogObject](CatalogObject)s at the requested
+    /// [Location](Location)s.
+    /// [Open in API Reference](https://developer.squareup.com/reference/square/inventory/retrieve-inventory-physical-count)
+    pub async fn batch_retrieve_counts(self, body: BatchRetrieveCounts)
+                                -> Result<SquareResponse, SquareError>{
+        self.client.request(
+            Verb::POST,
+            SquareAPI::Inventory("/counts/batch-retrieve".to_string()),
+            Some(&body),
+            None,
+        ).await
+    }
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -151,6 +164,50 @@ impl<T: ParentBuilder> Builder<InventoryChangeBody, T> {
 impl AddField<InventoryChange> for InventoryChangeBody {
     fn add_field(&mut self, field: InventoryChange) {
         self.changes.push(field);
+    }
+}
+
+
+// -------------------------------------------------------------------------------------------------
+// BatchRetrieveCounts builder implementation
+// -------------------------------------------------------------------------------------------------
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+pub struct BatchRetrieveCounts {
+    catalog_object_ids: Vec<String>,
+    cursor: Option<String>,
+    limit: Option<i32>,
+    location_ids: Vec<String>,
+    states: Option<Vec<InventoryState>>,
+    updated_after: Option<String>,
+}
+
+impl Validate for BatchRetrieveCounts {
+    fn validate(self) -> Result<Self, ValidationError> where Self: Sized {
+        if self.location_ids.len() > 0 && self.catalog_object_ids.len() > 0 {
+            Ok(self)
+        } else {
+            Err(ValidationError)
+        }
+    }
+}
+
+impl<T: ParentBuilder> Builder<BatchRetrieveCounts, T> {
+    pub fn object_ids(mut self, ids: Vec<String>) -> Self {
+        self.body.catalog_object_ids = ids;
+
+        self
+    }
+
+    pub fn location_ids(mut self, ids: Vec<String>) -> Self {
+        self.body.location_ids = ids;
+
+        self
+    }
+
+    pub fn add_location_id(mut self, id: String) -> Self {
+        self.body.location_ids.push(id);
+
+        self
     }
 }
 
