@@ -25,7 +25,7 @@ impl SquareClient {
 }
 
 pub struct Locations<'a> {
-    pub client: &'a SquareClient,
+    client: &'a SquareClient,
 }
 
 impl<'a> Locations<'a> {
