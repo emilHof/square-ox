@@ -353,6 +353,8 @@ pub struct CatalogObject {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub item_data: Option<CatalogItem>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub item_variation_data: Option<CatalogItemVariation>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub item_option_data: Option<CatalogObjectOption>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub measurement_unit_data: Option<CatalogMeasurementUnit>,

@@ -1,8 +1,6 @@
 /*!
 Catalog functionality of the [Square API](https://developer.squareup.com).
  */
-
-use std::sync::TryLockError::Poisoned;
 use crate::client::SquareClient;
 use crate::api::{Verb, SquareAPI};
 use crate::errors::{ObjectUpsertRequestBuildError, SquareError, ValidationError};
@@ -74,6 +72,21 @@ impl<'a> Catalog<'a> {
             SquareAPI::Catalog(format!("/object/{}", object_id)),
             None::<&ObjectUpsertRequest>,
             parameters,
+        ).await
+    }
+
+    /// Returns a set of [CatalogObject](CatalogObject)s based on the provided ID.
+    /// [Open in API Reference](https://developer.squareup.com/reference/square/catalog/batch-retrieve-catalog-objects)
+    pub async fn batch_retrieve_object(
+        self,
+        body: BatchRetrieveObjects
+    )
+        -> Result<SquareResponse, SquareError> {
+        self.client.request(
+            Verb::POST,
+            SquareAPI::Catalog("/batch-retrieve".to_string()),
+            Some(&body),
+            None,
         ).await
     }
 
@@ -425,6 +438,59 @@ impl<T: ParentBuilder> Builder<SearchCatalogItemsBody, T> {
     }
 }
 
+// -------------------------------------------------------------------------------------------------
+// BatchRetrieveObjects builder implementation
+// -------------------------------------------------------------------------------------------------
+#[derive(Clone, Debug, Serialize, Default)]
+pub struct BatchRetrieveObjects {
+    pub object_ids: Vec<String>,
+    pub catalog_version: Option<i32>,
+    pub include_deleted_objects: Option<bool>,
+    pub include_related_objects: Option<bool>,
+}
+
+impl Validate for BatchRetrieveObjects {
+    fn validate(self) -> Result<Self, ValidationError> where Self: Sized {
+        if self.object_ids.len() > 0 {
+            Ok(self)
+        } else {
+            Err(ValidationError)
+        }
+    }
+}
+
+impl<T: ParentBuilder> Builder<BatchRetrieveObjects, T> {
+    pub fn object_ids(mut self, ids: Vec<String>) -> Self {
+        self.body.object_ids = ids;
+        
+        self
+    }
+    
+    pub fn add_object_id(mut self, id: String) -> Self {
+        self.body.object_ids.push(id);
+        
+        self
+    }
+    
+    pub fn catalog_version(mut self, version: i32) -> Self {
+        self.body.catalog_version = Some(version);
+        
+        self
+    }
+
+    pub fn include_deleted_objects(mut self) -> Self {
+        self.body.include_deleted_objects = Some(true);
+
+        self
+    }
+
+    pub fn include_related_objects(mut self) -> Self {
+        self.body.include_related_objects = Some(true);
+
+        self
+    }
+}
+
 #[cfg(test)]
 mod test_catalog {
     use crate::objects::{CatalogItem, CatalogItemVariation, CatalogObjectVariation, Money};
@@ -548,6 +614,7 @@ mod test_catalog {
                         }
                     ])
                 }),
+                item_variation_data: None,
                 item_option_data: None,
                 measurement_unit_data: None,
                 modifier_data: None,
@@ -745,6 +812,7 @@ mod test_catalog {
                         }
                     ])
                 }),
+                item_variation_data: None,
                 item_option_data: None,
                 measurement_unit_data: None,
                 modifier_data: None,
@@ -942,6 +1010,27 @@ mod test_catalog {
         let res = sut.catalog()
             .search_items(input)
             .await;
+
+        assert!(res.is_ok())
+    }
+    
+    #[tokio::test]
+    async fn test_batch_retrieve_objects() {
+        use dotenv::dotenv;
+        use std::env;
+
+        dotenv().ok();
+        let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set");
+        let sut = SquareClient::new(&access_token);
+        
+        let input = BatchRetrieveObjects {
+            object_ids: vec!["6362XBFOY6N6F2J42ZE3JC5R".to_string(), "H4JPRP3IFQZKCW4R3CTKYOTO".to_string()],
+            catalog_version: None,
+            include_deleted_objects: None,
+            include_related_objects: None
+        };
+
+        let res = sut.catalog().batch_retrieve_object(input).await;
 
         assert!(res.is_ok())
     }
