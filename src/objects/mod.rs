@@ -353,6 +353,8 @@ pub struct CatalogObject {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub item_data: Option<CatalogItem>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub item_variation_data: Option<CatalogItemVariation>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub item_option_data: Option<CatalogObjectOption>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub measurement_unit_data: Option<CatalogMeasurementUnit>,
@@ -655,7 +657,7 @@ pub struct CatalogItem {
     pub modifier_list_info: Option<Vec<CatalogItemModifierListInfo>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    #[serde(rename="type", default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub product_type: Option<CatalogItemProductType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub skip_modifier_scree: Option<bool>,

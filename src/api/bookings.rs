@@ -717,7 +717,7 @@ mod test_bookings {
         assert!(res.is_err());
     }
 
-    #[tokio::test]
+    // #[tokio::test]
     async fn test_create_booking() {
         use dotenv::dotenv;
         use std::env;
