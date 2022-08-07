@@ -85,18 +85,25 @@ impl SquareClient {
         }
     }
 
-    /// Sends a request to a given [SquareEndpoint](SquareEndpoint)
+    /// Sends a request to a given [SquareAPI](crate::api::SquareAPI)
     /// # Arguments
-    /// * `api` - The [SquareEndpoint](crate::api::SquareEndpoint) to send the request to
+    /// * `api` - The [SquareAPI](crate::api::SquareAPI) to send the request to
     /// * `body` - The json that will be included in the request.
     /// All types that meet the conditions to be deserialized to JSON are accepted.
     ///
     /// # Example:
     /// ```
-    /// async {
-    ///     use square_ox::{api::{Verb, SquareAPI, payment}, client};
+    /// use env_logger::Builder;
+    ///  async {
+    ///     use square_ox::{
+    ///         api::{
+    ///             Verb, SquareAPI, payment::PaymentRequest
+    ///         },
+    ///         client,
+    ///         builder::Builder
+    ///     };
     ///     const ACCESS_TOKEN:&str = "your_square_access_token";
-    ///     let payment = payment::PaymentBuilder::new().build().await;
+    ///     let payment = Builder::from(PaymentRequest::default()).build().await;
     ///
     ///     let client = client::SquareClient::new(ACCESS_TOKEN);
     ///     client.request( Verb::POST, SquareAPI::Payments("".to_string()), Some(&payment), None).await.expect("");
@@ -148,7 +155,7 @@ impl SquareClient {
         }
 
         // Deserialize the response into a SquareResponse
-        // let response = builder.send().await?.json().await?;
+        // let response: SquareResponse = builder.send().await?.json().await?;
 
         // TODO remove the debug code!
         let response = builder.send().await?.text().await?;

@@ -4,7 +4,7 @@ Customers functionality of the [Square API](https://developer.squareup.com).
 
 use crate::client::SquareClient;
 use crate::api::{Verb, SquareAPI};
-use crate::errors::{SquareError, LocationBuildError};
+use crate::errors::{SquareError, LocationBuildError, ValidationError};
 use crate::response::SquareResponse;
 use crate::objects::{
     Address, BusinessHours, BusinessHoursPeriod, Coordinates, Location, TaxIds,
@@ -14,6 +14,7 @@ use crate::objects::{
 };
 
 use serde::{Deserialize, Serialize};
+use crate::builder::{Builder, ParentBuilder, Validate};
 
 impl SquareClient {
     pub fn locations(&self) -> Locations {
@@ -24,7 +25,7 @@ impl SquareClient {
 }
 
 pub struct Locations<'a> {
-    pub client: &'a SquareClient,
+    client: &'a SquareClient,
 }
 
 impl<'a> Locations<'a> {
@@ -56,18 +57,18 @@ impl<'a> Locations<'a> {
 
     /// Create a new [Location](Location) at the [Square API](https://developer.squareup.com).
     /// # Arguments
-    /// * `new_location` - A [LocationCreationWrapper](LocationCreationWrapper) that is build by the
-    /// the [LocationBuilder](LocationBuilder).
+    /// * `new_location` - A [LocationCreationWrapper](LocationCreationWrapper).
     /// # Example
     /// ```rust
-    /// use square_ox::{
-    ///    response::{SquareResponse, ResponseError},
-    ///    client::SquareClient,
-    ///    api::locations::LocationBuilder
-    ///    };
+    ///use square_ox::{
+    ///         response::{SquareResponse, ResponseError},
+    ///         client::SquareClient,
+    ///         builder::Builder,
+    ///         api::locations::LocationCreationWrapper
+    ///     };
     ///
     ///  async {
-    ///     let location = LocationBuilder::new()
+    ///     let location = Builder::from(LocationCreationWrapper::default())
     ///         .name("The Foo Bar".to_string())
     ///         .build()
     ///         .await
@@ -90,19 +91,19 @@ impl<'a> Locations<'a> {
 
     /// Update an existing [Location](Location) at the [Square API](https://developer.squareup.com).
     /// # Arguments
-    /// * `updated_location` - A [LocationCreationWrapper](LocationCreationWrapper) that is build by the
-    /// the [LocationBuilder](LocationBuilder).
+    /// * `updated_location` - A [LocationCreationWrapper](LocationCreationWrapper).
     /// * `location_id` - The id of the location that is to be updated.
     /// # Example
     /// ```rust
-    /// use square_ox::{
-    ///    response::{SquareResponse, ResponseError},
-    ///    client::SquareClient,
-    ///    api::locations::LocationBuilder
-    ///    };
+    ///  use square_ox::{
+    ///         response::{SquareResponse, ResponseError},
+    ///         client::SquareClient,
+    ///         builder::Builder,
+    ///         api::locations::LocationCreationWrapper
+    ///     };
     ///
     ///  async {
-    ///     let location = LocationBuilder::new()
+    ///     let location = Builder::from(LocationCreationWrapper::default())
     ///         .name("The New Foo Bar".to_string())
     ///         .build()
     ///         .await
@@ -152,6 +153,9 @@ impl<'a> Locations<'a> {
     }
 }
 
+// -------------------------------------------------------------------------------------------------
+// LocationCreationWrapper builder implementation
+// -------------------------------------------------------------------------------------------------
 /// Build a  wrapping a [Location](Location)
 ///
 /// When passing a [Location](Location) to one of the request methods, they almost always must
@@ -164,8 +168,13 @@ impl<'a> Locations<'a> {
 ///
 /// # Example: Build a [LocationCreationWrapper](LocationCreationWrapper)
 /// ```
+/// use square_ox::{
+///     builder::Builder,
+///     api::locations::LocationCreationWrapper,
+/// };
+///
 /// async {
-///     let builder = square_rs::api::locations::LocationBuilder::new()
+///     let builder = Builder::from(LocationCreationWrapper::default())
 ///     .name("The Foo Bar".to_string())
 ///     .build()
 ///     .await;
@@ -176,70 +185,44 @@ pub struct LocationCreationWrapper {
     location: Location
 }
 
-/// The [LocationBuilder](LocationBuilder) facilitates the creation of a [Location](Location) object
-/// wrapped in a [LocationCreationWrapper](LocationCreationWrapper).
-#[derive(Default)]
-pub struct LocationBuilder {
-    pub name: Option<String>,
-    pub address: Option<Address>,
-    pub timezone: Option<String>,
-    pub capabilities: Option<Vec<String>>,
-    pub status: Option<LocationStatus>,
-    pub created_id: Option<String>,
-    pub coordinates: Option<Coordinates>,
-    pub country: Option<String>,
-    pub created_at: Option<String>,
-    pub currency: Option<Currency>,
-    pub description: Option<String>,
-    pub facebook_url: Option<String>,
-    pub full_format_logo_url: Option<String>,
-    pub logo_url: Option<String>,
-    pub instagram_username: Option<String>,
-    pub language_code: Option<String>,
-    pub mcc: Option<String>,
-    pub merchant_id: Option<String>,
-    pub phone_number: Option<String>,
-    pub pos_background_url: Option<String>,
-    pub tax_ids: Option<TaxIds>,
-    pub twitter_username: Option<String>,
-    pub type_name: Option<LocationType>,
-    pub business_hours: Option<BusinessHours>,
-    pub business_name: Option<String>,
-    pub business_email: Option<String>,
-    pub website_url: Option<String>,
+impl Validate for LocationCreationWrapper {
+    fn validate(self) -> Result<Self, ValidationError> where Self: Sized {
+        if self.location.name.is_some() {
+            Ok(self)
+        } else {
+            Err(ValidationError)
+        }
+
+    }
 }
 
-impl LocationBuilder {
-    pub fn new() -> Self {
-        Default::default()
-    }
-
+impl<T: ParentBuilder> Builder<LocationCreationWrapper, T> {
     pub fn name(mut self, name: String) -> Self {
-        self.name = Some(name);
+        self.body.location.name = Some(name);
 
         self
     }
 
     pub fn address(mut self, address: Address) -> Self {
-        self.address = Some(address);
+        self.body.location.address = Some(address);
 
         self
     }
 
     pub fn business_email(mut self, business_email: String) -> Self {
-        self.business_email = Some(business_email);
+        self.body.location.business_email = Some(business_email);
 
         self
     }
 
     /// Add individual [BusinessHoursPeriod](BusinessHoursPeriod)'s by the use of this method.
     pub fn add_business_hours_period(mut self, business_hours_period: BusinessHoursPeriod) -> Self {
-        match self.business_hours.take() {
+        match self.body.location.business_hours.take() {
             Some(mut business_hours) => {
                 business_hours.periods.push(business_hours_period);
-                self.business_hours = Some(business_hours);
+                self.body.location.business_hours = Some(business_hours);
             }
-            None => self.business_hours = Some(BusinessHours {
+            None => self.body.location.business_hours = Some(BusinessHours {
                 periods: vec![business_hours_period]
             })
         }
@@ -249,25 +232,25 @@ impl LocationBuilder {
 
     /// Add a complete [BusinessHours](BusinessHours) object by using this method.
     pub fn business_hours(mut self, business_hours: BusinessHours) -> Self {
-        self.business_hours = Some(business_hours);
+        self.body.location.business_hours = Some(business_hours);
 
         self
     }
 
     pub fn business_name(mut self, business_name: String) -> Self {
-        self.business_name = Some(business_name);
+        self.body.location.business_name = Some(business_name);
 
         self
     }
 
     /// Add an individual *capability* by the use of this method.
     pub fn add_capability(mut self, capability: String) -> Self {
-        match self.capabilities.take() {
+        match self.body.location.capabilities.take() {
             Some(mut capabilities) => {
                 capabilities.push(capability);
-                self.capabilities = Some(capabilities)
+                self.body.location.capabilities = Some(capabilities)
             }
-            None => self.capabilities = Some(vec![capability]),
+            None => self.body.location.capabilities = Some(vec![capability]),
         }
 
         self
@@ -276,189 +259,131 @@ impl LocationBuilder {
     /// Add multiple *capabilities* at once through this method. This method will overwrite all
     /// other *capabilities* that are already held by the [Location](Location) object.
     pub fn capabilities(mut self, capabilities: Vec<String>) -> Self {
-        self.capabilities = Some(capabilities);
+        self.body.location.capabilities = Some(capabilities);
 
         self
     }
 
     pub fn coordinates(mut self, coordinates: Coordinates) -> Self {
-        self.coordinates = Some(coordinates);
+        self.body.location.coordinates = Some(coordinates);
 
         self
     }
 
     pub fn country(mut self, country: String) -> Self {
-        self.country = Some(country);
+        self.body.location.country = Some(country);
 
         self
     }
 
     pub fn currency(mut self, currency: Currency) -> Self {
-        self.currency = Some(currency);
+        self.body.location.currency = Some(currency);
 
         self
     }
 
     pub fn description(mut self, description: String) -> Self {
-        self.description = Some(description);
+        self.body.location.description = Some(description);
 
         self
     }
 
     pub fn facebook_url(mut self, facebook_url: String) -> Self {
-        self.facebook_url = Some(facebook_url);
+        self.body.location.facebook_url = Some(facebook_url);
 
         self
     }
 
     pub fn full_format_logo_url(mut self, full_format_logo_url: String) -> Self {
-        self.full_format_logo_url = Some(full_format_logo_url);
+        self.body.location.full_format_logo_url = Some(full_format_logo_url);
 
         self
     }
 
     pub fn instagram_username(mut self, instagram_username: String) -> Self {
-        self.instagram_username = Some(instagram_username);
+        self.body.location.instagram_username = Some(instagram_username);
 
         self
     }
 
     pub fn language_code(mut self, language_code: String) -> Self {
-        self.language_code = Some(language_code);
+        self.body.location.language_code = Some(language_code);
 
         self
     }
 
     pub fn logo_url(mut self, logo_url: String) -> Self {
-        self.logo_url = Some(logo_url);
+        self.body.location.logo_url = Some(logo_url);
 
         self
     }
 
     pub fn mcc(mut self, mcc: String) -> Self {
-        self.mcc = Some(mcc);
+        self.body.location.mcc = Some(mcc);
 
         self
     }
 
     pub fn merchant_id(mut self, merchant_id: String) -> Self {
-        self.merchant_id = Some(merchant_id);
+        self.body.location.merchant_id = Some(merchant_id);
 
         self
     }
 
     pub fn phone_number(mut self, phone_number: String) -> Self {
-        self.phone_number = Some(phone_number);
+        self.body.location.phone_number = Some(phone_number);
 
         self
     }
 
     pub fn pos_background_url(mut self, pos_background_url: String) -> Self {
-        self.pos_background_url = Some(pos_background_url);
+        self.body.location.pos_background_url = Some(pos_background_url);
 
         self
     }
 
     pub fn status(mut self, status: LocationStatus) -> Self {
-        self.status = Some(status);
+        self.body.location.status = Some(status);
 
         self
     }
 
     pub fn tax_ids(mut self, tax_ids: TaxIds) -> Self {
-        self.tax_ids = Some(tax_ids);
+        self.body.location.tax_ids = Some(tax_ids);
 
         self
     }
 
     pub fn timezone(mut self, timezone: String) -> Self {
-        self.timezone = Some(timezone);
+        self.body.location.timezone = Some(timezone);
 
         self
     }
 
     pub fn twitter_username(mut self, twitter_username: String) -> Self {
-        self.twitter_username = Some(twitter_username);
+        self.body.location.twitter_username = Some(twitter_username);
 
         self
     }
 
     pub fn location_type(mut self, location_type: LocationType) -> Self {
-        self.type_name = Some(location_type);
+        self.body.location.type_name = Some(location_type);
 
         self
     }
 
     pub fn website_url(mut self, website_url: String) -> Self {
-        self.website_url = Some(website_url);
+        self.body.location.website_url = Some(website_url);
 
         self
     }
-
-    /// Build a [LocationCreationWrapper](LocationCreationWrapper) wrapping a [Location](Location)
-    ///
-    /// When passing a [Location](Location) to one of the request methods, they almost always must
-    /// be wrapped within a [LocationCreationWrapper](LocationCreationWrapper) to adhere to the
-    /// [Square API](https://developer.squareup.com) contract.
-    ///
-    /// A [Location](Location) must have a name upon creation, otherwise it is not seen as a valid
-    /// new [Location](Location).
-    /// * `.name()`
-    ///
-    /// # Example: Build a [LocationCreationWrapper](LocationCreationWrapper)
-    /// ```
-    /// async {
-    ///     let builder = square_ox::api::locations::LocationBuilder::new()
-    ///     .name("The Foo Bar".to_string())
-    ///     .build()
-    ///     .await;
-    /// };
-    /// ```
-    pub async fn build(mut self) -> Result<LocationCreationWrapper, LocationBuildError> {
-        if let Some(name) = self.name.take() {
-            Ok( LocationCreationWrapper {
-                location: Location {
-                    id: None,
-                    name,
-                    business_email: None,
-                    address: self.address,
-                    timezone: self.timezone,
-                    capabilities: self.capabilities,
-                    status: self.status,
-                    created_id: self.created_id,
-                    coordinates: self.coordinates,
-                    country: self.country,
-                    created_at: self.created_at,
-                    currency: self.currency,
-                    description: self.description,
-                    facebook_url: self.facebook_url,
-                    full_format_logo_url: self.full_format_logo_url,
-                    logo_url: self.logo_url,
-                    instagram_username: self.instagram_username,
-                    language_code: self.language_code,
-                    mcc: self.mcc,
-                    merchant_id: self.merchant_id,
-                    phone_number: self.phone_number,
-                    pos_background_url: self.pos_background_url,
-                    tax_ids: self.tax_ids,
-                    twitter_username: self.twitter_username,
-                    type_name: self.type_name,
-                    business_hours: self.business_hours,
-                    business_name: self.business_name,
-                    website_url: self.website_url
-            }})
-        } else {
-            Err(LocationBuildError)
-        }
-    }
 }
-
 
 #[cfg(test)]
 mod test_locations {
     use super::*;
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_locations() {
         use dotenv::dotenv;
         use std::env;
@@ -473,11 +398,11 @@ mod test_locations {
         assert!(result.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_location_builder() {
         let expected = Location {
             id: None,
-            name: "New Test Location".to_string(),
+            name: Some("New Test Location".to_string()),
             business_email: None,
             address: None,
             timezone: None,
@@ -505,7 +430,7 @@ mod test_locations {
             business_name: None,
             website_url: None
         };
-        let actual = LocationBuilder::new()
+        let actual = Builder::from(LocationCreationWrapper::default())
             .name("New Test Location".to_string())
             .facebook_url("some_url".to_string())
             .location_type(LocationType::Physical)
@@ -517,9 +442,9 @@ mod test_locations {
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual.unwrap().location))
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_location_builder_fail() {
-        let res = LocationBuilder::new()
+        let res = Builder::from(LocationCreationWrapper::default())
             .facebook_url("some_url".to_string())
             .location_type(LocationType::Physical)
             .build()
@@ -528,7 +453,7 @@ mod test_locations {
         assert!(res.is_err());
     }
 
-    // #[actix_rt::test]
+    // #[tokio::test]
     async fn test_create_location() {
         use dotenv::dotenv;
         use std::env;
@@ -540,7 +465,7 @@ mod test_locations {
         let input = LocationCreationWrapper {
             location: Location {
                 id: None,
-                name: "New Test Location".to_string(),
+                name: Some("New Test Location".to_string()),
                 business_name: None,
                 address: None,
                 timezone: None,
@@ -577,7 +502,7 @@ mod test_locations {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_update_location() {
         use dotenv::dotenv;
         use std::env;
@@ -589,7 +514,7 @@ mod test_locations {
         let input = LocationCreationWrapper {
             location: Location {
                 id: None,
-                name: "Updated Test Location".to_string(),
+                name: Some("Updated Test Location".to_string()),
                 business_email: None,
                 address: None,
                 timezone: None,
@@ -626,7 +551,7 @@ mod test_locations {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_retrieve_location() {
         use dotenv::dotenv;
         use std::env;

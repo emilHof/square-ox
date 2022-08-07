@@ -4,14 +4,15 @@ Inventory functionality of the [Square API](https://developer.squareup.com).
 
 use crate::client::SquareClient;
 use crate::api::{Verb, SquareAPI};
-use crate::errors::{InventoryChangeBodyBuildError, SquareError};
+use crate::errors::{InventoryChangeBodyBuildError, SquareError, ValidationError};
 use crate::response::SquareResponse;
-use crate::objects::{CatalogObject, InventoryAdjustment, InventoryChange, InventoryPhysicalCount,
+use crate::objects::{CatalogObject, InventoryChange, InventoryPhysicalCount,
                      InventoryTransfer};
-use crate::objects::enums::InventoryChangeType;
+use crate::objects::enums::{InventoryChangeType, InventoryState};
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use crate::builder::{AddField, Builder, ParentBuilder, Validate};
 
 
 impl SquareClient {
@@ -20,9 +21,9 @@ impl SquareClient {
     /// # Example: Using the inventory endpoint to make a retrieve_count request.
     /// ```rust
     /// use square_ox::{
-    ///     response::{SquareResponse, ResponseError},
-    ///     client::SquareClient,
-    ///     api::inventory::Inventory,
+    ///         response::{SquareResponse, ResponseError},
+    ///         client::SquareClient,
+    ///         api::inventory::Inventory,
     ///     };
     ///
     /// async {
@@ -62,8 +63,8 @@ impl<'a> Inventory<'a> {
         ).await
     }
 
-    /// Retrieves the current calculated stock count for a given [CatalogObject](CatalogObject) at
-    /// a given set of [Location](Location)s.
+    /// Retrieves the current calculated stock count for a given [CatalogObject](crate::objects::CatalogObject) at
+    /// a given set of [Location](crate::objects::Location)s.
     /// [Open in API Reference](https://developer.squareup.com/reference/square/inventory/retrieve-inventory-count)
     pub async fn retrieve_count(self, object_id: String, location_id: Option<String>)
         -> Result<SquareResponse, SquareError>{
@@ -115,100 +116,108 @@ impl<'a> Inventory<'a> {
             None,
         ).await
     }
+
+    /// Returns current counts for the provided [CatalogObject](CatalogObject)s at the requested
+    /// [Location](Location)s.
+    /// [Open in API Reference](https://developer.squareup.com/reference/square/inventory/retrieve-inventory-physical-count)
+    pub async fn batch_retrieve_counts(self, body: BatchRetrieveCounts)
+                                -> Result<SquareResponse, SquareError>{
+        self.client.request(
+            Verb::POST,
+            SquareAPI::Inventory("/counts/batch-retrieve".to_string()),
+            Some(&body),
+            None,
+        ).await
+    }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+// -------------------------------------------------------------------------------------------------
+// InventoryChangeBody builder implementation
+// -------------------------------------------------------------------------------------------------
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct InventoryChangeBody {
-    idempotency_key: String,
+    idempotency_key: Option<String>,
     changes: Vec<InventoryChange>,
     ignore_unchanged_counts: Option<bool>,
 }
 
-#[derive(Default)]
-pub struct InventoryChangeBodyBuilder {
-    changes: Vec<InventoryChange>,
-    ignore_unchanged_counts: Option<bool>,
-}
+impl Validate for InventoryChangeBody {
+    fn validate(mut self) -> Result<Self, ValidationError> where Self: Sized {
+        if self.changes.len() > 0 {
+            self.idempotency_key = Some(Uuid::new_v4().to_string());
 
-impl InventoryChangeBodyBuilder {
-    pub fn new() -> Self {
-        Default::default()
-    }
-
-    pub fn change(mut self, change: InventoryChange) -> Self {
-        self.changes.push(change);
-
-        self
-    }
-
-    pub fn change_object_builder(self) -> InventoryChangeObjectBuilder {
-        InventoryChangeObjectBuilder {
-            inventory_change_body_builder: self,
-            inventory_change: InventoryChange {
-                adjustment: None,
-                measurement_unit: None,
-                measurement_unit_id: None,
-                physical_count: None,
-                transfer: None,
-                inventory_change_type: InventoryChangeType::PhysicalCount
-            }
-        }
-    }
-
-    pub async fn build(self) -> Result<InventoryChangeBody, InventoryChangeBodyBuildError> {
-        if self.changes.len() == 0 {
-            return Err(InventoryChangeBodyBuildError)
+            Ok(self)
         } else {
-            Ok(InventoryChangeBody {
-                idempotency_key: Uuid::new_v4().to_string(),
-                changes: self.changes,
-                ignore_unchanged_counts: self.ignore_unchanged_counts,
-            })
+            Err(ValidationError)
         }
     }
 }
 
-pub struct InventoryChangeObjectBuilder {
-    inventory_change_body_builder: InventoryChangeBodyBuilder,
-    inventory_change: InventoryChange,
+impl<T: ParentBuilder> Builder<InventoryChangeBody, T> {
+    pub fn change(mut self, change: InventoryChange) -> Self {
+        self.body.changes.push(change);
+
+        self
+    }
 }
 
-impl InventoryChangeObjectBuilder {
-    pub fn change_type(mut self, change_type: InventoryChangeType) -> Self {
-        self.inventory_change.inventory_change_type = change_type;
-        
-        self
+impl AddField<InventoryChange> for InventoryChangeBody {
+    fn add_field(&mut self, field: InventoryChange) {
+        self.changes.push(field);
     }
-    
-    pub fn physical_count(mut self, physical_count: InventoryPhysicalCount) -> Self {
-        self.inventory_change.physical_count = Some(physical_count);
-        
+}
+
+
+// -------------------------------------------------------------------------------------------------
+// BatchRetrieveCounts builder implementation
+// -------------------------------------------------------------------------------------------------
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+pub struct BatchRetrieveCounts {
+    catalog_object_ids: Vec<String>,
+    cursor: Option<String>,
+    limit: Option<i32>,
+    location_ids: Vec<String>,
+    states: Option<Vec<InventoryState>>,
+    updated_after: Option<String>,
+}
+
+impl Validate for BatchRetrieveCounts {
+    fn validate(self) -> Result<Self, ValidationError> where Self: Sized {
+        if self.location_ids.len() > 0 && self.catalog_object_ids.len() > 0 {
+            Ok(self)
+        } else {
+            Err(ValidationError)
+        }
+    }
+}
+
+impl<T: ParentBuilder> Builder<BatchRetrieveCounts, T> {
+    pub fn object_ids(mut self, ids: Vec<String>) -> Self {
+        self.body.catalog_object_ids = ids;
+
         self
     }
 
-    pub fn adjustment(mut self, adjustment: InventoryAdjustment) -> Self {
-        self.inventory_change.adjustment = Some(adjustment);
+    pub fn location_ids(mut self, ids: Vec<String>) -> Self {
+        self.body.location_ids = ids;
 
         self
     }
 
-    pub fn transfer(mut self, transfer: InventoryTransfer) -> Self {
-        self.inventory_change.transfer = Some(transfer);
+    pub fn add_location_id(mut self, id: String) -> Self {
+        self.body.location_ids.push(id);
 
         self
-    }
-    
-    pub async fn into_builder(self) -> InventoryChangeBodyBuilder {
-        self.inventory_change_body_builder.change(self.inventory_change)
     }
 }
 
 #[cfg(test)]
 mod test_inventory {
+    use crate::builder::BackIntoBuilder;
     use crate::objects::enums::InventoryState;
     use super::*;
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_retrieve_count() {
         use dotenv::dotenv;
         use std::env;
@@ -229,10 +238,10 @@ mod test_inventory {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_change_body_builder() {
         let expected = InventoryChangeBody {
-            idempotency_key: "".to_string(),
+            idempotency_key: None,
             changes: vec![
                 InventoryChange {
                     adjustment: None,
@@ -258,8 +267,8 @@ mod test_inventory {
             ignore_unchanged_counts: None
         };
 
-        let mut actual = InventoryChangeBodyBuilder::new()
-            .change_object_builder()
+        let mut actual = Builder::from(InventoryChangeBody::default())
+            .sub_builder_from(InventoryChange::default())
             .change_type(InventoryChangeType::PhysicalCount)
             .physical_count(InventoryPhysicalCount {
                 id: None,
@@ -274,18 +283,20 @@ mod test_inventory {
                 state: InventoryState::InStock,
                 team_member_id: None
             })
-            .into_builder()
-            .await
+            .into_parent_builder()
+            .unwrap()
             .build()
             .await
             .unwrap();
 
-        actual.idempotency_key = "".to_string();
+        assert!(actual.idempotency_key.is_some());
+
+        actual.idempotency_key = None;
 
         assert_eq!(format!("{:?}",expected), format!("{:?}",actual));
     }
 
-    // #[actix_rt::test]
+    // #[tokio::test]
     async fn test_batch_change() {
         use dotenv::dotenv;
         use std::env;
@@ -295,7 +306,7 @@ mod test_inventory {
         let sut = SquareClient::new(&access_token);
 
         let input = InventoryChangeBody {
-            idempotency_key: Uuid::new_v4().to_string(),
+            idempotency_key: Some(Uuid::new_v4().to_string()),
             changes: vec![
                 InventoryChange {
                     adjustment: None,

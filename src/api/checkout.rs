@@ -4,13 +4,14 @@ Checkout functionality of the [Square API](https://developer.squareup.com).
 
 use crate::client::SquareClient;
 use crate::api::{Verb, SquareAPI};
-use crate::errors::{CreateOrderRequestBuildError, CreatePaymentLinkBuildError, PaymentLinkBuildError, SquareError};
+use crate::errors::{SquareError, ValidationError};
 use crate::response::SquareResponse;
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use crate::builder::{AddField, Builder, ParentBuilder, Validate};
 use crate::objects::{self, Address, ChargeRequestAdditionalRecipient, CheckoutOptions,
-                     CreateOrderRequest, Order, OrderLineItem, PaymentLink, PrePopulatedData,
+                     CreateOrderRequest, Order, PaymentLink, PrePopulatedData,
                      QuickPay};
 
 impl SquareClient {
@@ -31,8 +32,7 @@ impl<'a> Checkout<'a> {
     /// # Arguments:
     /// * `location_id` - The id of the location you would like to link to the checkout page.
     /// * `create_order_request`- The request body of the create_checkout call wrapped in a
-    /// [CreateOrderRequestWrapper](CreateOrderRequestWrapper) created through the
-    /// [CreateOrderRequestBuilder](CreateOrderRequestBuilder).
+    /// [CreateOrderRequestWrapper](CreateOrderRequestWrapper).
     pub async fn create_checkout(
         self, location_id: String,
         create_order_request: CreateOrderRequestWrapper
@@ -69,9 +69,8 @@ impl<'a> Checkout<'a> {
     ///
     /// # Arguments:
     /// * `payment_link` - The body of the quest, holding the details of the payment link that is
-    /// being added. This body is wrapped by a [CreatePaymentLinkWrapper](CreatePaymentLinkWrapper)
-    /// that is created through the [CreatePaymentLinkBuilder](CreatePaymentLinkBuilder). The
-    /// payment link must contain at least one Order or QuickPay object.
+    /// being added. This body is wrapped by a [CreatePaymentLinkWrapper](CreatePaymentLinkWrapper).
+    /// The payment link must contain at least one Order or QuickPay object.
     pub async fn create(
         self, payment_link: CreatePaymentLinkWrapper
     )
@@ -122,7 +121,7 @@ impl<'a> Checkout<'a> {
     /// * `link_id` - The id of the payment link to update.
     /// * `payment_link` - The updated [PaymentLink](PaymentLink).
     pub async fn update(
-        self, link_id: String, payment_link: PaymentLinkWrapper
+        self, link_id: String, payment_link: UpdatePaymentLinkWrapper
     )
         -> Result<SquareResponse, SquareError> {
         self.client.request(
@@ -136,10 +135,10 @@ impl<'a> Checkout<'a> {
 
 #[derive(Clone, Serialize, Debug, Deserialize)]
 pub struct CreateOrderRequestWrapper {
-    idempotency_key: String,
+    idempotency_key: Option<String>,
     order: CreateOrderRequest,
     ask_for_shipping_address: Option<bool>,
-    merchant_support_email: Option<bool>,
+    merchant_support_email: Option<String>,
     pre_populate_buyer_email: Option<bool>,
     pre_populate_shipping_address: Option<Address>,
     redirect_url: Option<String>,
@@ -147,59 +146,69 @@ pub struct CreateOrderRequestWrapper {
     note: Option<String>,
 }
 
-#[derive(Default)]
-pub struct CreateOrderRequestBuilder {
-    order: Order,
-    ask_for_shipping_address: Option<bool>,
-    merchant_support_email: Option<bool>,
-    pre_populate_buyer_email: Option<bool>,
-    pre_populate_shipping_address: Option<Address>,
-    redirect_url: Option<String>,
-    additional_recipients: Option<Vec<ChargeRequestAdditionalRecipient>>,
-    note: Option<String>,
-}
-
-impl CreateOrderRequestBuilder {
-    pub fn new() -> Self {
-        Default::default()
-    }
-
-    pub fn location_id(mut self, location_id: String) -> Self {
-        self.order.location_id = Some(location_id);
-
-        self
-    }
-
-    pub fn add_order_item(mut self, order_item: OrderLineItem) -> Self {
-        if let Some(line_items) = self.order.line_items.as_mut() {
-            line_items.push(order_item);
-        } else {
-            self.order.line_items = Some(vec![order_item])
-        };
-        
-        self
-    }
-
-    pub async fn build(self) -> Result<CreateOrderRequestWrapper, CreateOrderRequestBuildError> {
-        let order = self.order;
-        if order.location_id.is_none() {
-            Err(CreateOrderRequestBuildError)
-        } else {
-            Ok(CreateOrderRequestWrapper {
-                idempotency_key: Uuid::new_v4().to_string(),
-                order: CreateOrderRequest {
-                    idempotency_key: Uuid::new_v4().to_string(),
-                    order,
-                },
-                ask_for_shipping_address: self.ask_for_shipping_address,
-                merchant_support_email: self.merchant_support_email,
-                pre_populate_buyer_email: self.pre_populate_buyer_email,
-                pre_populate_shipping_address: self.pre_populate_shipping_address,
-                redirect_url: self.redirect_url,
-                additional_recipients: self.additional_recipients,
-                note: self.note,
-            })
+impl Default for CreateOrderRequestWrapper {
+    fn default() -> Self {
+        CreateOrderRequestWrapper {
+            idempotency_key: None,
+            order: CreateOrderRequest { idempotency_key: Uuid::new_v4().to_string(), order: Default::default() },
+            ask_for_shipping_address: None,
+            merchant_support_email: None,
+            pre_populate_buyer_email: None,
+            pre_populate_shipping_address: None,
+            redirect_url: None,
+            additional_recipients: None,
+            note: None
         }
+    }
+}
+
+impl Validate for CreateOrderRequestWrapper {
+    fn validate(mut self) -> Result<Self, ValidationError> where Self: Sized {
+        if self.order.order.location_id.is_some() {
+            self.idempotency_key = Some(Uuid::new_v4().to_string());
+
+            Ok(self)
+        } else {
+            Err(ValidationError)
+        }
+    }
+}
+
+impl<T: ParentBuilder> Builder<CreateOrderRequestWrapper, T> {
+    pub fn order(mut self, order: Order) -> Self {
+        self.body.order.order = order;
+
+        self
+    }
+
+    pub fn ask_for_shipping_address(mut self) -> Self {
+        self.body.ask_for_shipping_address = Some(true);
+
+        self
+    }
+
+    pub fn merchant_support_email(mut self, merchant_support_email: String) -> Self {
+        self.body.merchant_support_email = Some(merchant_support_email);
+
+        self
+    }
+
+    pub fn redirect_url(mut self, redirect_url: String) -> Self {
+        self.body.redirect_url = Some(redirect_url);
+
+        self
+    }
+
+    pub fn pre_populate_buyer_email(mut self) -> Self {
+        self.body.pre_populate_buyer_email = Some(true);
+
+        self
+    }
+}
+
+impl AddField<Order> for CreateOrderRequestWrapper {
+    fn add_field(&mut self, field: Order) {
+        self.order.order = field;
     }
 }
 
@@ -246,7 +255,7 @@ impl ListPaymentLinksSearchQueryBuilder {
     }
 }
 
-#[derive(Clone, Serialize, Debug)]
+#[derive(Clone, Serialize, Debug, Default)]
 pub struct CreatePaymentLinkWrapper {
     idempotency_key: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -265,94 +274,76 @@ pub struct CreatePaymentLinkWrapper {
     payment_note: Option<String>,
 }
 
-#[derive(Default)]
-pub struct CreatePaymentLinkBuilder {
-    description: Option<String>,
-    quick_pay: Option<QuickPay>,
-    order: Option<Order>,
-    checkout_options: Option<CheckoutOptions>,
-    pre_populated_data: Option<PrePopulatedData>,
-    source: Option<String>,
-    payment_note: Option<String>,
+impl Validate for CreatePaymentLinkWrapper {
+    fn validate(mut self) -> Result<Self, ValidationError> where Self: Sized {
+        if self.order.is_some() || self.quick_pay.is_some() {
+            self.idempotency_key = Uuid::new_v4().to_string();
+
+            Ok(self)
+        } else {
+            Err(ValidationError)
+        }
+    }
 }
 
-impl CreatePaymentLinkBuilder {
-    pub fn new() -> Self {
-        Default::default()
-    }
-
+impl<T: ParentBuilder> Builder<CreatePaymentLinkWrapper, T> {
     pub fn checkout_options(mut self, checkout_options: CheckoutOptions) -> Self {
-        self.checkout_options = Some(checkout_options);
+        self.body.checkout_options = Some(checkout_options);
 
         self
     }
 
     pub fn description(mut self, description: String) -> Self {
-        self.description = Some(description);
+        self.body.description = Some(description);
 
         self
     }
 
     pub fn order(mut self, order: Order) -> Self {
-        self.order = Some(order);
+        self.body.order = Some(order);
 
         self
     }
 
     pub fn payment_note(mut self, payment_note: String) -> Self {
-        self.payment_note = Some(payment_note);
+        self.body.payment_note = Some(payment_note);
 
         self
     }
 
     pub fn pre_populated_data(mut self, pre_populated_data: PrePopulatedData) -> Self {
-        self.pre_populated_data = Some(pre_populated_data);
+        self.body.pre_populated_data = Some(pre_populated_data);
 
         self
     }
 
     pub fn quick_pay(mut self, quick_pay: QuickPay) -> Self {
-        self.quick_pay = Some(quick_pay);
+        self.body.quick_pay = Some(quick_pay);
 
         self
     }
 
     pub fn source(mut self, source: String) -> Self {
-        self.source = Some(source);
+        self.body.source = Some(source);
 
         self
     }
+}
 
-    pub async fn build(self) -> Result<CreatePaymentLinkWrapper, CreatePaymentLinkBuildError> {
-        if self.order.is_none() && self.quick_pay.is_none() {
-            Err(CreatePaymentLinkBuildError)
-        } else {
-            Ok(CreatePaymentLinkWrapper {
-                idempotency_key: Uuid::new_v4().to_string(),
-                description: self.description,
-                quick_pay: self.quick_pay,
-                order: self.order,
-                checkout_options: self.checkout_options,
-                pre_populated_data: self.pre_populated_data,
-                source: self.source,
-                payment_note: self.payment_note,
-            })
-        }
+impl AddField<Order> for CreatePaymentLinkWrapper {
+    fn add_field(&mut self, field: Order) {
+        self.order = Some(field);
     }
 }
 
 #[derive(Clone, Serialize, Debug)]
-pub struct PaymentLinkWrapper {
+pub struct UpdatePaymentLinkWrapper {
     payment_link: PaymentLink,
 }
 
-pub struct PaymentLinkBuilder {
-    pub payment_link: PaymentLink
-}
-
-impl PaymentLinkBuilder {
-    pub fn new() -> Self {
-        PaymentLinkBuilder {
+impl Default for UpdatePaymentLinkWrapper {
+    fn default() -> Self {
+        UpdatePaymentLinkWrapper {
             payment_link: PaymentLink {
                 id: None,
                 version: 1,
@@ -367,31 +358,43 @@ impl PaymentLinkBuilder {
             }
         }
     }
+}
 
-    pub fn set_updated_payment(mut self, payment_link: PaymentLink) -> Self {
-        self.payment_link = payment_link;
+impl Validate for UpdatePaymentLinkWrapper {
+    fn validate(self) -> Result<Self, ValidationError> where Self: Sized {
+        if self.payment_link.version > 1 {
+            Ok(self)
+        } else {
+            Err(ValidationError)
+        }
+
+    }
+}
+
+impl<T: ParentBuilder> Builder<UpdatePaymentLinkWrapper, T> {
+    pub fn set_updated_payment_link(mut self, payment_link: PaymentLink) -> Self {
+        self.body.payment_link = payment_link;
 
         self
     }
 
-    pub async fn build(self) -> Result<PaymentLinkWrapper, PaymentLinkBuildError> {
-        if self.payment_link.version < 1 {
-            Err(PaymentLinkBuildError)
-        } else {
-            Ok(PaymentLinkWrapper{ payment_link: self.payment_link })
-        }
+    pub fn version(mut self, version: i32) -> Self {
+        self.body.payment_link.version = version;
+
+        self
     }
 }
 
 #[cfg(test)]
 mod test_checkout {
-    use crate::objects::{enums::{OrderLineItemItemType, Currency}, Money};
+    use crate::builder::BackIntoBuilder;
+    use crate::objects::{enums::{OrderLineItemItemType, Currency}, Money, OrderLineItem};
     use super::*;
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_create_order_request_builder() {
         let expected = CreateOrderRequestWrapper {
-            idempotency_key: "".to_string(),
+            idempotency_key: None,
             order: CreateOrderRequest { idempotency_key: "".to_string(), order: Order {
                 id: None,
                 location_id: Some("L1JC53TYHS40Z".to_string()),
@@ -475,7 +478,7 @@ mod test_checkout {
                 total_tip_money: None,
                 updated_at: None,
                 version: None
-            } },
+            }},
             ask_for_shipping_address: None,
             merchant_support_email: None,
             pre_populate_buyer_email: None,
@@ -485,8 +488,8 @@ mod test_checkout {
             note: None
         };
 
-        let mut actual = CreateOrderRequestBuilder::new()
-            .location_id("L1JC53TYHS40Z".to_string())
+        let mut actual = Builder::from(CreateOrderRequestWrapper::default())
+            .sub_builder_from(Order::default())
             .add_order_item(OrderLineItem {
                 quantity: "1".to_string(),
                 applied_discounts: None,
@@ -539,16 +542,19 @@ mod test_checkout {
                 variation_total_price_money: None,
                 api_reference_ids: None
             })
+            .location_id("L1JC53TYHS40Z".to_string())
+            .into_parent_builder()
+            .unwrap()
             .build()
             .await
             .unwrap();
-        actual.idempotency_key = "".to_string();
+        actual.idempotency_key = None;
         actual.order.idempotency_key = "".to_string();
 
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_create_checkout() {
         use dotenv::dotenv;
         use std::env;
@@ -558,7 +564,7 @@ mod test_checkout {
         let sut = SquareClient::new(&access_token);
 
         let input = CreateOrderRequestWrapper {
-            idempotency_key: Uuid::new_v4().to_string(),
+            idempotency_key: Some(Uuid::new_v4().to_string()),
             order: CreateOrderRequest { idempotency_key: Uuid::new_v4().to_string(), order: Order {
                 id: None,
                 location_id: Some("L1JC53TYHS40Z".to_string()),
@@ -642,7 +648,7 @@ mod test_checkout {
                 total_tip_money: None,
                 updated_at: None,
                 version: None
-            } },
+            }},
             ask_for_shipping_address: None,
             merchant_support_email: None,
             pre_populate_buyer_email: None,
@@ -659,7 +665,7 @@ mod test_checkout {
         assert!(res.is_ok());
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_payment_search_query_builder() {
         let expected = vec![
             ("cursor".to_string(), "dwasd".to_string()),
@@ -675,7 +681,7 @@ mod test_checkout {
         assert_eq!(expected, actual)
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_payment_links() {
         use dotenv::dotenv;
         use std::env;
@@ -693,7 +699,7 @@ mod test_checkout {
         assert!(res.is_ok());
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_create_payment_link_builder() {
         let expected = CreatePaymentLinkWrapper {
             idempotency_key: "".to_string(),
@@ -710,7 +716,7 @@ mod test_checkout {
             payment_note: None
         };
 
-        let mut actual = CreatePaymentLinkBuilder::new()
+        let mut actual = Builder::from(CreatePaymentLinkWrapper::default())
             .quick_pay(QuickPay {
                 location_id: "L1JC53TYHS40Z".to_string(),
                 name: "Another Thing".to_string(),
@@ -726,7 +732,7 @@ mod test_checkout {
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual))
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_create_payment_link() {
         use dotenv::dotenv;
         use std::env;
@@ -757,7 +763,7 @@ mod test_checkout {
         assert!(res.is_ok());
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_delete_payment_link() {
         use dotenv::dotenv;
         use std::env;
@@ -775,7 +781,7 @@ mod test_checkout {
         assert!(res.is_ok());
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_retrieve_payment_link() {
         use dotenv::dotenv;
         use std::env;
@@ -793,7 +799,7 @@ mod test_checkout {
         assert!(res.is_ok());
     }
 
-    // #[actix_rt::test]
+    // #[tokio::test]
     async fn test_update_payment_link() {
         use dotenv::dotenv;
         use std::env;
@@ -804,7 +810,7 @@ mod test_checkout {
 
         let input = (
             "R6BRAXXKPCMYI2ZQ".to_string(),
-            PaymentLinkWrapper {
+            UpdatePaymentLinkWrapper {
                 payment_link: objects::PaymentLink {
                     id: None,
                     version: 5,

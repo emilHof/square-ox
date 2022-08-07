@@ -335,7 +335,7 @@ pub enum CatalogCustomAttributeDefinitionType {
 pub enum CatalogItemProductType {
     Regular,
     GiftCard,  /// Deprecated
-    AppointmentServices,
+    AppointmentsService,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -385,6 +385,12 @@ pub enum InventoryChangeType {
     PhysicalCount,
     Adjustment,
     Transfer,
+}
+
+impl Default for InventoryChangeType {
+    fn default() -> Self {
+        InventoryChangeType::PhysicalCount
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

@@ -7,10 +7,27 @@ pub mod enums;
 
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use crate::api::customers::TimeRange;
 use crate::api::orders::Orders;
 use crate::api::terminal::Terminal;
-use crate::objects::enums::{ActionCancelReason, ApplicationDetailsExternalSquareProduct, BankAccountOwnershipType, BusinessAppointmentSettingsBookingLocationType, BusinessAppointmentSettingsCancellationPolicy, BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType, BusinessBookingProfileBookingPolicy, BusinessBookingProfileCustomerTimezoneChoice, BuyNowPayLaterBrand, CatalogCustomAttributeDefinitionType, CatalogItemProductType, CatalogObjectType, CatalogPricingType, CCVStatus, CheckoutOptionsPaymentType, Currency, DigitalWalletBrand, DigitalWalletStatus, InventoryAlertType, InventoryChangeType, InventoryState, LocationStatus, LocationType, OrderFulfillmentFulfillmentLineItemApplication, OrderFulfillmentPickupDetailsScheduleType, OrderFulfillmentState, OrderFulfillmentType, OrderLineItemDiscountScope, OrderLineItemDiscountType, OrderLineItemItemType, OrderLineItemTaxScope, OrderLineItemTaxType, OrderServiceChargeCalculationPhase, OrderServiceChargeType, OrderState, PaymentSourceType, PaymentStatus, PaymentType, PaymentVerificationMethod, PaymentVerificationResults, ProcessingFeeType, RefundStatus, RiskEvaluationRiskLevel, SearchOrdersSortField, SortOrder, TenderCardDetailsEntryMethod, TenderCardDetailsStatus, TenderType, TerminalCheckoutStatus};
+use crate::objects::enums::{
+    ActionCancelReason, ApplicationDetailsExternalSquareProduct,
+    BankAccountOwnershipType, BusinessAppointmentSettingsBookingLocationType,
+    BusinessAppointmentSettingsCancellationPolicy,
+    BusinessAppointmentSettingsMaxAppointmentsPerDayLimitType,
+    BusinessBookingProfileBookingPolicy, BusinessBookingProfileCustomerTimezoneChoice,
+    BuyNowPayLaterBrand, CatalogCustomAttributeDefinitionType, CatalogItemProductType,
+    CatalogObjectType, CatalogPricingType, CCVStatus, CheckoutOptionsPaymentType, Currency,
+    CustomerCreationSource, DigitalWalletBrand, DigitalWalletStatus, InventoryAlertType,
+    InventoryChangeType, InventoryState, LocationStatus, LocationType,
+    OrderFulfillmentFulfillmentLineItemApplication, OrderFulfillmentPickupDetailsScheduleType,
+    OrderFulfillmentState, OrderFulfillmentType, OrderLineItemDiscountScope,
+    OrderLineItemDiscountType, OrderLineItemItemType, OrderLineItemTaxScope,
+    OrderLineItemTaxType, OrderServiceChargeCalculationPhase, OrderServiceChargeType,
+    OrderState, PaymentSourceType, PaymentStatus, PaymentType, PaymentVerificationMethod,
+    PaymentVerificationResults, ProcessingFeeType, RefundStatus, RiskEvaluationRiskLevel,
+    SearchOrdersSortField, SortOrder, TenderCardDetailsEntryMethod, TenderCardDetailsStatus,
+    TenderType, TerminalCheckoutStatus
+};
 use crate::response::ResponseError;
 
 /// The Response enum holds the variety of responses that can be returned from a
@@ -83,9 +100,11 @@ pub enum CheckoutEnum {
 pub struct Location {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
-    pub name: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub business_email: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub address: Option<Address>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub timezone: Option<String>,
@@ -309,7 +328,7 @@ pub struct FilterValue {
     pub none: Option<Vec<String>>,
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default)]
 pub struct CatalogObject {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
@@ -333,6 +352,8 @@ pub struct CatalogObject {
     pub is_deleted: Option<bool>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub item_data: Option<CatalogItem>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub item_variation_data: Option<CatalogItemVariation>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub item_option_data: Option<CatalogObjectOption>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -636,7 +657,7 @@ pub struct CatalogItem {
     pub modifier_list_info: Option<Vec<CatalogItemModifierListInfo>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    #[serde(rename="type", default, skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub product_type: Option<CatalogItemProductType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub skip_modifier_scree: Option<bool>,
@@ -2023,7 +2044,7 @@ pub struct InventoryCount {
     pub state: Option<InventoryState>,
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default)]
 pub struct InventoryChange {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub adjustment: Option<InventoryAdjustment>,
@@ -2394,7 +2415,7 @@ pub struct Site {
     pub updated_at: Option<String>,
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default)]
 pub struct TerminalCheckout {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
@@ -2432,7 +2453,7 @@ pub struct TerminalCheckout {
     pub updated_at: Option<String>,
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default)]
 pub struct DeviceCheckoutOptions {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub device_id: Option<String>,
@@ -2483,7 +2504,7 @@ pub struct PaymentOptions {
     pub delay_duration: Option<String>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct TerminalCheckoutQuery {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub filter: Option<TerminalCheckoutQueryFilter>,
@@ -2631,15 +2652,85 @@ pub struct OrderEntry {
     version: Option<i32>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+pub struct SearchQueryAttribute {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub filter: Option<CustomerFilter>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sort: Option<CustomerSort>,
+}
 
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+pub struct CustomerFilter {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created_at: Option<TimeRange>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub creation_source: Option<CreationSource>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub email_address: Option<CustomerTextFilter>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group_ids: Option<FilterValue>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub phone_number: Option<CustomerTextFilter>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reference_id: Option<CustomerTextFilter>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub updated_at: Option<TimeRange>,
+}
 
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+pub struct CustomerSort {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub field: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub order: Option<String>,
+}
 
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+pub struct TimeRange {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub end_at: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub start_at: Option<String>,
+}
 
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+pub struct CustomerTextFilter {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub exact: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fuzzy: Option<String>,
+}
 
+#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+pub struct CreationSource {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rule: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub values: Option<Vec<CustomerCreationSource>>,
+}
 
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct StartAtRange {
+    pub end_at: String,
+    pub start_at: String,
+}
 
+#[derive(Clone, Serialize, Debug, Deserialize)]
+pub struct SegmentFilter {
+    pub service_variation_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub team_member_id_filter: Option<FilterValue>,
+}
 
-
-
-
-
+#[derive(Serialize, Debug, Deserialize, Default)]
+pub struct AvailabilityQueryFilter {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub start_at_range: Option<StartAtRange>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub booking_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub location_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub segment_filters: Option<Vec<SegmentFilter>>
+}

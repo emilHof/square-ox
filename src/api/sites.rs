@@ -52,7 +52,7 @@ impl<'a> Sites<'a> {
 mod test_sites {
     use super::*;
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_sites() {
         use dotenv::dotenv;
         use std::env;

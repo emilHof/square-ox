@@ -1,12 +1,11 @@
 use square_ox;
-use actix_rt;
 
 use dotenv::dotenv;
 use std::env;
 use square_ox::api::catalog;
 use square_ox::api::customers::CustomerListParametersBuilder;
 
-#[actix_rt::test]
+#[tokio::test]
 async fn test_list_locations() {
     dotenv().ok();
     let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set!");
@@ -19,7 +18,7 @@ async fn test_list_locations() {
     assert!(res.is_ok())
 }
 
-#[actix_rt::test]
+#[tokio::test]
 async fn test_list_customer() {
     dotenv().ok();
     let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set!");
@@ -35,7 +34,7 @@ async fn test_list_customer() {
     assert!(res.is_ok());
 }
 
-#[actix_rt::test]
+#[tokio::test]
 async fn test_list_catalog() {
     dotenv().ok();
     let access_token = env::var("ACCESS_TOKEN").expect("ACCESS_TOKEN to be set!");

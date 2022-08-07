@@ -4,12 +4,13 @@ Cards functionality of the [Square API](https://developer.squareup.com).
 
 use crate::client::SquareClient;
 use crate::api::{Verb, SquareAPI};
-use crate::errors::{CardBuildError, SquareError};
+use crate::errors::{CardBuildError, SquareError, ValidationError};
 use crate::response::SquareResponse;
 use crate::objects::{Address, Card};
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use crate::builder::{Builder, ParentBuilder, Validate};
 use crate::objects::enums::SortOrder;
 
 impl SquareClient {
@@ -86,14 +87,15 @@ impl<'a> Cards<'a> {
     ///
     /// # Example
     /// ```rust
-    ///use square_ox::{
-    ///    response::{SquareResponse, ResponseError},
-    ///    client::SquareClient
-    ///    };
-    /// use square_ox::api::cards::{CardBuilder, CardWrapper};
+    ///  use square_ox::{
+    ///     response::{SquareResponse, ResponseError},
+    ///     client::SquareClient,
+    ///     api::cards::CardWrapper,
+    ///     builder::Builder
+    ///  };
     ///
     /// async {
-    ///     let card = CardBuilder::new()
+    ///     let card = Builder::from(CardWrapper::default())
     ///     .source_id("some_id".to_string())
     ///     .customer_id("some_id".to_string())
     ///     .build()
@@ -232,57 +234,43 @@ impl ListCardsQueryBuilder {
     }
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default)]
 pub struct CardWrapper {
     pub(crate) card: Card,
-    pub(crate) idempotency_key: String,
-    pub(crate) source_id: String,
+    pub(crate) idempotency_key: Option<String>,
+    pub(crate) source_id: Option<String>,
     pub(crate) verification_token: Option<String>,
 }
 
-#[derive(Default)]
-pub struct CardBuilder {
-    card: Card,
-    source_id: Option<String>,
-    verification_token: Option<String>,
+impl Validate for CardWrapper {
+    fn validate(mut self) -> Result<Self, ValidationError> where Self: Sized {
+        if self.source_id.is_some() {
+            self.idempotency_key = Some(Uuid::new_v4().to_string());
+
+            Ok(self)
+        } else {
+            Err(ValidationError)
+        }
+    }
 }
 
-impl CardBuilder {
-    pub fn new() -> Self {
-        Default::default()
-    }
-    
+impl<T: ParentBuilder> Builder<CardWrapper, T> {
     pub fn customer_id(mut self, customer_id: String) -> Self {
-        self.card.customer_id = Some(customer_id);
-        
+        self.body.card.customer_id = Some(customer_id);
+
         self
     }
-    
+
     pub fn billing_address(mut self, address: Address) -> Self {
-        self.card.billing_address = Some(address);
-        
+        self.body.card.billing_address = Some(address);
+
         self
     }
-    
+
     pub fn source_id(mut self, source_id: String) -> Self {
-        self.source_id = Some(source_id);
-        
+        self.body.source_id = Some(source_id);
+
         self
-    } 
-    
-    pub async fn build(self) -> Result<CardWrapper, CardBuildError> {
-        if self.source_id.is_none() || self.card.customer_id.is_none() {
-            Err(CardBuildError)
-        } else {
-            Ok(
-                CardWrapper {
-                    card: self.card,
-                    idempotency_key: Uuid::new_v4().to_string(),
-                    source_id: self.source_id.unwrap(),
-                    verification_token: self.verification_token
-                }
-            )
-        }
     }
 }
 
@@ -290,7 +278,7 @@ impl CardBuilder {
 mod test_cards {
     use super::*;
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_cards_query_builder() {
         let expected = vec![
             ("cursor".to_string(), "dwcsdaw2390rec92".to_string()),
@@ -307,7 +295,7 @@ mod test_cards {
         assert_eq!(expected, actual)
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_list_cards() {
         use dotenv::dotenv;
         use std::env;
@@ -329,7 +317,7 @@ mod test_cards {
 
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_retrieve_card() {
         use dotenv::dotenv;
         use std::env;
@@ -346,7 +334,7 @@ mod test_cards {
 
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_card_builder() {
         let expected = CardWrapper {
             card: Card {
@@ -368,23 +356,26 @@ mod test_cards {
                 reference_id: None,
                 version: None
             },
-            idempotency_key: "".to_string(),
-            source_id: "cnon:card-nonce-ok".to_string(),
+            idempotency_key: None,
+            source_id: Some("cnon:card-nonce-ok".to_string()),
             verification_token: None
         };
 
-        let mut actual = CardBuilder::new()
+        let mut actual = Builder::from(CardWrapper::default())
             .customer_id("EDH2RWZCFCRGZCZ99GMG8ZF59R".to_string())
             .source_id("cnon:card-nonce-ok".to_string())
             .build()
             .await
             .unwrap();
-        actual.idempotency_key = "".to_string();
+
+        assert!(actual.idempotency_key.is_some());
+
+        actual.idempotency_key = None;
 
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
     }
 
-    // #[actix_rt::test]
+    // #[tokio::test]
     async fn test_create_card() {
         use dotenv::dotenv;
         use std::env;
@@ -413,8 +404,8 @@ mod test_cards {
                 reference_id: None,
                 version: None
             },
-            idempotency_key: Uuid::new_v4().to_string(),
-            source_id: "cnon:card-nonce-ok".to_string(),
+            idempotency_key: Some(Uuid::new_v4().to_string()),
+            source_id: Some("cnon:card-nonce-ok".to_string()),
             verification_token: None
         };
 
@@ -425,7 +416,7 @@ mod test_cards {
         assert!(res.is_ok())
     }
 
-    #[actix_rt::test]
+    #[tokio::test]
     async fn test_disable_card() {
         use dotenv::dotenv;
         use std::env;
