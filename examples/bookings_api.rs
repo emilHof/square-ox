@@ -5,7 +5,7 @@ use actix_web::{middleware::Logger, post, get, web, App, HttpResponse, HttpServe
 use serde::{Deserialize, Serialize};
 use std::env;
 use dotenv;
-use square_ox::builder::Builder;
+use square_ox::builder::{Builder, Buildable};
 use square_ox::errors::ValidationError;
 use square_ox::objects::{Response, Address};
 
@@ -72,7 +72,6 @@ async fn list_availability(
         .start_at_range(query_params.start_at, query_params.end_at)
         .segment_filters(query_params.segment_id)
         .build()
-        .await
     {
         Ok(p) => p,
         Err(e) => {

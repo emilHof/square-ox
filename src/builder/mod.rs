@@ -16,7 +16,7 @@ pub trait AddField<T> {
 
 // This trait allows a builder to release a sub builder and allows that sub builder to add its field
 // to the releasing builders body.
-pub trait BackIntoBuilder<T: Validate, U: ParentBuilder + BackIntoBuilder<T, U>> {
+pub trait BackIntoBuilder<T: crate::builder::Validate, U: ParentBuilder + BackIntoBuilder<T, U>> {
     fn add_field(self, field: T) -> Self;
     fn sub_builder_from(self, body: T) -> Builder<T, U>;
 }
@@ -38,13 +38,17 @@ pub trait ParentBuilder {}
 
 // both Nil and Builder<T, U> where T implements validate and U implements ParentBuilder implement
 // the ParentBuilder trait automatically
-impl ParentBuilder for Nil{}
+impl ParentBuilder for Nil {}
 
 impl<T: Validate, U: ParentBuilder> ParentBuilder for Builder<T, U> {}
 
+pub trait Buildable<T> {
+    fn build(self) -> Result<T, BuildError>;
+}
+
 // gives builders the ability to validate and build the objects they hold in their body field.
-impl<T: Validate, U: ParentBuilder> Builder<T, U> {
-    pub async fn build(self) -> Result<T, BuildError> {
+impl<T: Validate> Buildable<T> for Builder<T, Nil> {
+    fn build(self) -> Result<T, BuildError> {
         match self.body.validate() {
             Ok(body) => Ok(body),
             Err(_) => Err(BuildError)
@@ -55,8 +59,8 @@ impl<T: Validate, U: ParentBuilder> Builder<T, U> {
 // Allows a builder that holds a parent builder that implements the BackIntoBuilder trait to return
 // the builder it is holding while also validating and adding its content to the body of the parent
 // builder.
-impl<T: Validate, V: ParentBuilder + BackIntoBuilder<T, V>> Builder<T, V> {
-    pub fn into_parent_builder(self) -> Result<V, BuildError> {
+impl<T: Validate, V: ParentBuilder + BackIntoBuilder<T, V>> Buildable<V> for Builder<T, V>  {
+    fn build(self) -> Result<V, BuildError> {
         match self.body.validate() {
             Ok(body) => {
                 Ok(self.parent_builder.unwrap().add_field(body))
@@ -91,5 +95,31 @@ impl<T: Validate> From<T> for Builder<T, Nil> {
             body,
             parent_builder: None::<Nil>
         }
+    }
+}
+
+#[cfg(test)]
+mod builder_tests {
+    use super::*;
+    use square_ox_derive::Builder;
+
+    #[tokio::test]
+    async fn test_derive() {
+        #[derive(Default, Debug, Builder)]
+        struct Example {
+            #[builder_into]
+            field_0: String,
+            field_1: Option<i32>,
+            #[builder_into]
+            field_2: Option<String>
+        }
+
+        let sut = Builder::from(Example::default())
+            .field_0("a real String".to_string())
+            .field_1(54)
+            .field_2("just a &str")
+            .build();
+
+        assert!(sut.is_ok())
     }
 }

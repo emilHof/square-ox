@@ -379,6 +379,12 @@ pub enum InventoryState {
     SupportedByNewerVersion,
 }
 
+impl Default for InventoryState {
+    fn default() -> Self {
+        InventoryState::InStock
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum InventoryChangeType {

@@ -115,69 +115,69 @@ impl<T: ParentBuilder> Builder<SearchOrdersQuery, T> {
 // -------------------------------------------------------------------------------------------------
 // Order builder implementation
 // -------------------------------------------------------------------------------------------------
-impl Validate for Order {
-    fn validate(self) -> Result<Self, ValidationError> where Self: Sized {
-        if self.location_id.is_some(){
-            Ok(self)
-        } else {
-            Err(ValidationError)
-        }
-    }
-}
-
-impl<T: ParentBuilder> Builder<Order, T> {
-    pub fn location_id(mut self, location_id: String) -> Self {
-        self.body.location_id = Some(location_id);
-
-        self
-    }
-
-    pub fn version(mut self, version: i64) -> Self {
-        self.body.version = Some(version);
-
-        self
-    }
-
-    pub fn add_service_charge(mut self, service_charge: OrderServiceCharge) -> Self {
-        if let Some(service_charges) = self.body.service_charges.as_mut() {
-            service_charges.push(service_charge);
-        } else {
-            self.body.service_charges = Some(vec![service_charge])
-        };
-
-        self
-    }
-
-    pub fn add_order_item(mut self, order_item: OrderLineItem) -> Self {
-        if let Some(line_items) = self.body.line_items.as_mut() {
-            line_items.push(order_item);
-        } else {
-            self.body.line_items = Some(vec![order_item])
-        };
-
-        self
-    }
-}
-
-impl AddField<OrderServiceCharge> for Order {
-    fn add_field(&mut self, field: OrderServiceCharge) {
-        if let Some(service_charges) = self.service_charges.as_mut() {
-            service_charges.push(field);
-        } else {
-            self.service_charges = Some(vec![field]);
-        }
-    }
-}
-
-impl AddField<OrderLineItem> for Order {
-    fn add_field(&mut self, field: OrderLineItem) {
-        if let Some(line_items) = self.line_items.as_mut() {
-            line_items.push(field);
-        } else {
-            self.line_items = Some(vec![field]);
-        }
-    }
-}
+// impl Validate for Order {
+//     fn validate(self) -> Result<Self, ValidationError> where Self: Sized {
+//         if self.location_id.is_some(){
+//             Ok(self)
+//         } else {
+//             Err(ValidationError)
+//         }
+//     }
+// }
+//
+// impl<T: ParentBuilder> Builder<Order, T> {
+//     pub fn location_id(mut self, location_id: String) -> Self {
+//         self.body.location_id = Some(location_id);
+//
+//         self
+//     }
+//
+//     pub fn version(mut self, version: i64) -> Self {
+//         self.body.version = Some(version);
+//
+//         self
+//     }
+//
+//     pub fn add_service_charge(mut self, service_charge: OrderServiceCharge) -> Self {
+//         if let Some(service_charges) = self.body.service_charges.as_mut() {
+//             service_charges.push(service_charge);
+//         } else {
+//             self.body.service_charges = Some(vec![service_charge])
+//         };
+//
+//         self
+//     }
+//
+//     pub fn add_order_item(mut self, order_item: OrderLineItem) -> Self {
+//         if let Some(line_items) = self.body.line_items.as_mut() {
+//             line_items.push(order_item);
+//         } else {
+//             self.body.line_items = Some(vec![order_item])
+//         };
+//
+//         self
+//     }
+// }
+//
+// impl AddField<OrderServiceCharge> for Order {
+//     fn add_field(&mut self, field: OrderServiceCharge) {
+//         if let Some(service_charges) = self.service_charges.as_mut() {
+//             service_charges.push(field);
+//         } else {
+//             self.service_charges = Some(vec![field]);
+//         }
+//     }
+// }
+//
+// impl AddField<OrderLineItem> for Order {
+//     fn add_field(&mut self, field: OrderLineItem) {
+//         if let Some(line_items) = self.line_items.as_mut() {
+//             line_items.push(field);
+//         } else {
+//             self.line_items = Some(vec![field]);
+//         }
+//     }
+// }
 
 // -------------------------------------------------------------------------------------------------
 // DeviceCheckoutOptions builder implementation

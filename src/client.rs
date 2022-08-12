@@ -155,16 +155,13 @@ impl SquareClient {
         }
 
         // Deserialize the response into a SquareResponse
-        // let response: SquareResponse = builder.send().await?.json().await?;
+        let response: SquareResponse = builder.send().await?.json().await?;
 
-        // TODO remove the debug code!
-        let response = builder.send().await?.text().await?;
-
-        println!("{:?}", response);
-
-        let response: SquareResponse = serde_json::from_str(&response)?;
-
-        println!("{:?}", response);
+        // TODO debug code!
+        // let response = builder.send().await?.text().await?;
+        // println!("{:?}", response);
+        // let response: SquareResponse = serde_json::from_str(&response)?;
+        // println!("{:?}", response);
 
         // handle the possibility of an error being returned by the Square API
         if response.errors.is_some() && response.errors.as_ref().unwrap().len() > 0 {

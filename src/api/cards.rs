@@ -10,7 +10,8 @@ use crate::objects::{Address, Card};
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::builder::{Builder, ParentBuilder, Validate};
+use square_ox_derive::Builder;
+use crate::builder::{AddField, Builder, ParentBuilder, Validate, Buildable};
 use crate::objects::enums::SortOrder;
 
 impl SquareClient {
@@ -234,44 +235,17 @@ impl ListCardsQueryBuilder {
     }
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize, Default)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default, Builder)]
 pub struct CardWrapper {
     pub(crate) card: Card,
+    #[builder_rand("uuid")]
+    #[builder_into]
     pub(crate) idempotency_key: Option<String>,
+    #[builder_validate("is_some")]
+    #[builder_into]
     pub(crate) source_id: Option<String>,
+    #[builder_vis("private")]
     pub(crate) verification_token: Option<String>,
-}
-
-impl Validate for CardWrapper {
-    fn validate(mut self) -> Result<Self, ValidationError> where Self: Sized {
-        if self.source_id.is_some() {
-            self.idempotency_key = Some(Uuid::new_v4().to_string());
-
-            Ok(self)
-        } else {
-            Err(ValidationError)
-        }
-    }
-}
-
-impl<T: ParentBuilder> Builder<CardWrapper, T> {
-    pub fn customer_id(mut self, customer_id: String) -> Self {
-        self.body.card.customer_id = Some(customer_id);
-
-        self
-    }
-
-    pub fn billing_address(mut self, address: Address) -> Self {
-        self.body.card.billing_address = Some(address);
-
-        self
-    }
-
-    pub fn source_id(mut self, source_id: String) -> Self {
-        self.body.source_id = Some(source_id);
-
-        self
-    }
 }
 
 #[cfg(test)]
@@ -335,7 +309,7 @@ mod test_cards {
     }
 
     #[tokio::test]
-    async fn test_card_builder() {
+    async fn test_card_wrapper_builder() {
         let expected = CardWrapper {
             card: Card {
                 id: None,
@@ -362,10 +336,14 @@ mod test_cards {
         };
 
         let mut actual = Builder::from(CardWrapper::default())
-            .customer_id("EDH2RWZCFCRGZCZ99GMG8ZF59R".to_string())
+            .card(
+                Builder::from(Card::default())
+                    .customer_id("EDH2RWZCFCRGZCZ99GMG8ZF59R".to_string())
+                    .build()
+                    .unwrap()
+            )
             .source_id("cnon:card-nonce-ok".to_string())
             .build()
-            .await
             .unwrap();
 
         assert!(actual.idempotency_key.is_some());
@@ -373,6 +351,20 @@ mod test_cards {
         actual.idempotency_key = None;
 
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
+    }
+
+    #[tokio::test]
+    async fn test_card_wrapper_builder_fail() {
+        let res = Builder::from(CardWrapper::default())
+            .card(
+                Builder::from(Card::default())
+                    .customer_id("EDH2RWZCFCRGZCZ99GMG8ZF59R".to_string())
+                    .build()
+                    .unwrap()
+            )
+            .build();
+
+        assert!(res.is_err())
     }
 
     // #[tokio::test]

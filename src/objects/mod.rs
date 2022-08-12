@@ -7,8 +7,10 @@ pub mod enums;
 
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use square_ox_derive::{Builder};
 use crate::api::orders::Orders;
 use crate::api::terminal::Terminal;
+use crate::builder::{AddField, Buildable};
 use crate::objects::enums::{
     ActionCancelReason, ApplicationDetailsExternalSquareProduct,
     BankAccountOwnershipType, BusinessAppointmentSettingsBookingLocationType,
@@ -201,7 +203,7 @@ pub struct Availability {
     pub appointment_segments: Vec<AppointmentSegment>
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, Default, Builder)]
 pub struct AppointmentSegment {
     pub duration_minutes: f64,
     pub team_member_id: String,
@@ -213,6 +215,35 @@ pub struct AppointmentSegment {
     pub resource_ids: Option<String>,
     pub service_variation_id: String,
     pub service_variation_version: i64,
+}
+
+#[cfg(test)]
+mod test_appointment_segment {
+    use crate::builder::Builder;
+    use super::*;
+
+    #[tokio::test]
+    async fn test_derive() {
+        let expected = AppointmentSegment {
+            duration_minutes: 30.0,
+            team_member_id: "some_id".to_string(),
+            any_team_member_id: None,
+            intermission_minutes: None,
+            resource_ids: None,
+            service_variation_id: "some_id".to_string(),
+            service_variation_version: 1232941981
+        };
+
+        let actual = Builder::from(AppointmentSegment::default())
+            .duration_minutes(30.0)
+            .team_member_id("some_id".into())
+            .service_variation_id("some_id".into())
+            .service_variation_version(1232941981)
+            .build()
+            .unwrap();
+
+        assert_eq!(format!("{:?}", expected), format!("{:?}", actual))
+    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
@@ -280,23 +311,31 @@ pub struct TaxIds {
 }
 
 /// Representation of a Credit/Debit Card for the crate and the Square API.
-#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, Default, Builder)]
 pub struct Card {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_vis("private")]
+    #[builder_into]
     pub id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub billing_address: Option<Address>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub bin: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub card_brand: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub card_co_brand: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub card_type: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub cardholder_name: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub customer_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub enabled: Option<bool>,
@@ -304,18 +343,78 @@ pub struct Card {
     pub exp_month: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub exp_year: Option<i64>,
+    #[builder_into]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fingerprint: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub last_4: Option<String>,
+    #[builder_into]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub merchant_id: Option<String>,
+    #[builder_into]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub prepaid_type: Option<String>,
+    #[builder_into]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub reference_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub version: Option<i64>,
+}
+
+#[cfg(test)]
+mod test_card_builder {
+    use crate::builder::Builder;
+    use super::*;
+
+    #[tokio::test]
+    async fn test_card_builder() {
+        let expected = Card {
+            id: None,
+            billing_address: Some(Address {
+                address_line_1: Some("some line".to_string()),
+                address_line_2: None,
+                address_line_3: None,
+                locality: None,
+                sublocality: None,
+                administrative_district_level: None,
+                postal_code: None,
+                country: None
+            }),
+            bin: None,
+            card_brand: None,
+            card_co_brand: None,
+            card_type: None,
+            cardholder_name: None,
+            customer_id: None,
+            enabled: Some(true),
+            exp_month: None,
+            exp_year: None,
+            fingerprint: None,
+            last_4: None,
+            merchant_id: None,
+            prepaid_type: None,
+            reference_id: None,
+            version: None
+        };
+
+        let actual = Builder::from(Card::default())
+            .billing_address(Address {
+                address_line_1: Some("some line".to_string()),
+                address_line_2: None,
+                address_line_3: None,
+                locality: None,
+                sublocality: None,
+                administrative_district_level: None,
+                postal_code: None,
+                country: None
+            })
+            .enabled(true)
+            .build()
+            .unwrap();
+
+        assert_eq!(format!("{:?}", expected), format!("{:?}", actual))
+    }
 }
 
 #[derive(Clone, Serialize, Debug, Deserialize)]
@@ -1107,23 +1206,36 @@ pub struct TeamMemberBookingProfile {
     pub team_member_id: Option<String>,
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default, Builder)]
 pub struct CreateOrderRequest {
-    pub idempotency_key: String,
+    #[builder_rand("uuid")]
+    pub idempotency_key: Option<String>,
     pub order: Order,
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize, Default)]
+impl AddField<Order> for CreateOrderRequest {
+    fn add_field(&mut self, field: Order) {
+        self.order = field;
+    }
+}
+
+#[derive(Clone, Serialize, Debug, Deserialize, Default, Builder)]
 pub struct Order {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
+    #[builder_validate("is_some")]
     pub location_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub close_at: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub created_at: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub customer_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub discounts: Option<Vec<OrderLineItemDiscount>>,
@@ -1138,6 +1250,7 @@ pub struct Order {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pricing_options: Option<OrderPricingOptions>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub reference_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub refunds: Option<Vec<Refund>>,
@@ -1160,6 +1273,7 @@ pub struct Order {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tenders: Option<Vec<Tender>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub ticket_name: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub total_discount_money: Option<Money>,
@@ -1172,9 +1286,20 @@ pub struct Order {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub total_tip_money: Option<Money>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub updated_at: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub version: Option<i64>,
+}
+
+impl AddField<OrderLineItem> for Order {
+    fn add_field(&mut self, field: OrderLineItem) {
+        if let Some(line_items) = self.line_items.as_mut() {
+            line_items.push(field);
+        } else {
+            self.line_items = Some(vec![field]);
+        }
+    }
 }
 
 #[derive(Clone, Serialize, Debug, Deserialize)]
@@ -1334,8 +1459,9 @@ pub struct OrderFulfillmentShipmentDetails {
     tracking_url: Option<String>,
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default, Builder)]
 pub struct OrderLineItem {
+    #[builder_into]
     pub quantity: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub applied_discounts: Option<Vec<OrderLineItemAppliedDiscount>>,
@@ -1344,6 +1470,7 @@ pub struct OrderLineItem {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub base_price_money: Option<Money>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub catalog_object_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub catalog_version: Option<i64>,
@@ -1796,26 +1923,34 @@ pub struct Checkout {
     pub redirect_url: Option<String>,
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default, Builder)]
 pub struct PaymentLink {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
+    #[builder_vis("private")]
     pub id: Option<String>,
     pub version: i32,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub checkout_options: Option<CheckoutOptions>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub created_at: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub description: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub order_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub payment_note: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub pre_populated_data: Option<PrePopulatedData>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub updated_at: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub url: Option<String>,
 }
 
@@ -2060,6 +2195,12 @@ pub struct InventoryChange {
     pub inventory_change_type: InventoryChangeType,
 }
 
+impl AddField<InventoryPhysicalCount> for InventoryChange {
+    fn add_field(&mut self, field: InventoryPhysicalCount) {
+        self.physical_count = Some(field)
+    }
+}
+
 #[derive(Clone, Serialize, Debug, Deserialize)]
 pub struct InventoryAdjustment {
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -2112,9 +2253,10 @@ pub struct InventoryAdjustmentGroup {
     pub to_state: Option<InventoryState>,
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default, Builder)]
 pub struct InventoryPhysicalCount {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_vis("private")]
     pub id: Option<String>,
     pub catalog_object_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]

@@ -14,7 +14,7 @@ use crate::objects::{
 };
 
 use serde::{Deserialize, Serialize};
-use crate::builder::{Builder, ParentBuilder, Validate};
+use crate::builder::{Builder, ParentBuilder, Validate, Buildable};
 
 impl SquareClient {
     pub fn locations(&self) -> Locations {
@@ -66,6 +66,7 @@ impl<'a> Locations<'a> {
     ///         builder::Builder,
     ///         api::locations::LocationCreationWrapper
     ///     };
+    /// use square_ox::builder::Buildable;
     ///
     ///  async {
     ///     let location = Builder::from(LocationCreationWrapper::default())
@@ -434,8 +435,7 @@ mod test_locations {
             .name("New Test Location".to_string())
             .facebook_url("some_url".to_string())
             .location_type(LocationType::Physical)
-            .build()
-            .await;
+            .build();
 
         assert!(actual.is_ok());
 
@@ -447,8 +447,7 @@ mod test_locations {
         let res = Builder::from(LocationCreationWrapper::default())
             .facebook_url("some_url".to_string())
             .location_type(LocationType::Physical)
-            .build()
-            .await;
+            .build();
 
         assert!(res.is_err());
     }

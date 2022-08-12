@@ -10,7 +10,7 @@ use crate::objects::{AppointmentSegment, Booking, FilterValue, enums::BusinessAp
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::builder::{Builder, ParentBuilder, Validate};
+use crate::builder::{Builder, ParentBuilder, Validate, Buildable};
 
 impl SquareClient {
     pub fn bookings(&self) -> Bookings {
@@ -186,24 +186,24 @@ impl ListBookingsQueryBuilder {
 
     /// The pagination cursor from the preceding response to return the next page of the results.
     /// Do not set this when retrieving the first page of the results.
-    pub fn cursor(mut self, cursor: String) -> Self {
-        self.cursor = Some(cursor);
+    pub fn cursor<S: Into<String>>(mut self, cursor: S) -> Self {
+        self.cursor = Some(cursor.into());
 
         self
     }
 
     /// The team member for whom to retrieve bookings.
     /// If this is not set, bookings of all members are retrieved.
-    pub fn team_member_id(mut self, team_member_id: String) -> Self {
-        self.team_member_id = Some(team_member_id);
+    pub fn team_member_id<S: Into<String>>(mut self, team_member_id: S) -> Self {
+        self.team_member_id = Some(team_member_id.into());
 
         self
     }
 
     /// The location for which to retrieve bookings.
     /// If this is not set, all locations' bookings are retrieved.
-    pub fn location_id(mut self, location_id: String) -> Self {
-        self.location_id = Some(location_id);
+    pub fn location_id<S: Into<String>>(mut self, location_id: S) -> Self {
+        self.location_id = Some(location_id.into());
 
         self
     }
@@ -216,8 +216,8 @@ impl ListBookingsQueryBuilder {
     // UTC: 2020-01-26T02:25:34Z
     //
     // Pacific Standard Time with UTC offset: 2020-01-25T18:25:34-08:00
-    pub fn start_at_min(mut self, start_at_min: String) -> Self {
-        self.start_at_min = Some(start_at_min);
+    pub fn start_at_min<S: Into<String>>(mut self, start_at_min: S) -> Self {
+        self.start_at_min = Some(start_at_min.into());
 
         self
     }
@@ -230,8 +230,8 @@ impl ListBookingsQueryBuilder {
     // UTC: 2020-01-26T02:25:34Z
     //
     // Pacific Standard Time with UTC offset: 2020-01-25T18:25:34-08:00
-    pub fn start_at_max(mut self, start_at_max: String) -> Self {
-        self.start_at_max = Some(start_at_max);
+    pub fn start_at_max<S: Into<String>>(mut self, start_at_max: S) -> Self {
+        self.start_at_max = Some(start_at_max.into());
 
         self
     }
@@ -302,8 +302,8 @@ impl ListTeamMemberBookingsProfileBuilder {
 
     /// The pagination cursor from the preceding response to return the next page of the results.
     /// Do not set this when retrieving the first page of the results.
-    pub fn cursor(mut self, cursor: String) -> Self {
-        self.cursor = Some(cursor);
+    pub fn cursor<S: Into<String>>(mut self, cursor: S) -> Self {
+        self.cursor = Some(cursor.into());
 
         self
     }
@@ -317,8 +317,8 @@ impl ListTeamMemberBookingsProfileBuilder {
 
     /// Indicates whether to include only team members enabled at the given location in the
     /// returned result.
-    pub fn location_id(mut self, location_id: String) -> Self {
-        self.location_id = Some(location_id);
+    pub fn location_id<S: Into<String>>(mut self, location_id: S) -> Self {
+        self.location_id = Some(location_id.into());
 
         self
     }
@@ -417,8 +417,8 @@ impl<T: ParentBuilder> Builder<BookingsPost, T> {
     ///  let builder = Builder::from(BookingsPost::default())
     ///  .customer_id("some_id".to_string());
     /// ```
-    pub fn customer_id(mut self, customer_id: String) -> Self {
-        self.body.booking.customer_id = Some(customer_id);
+    pub fn customer_id<S: Into<String>>(mut self, customer_id: S) -> Self {
+        self.body.booking.customer_id = Some(customer_id.into());
 
         self
     }
@@ -438,8 +438,8 @@ impl<T: ParentBuilder> Builder<BookingsPost, T> {
     /// let builder = Builder::from(BookingsPost::default())
     /// .location_id("some_id".to_string());
     /// ```
-    pub fn location_id(mut self, location_id: String) -> Self {
-        self.body.booking.location_id = Some(location_id);
+    pub fn location_id<S: Into<String>>(mut self, location_id: S) -> Self {
+        self.body.booking.location_id = Some(location_id.into());
 
         self
     }
@@ -450,8 +450,8 @@ impl<T: ParentBuilder> Builder<BookingsPost, T> {
         self
     }
 
-    pub fn start_at(mut self, start_at_date_time: String) -> Self {
-        self.body.booking.start_at = Some(start_at_date_time);
+    pub fn start_at<S: Into<String>>(mut self, start_at_date_time: S) -> Self {
+        self.body.booking.start_at = Some(start_at_date_time.into());
 
         self
     }
@@ -466,14 +466,14 @@ impl<T: ParentBuilder> Builder<BookingsPost, T> {
         self
     }
 
-    pub fn seller_note(mut self, seller_note: String) -> Self {
-        self.body.booking.seller_note = Some(seller_note);
+    pub fn seller_note<S: Into<String>>(mut self, seller_note: S) -> Self {
+        self.body.booking.seller_note = Some(seller_note.into());
 
         self
     }
 
-    pub fn customer_note(mut self, customer_note: String) -> Self {
-        self.body.booking.customer_note = Some(customer_note);
+    pub fn customer_note<S: Into<String>>(mut self, customer_note: S) -> Self {
+        self.body.booking.customer_note = Some(customer_note.into());
 
         self
     }
@@ -505,8 +505,8 @@ impl Validate for BookingsCancel {
 }
 
 impl<T: ParentBuilder> Builder<BookingsCancel, T>  {
-    pub fn booking_id(mut self, booking_id: String) -> Self {
-        self.body.booking_id = Some(booking_id);
+    pub fn booking_id<S: Into<String>>(mut self, booking_id: S) -> Self {
+        self.body.booking_id = Some(booking_id.into());
 
         self
     }
@@ -554,24 +554,24 @@ impl Validate for SearchAvailabilityQuery {
 }
 
 impl<T: ParentBuilder> Builder<SearchAvailabilityQuery, T> {
-    pub fn start_at_range(mut self, start: String, end: String) -> Self {
+    pub fn start_at_range<S: Into<String>>(mut self, start: S, end: S) -> Self {
         self.body.query.filter.start_at_range = Some(StartAtRange {
-            end_at: end.clone(),
-            start_at: start.clone(),
+            end_at: end.into(),
+            start_at: start.into(),
         });
 
         self
     }
 
-    pub fn location_id(mut self, location_id: String) -> Self {
-        self.body.query.filter.location_id = Some(location_id);
+    pub fn location_id<S: Into<String>>(mut self, location_id: S) -> Self {
+        self.body.query.filter.location_id = Some(location_id.into());
 
         self
     }
 
-    pub fn segment_filters(mut self, service_variation_id: String) -> Self {
+    pub fn segment_filters<S: Into<String>>(mut self, service_variation_id: S) -> Self {
         let new_filter = SegmentFilter {
-            service_variation_id: service_variation_id.clone(),
+            service_variation_id: service_variation_id.into(),
             team_member_id_filter: None
         };
 
@@ -616,11 +616,10 @@ mod test_bookings {
 
         let actual = Builder::from(SearchAvailabilityQuery::default())
             .start_at_range(
-                "2022-10-12T07:20:50.52Z".to_string(),
-                "2023-10-12T07:20:50.52Z".to_string())
-            .location_id("LPNXWH14W6S47".to_string())
+                "2022-10-12T07:20:50.52Z",
+                "2023-10-12T07:20:50.52Z")
+            .location_id("LPNXWH14W6S47")
             .build()
-            .await
             .unwrap();
 
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual))
@@ -637,11 +636,11 @@ mod test_bookings {
 
         let input = Builder::from(SearchAvailabilityQuery::default())
             .start_at_range(
-                "2022-09-12T07:20:50.52Z".to_string(),
-                "2022-10-12T07:20:50.52Z".to_string())
-            .location_id("L1JC53TYHS40Z".to_string())
-            .segment_filters("BJHURKYAIAQIDMY267GZNYNW".to_string())
-            .build().await.unwrap();
+                "2022-09-12T07:20:50.52Z",
+                "2022-10-12T07:20:50.52Z")
+            .location_id("L1JC53TYHS40Z")
+            .segment_filters("BJHURKYAIAQIDMY267GZNYNW")
+            .build().unwrap();
 
         let result = sut.bookings().search_availability(input).await;
 
@@ -651,9 +650,9 @@ mod test_bookings {
     #[tokio::test]
     async fn test_booking_post_builder() {
         let actual = Builder::from(BookingsPost::default())
-            .start_at("2022-10-11T16:30:00Z".to_string())
-            .location_id("L1JC53TYHS40Z".to_string())
-            .customer_id("7PB8P9553RYA3F672D15369VK4".to_string())
+            .start_at("2022-10-11T16:30:00Z")
+            .location_id("L1JC53TYHS40Z")
+            .customer_id("7PB8P9553RYA3F672D15369VK4")
             .add_appointment_segment(AppointmentSegment {
                 duration_minutes: 60.00,
                 team_member_id: "TMKFnToW8ByXrcm6".to_string(),
@@ -663,8 +662,7 @@ mod test_bookings {
                 service_variation_id: "BSOL4BB6RCMX6SH4KQIFWZDP".to_string(),
                 service_variation_version:  1655427266071,
             })
-            .build()
-            .await;
+            .build();
 
         let expected = Booking {
             id: None,
@@ -700,8 +698,8 @@ mod test_bookings {
     #[tokio::test]
     async fn test_booking_post_builder_fail() {
         let res = Builder::from(BookingsPost::default())
-            .start_at("2022-10-11T16:30:00Z".to_string())
-            .customer_id("7PB8P9553RYA3F672D15369VK4".to_string())
+            .start_at("2022-10-11T16:30:00Z")
+            .customer_id("7PB8P9553RYA3F672D15369VK4")
             .add_appointment_segment(AppointmentSegment {
                 duration_minutes: 60.00,
                 team_member_id: "TMKFnToW8ByXrcm6".to_string(),
@@ -711,8 +709,7 @@ mod test_bookings {
                 service_variation_id: "BSOL4BB6RCMX6SH4KQIFWZDP".to_string(),
                 service_variation_version:  1655427266071,
             })
-            .build()
-            .await;
+            .build();
 
         assert!(res.is_err());
     }
@@ -787,7 +784,7 @@ mod test_bookings {
             })
         };
         let actual = Builder::from(BookingsCancel::default())
-            .booking_id("9uv6i3p5x5ao1p".to_string()).build().await;
+            .booking_id("9uv6i3p5x5ao1p").build();
 
         assert!(actual.is_ok());
         assert_eq!(format!("{:?}", expected.booking_id),
@@ -797,7 +794,7 @@ mod test_bookings {
     #[tokio::test]
     async fn test_bookings_cancel_builder_fail() {
 
-        let res = Builder::from(BookingsCancel::default()).build().await;
+        let res = Builder::from(BookingsCancel::default()).build();
 
         assert!(res.is_err());
     }
@@ -878,8 +875,8 @@ mod test_bookings {
         ];
 
         let actual = ListBookingsQueryBuilder::new()
-            .location_id("L1JC53TYHS40Z".to_string())
-            .start_at_min("2022-09-12T07:20:50.52Z".to_string())
+            .location_id("L1JC53TYHS40Z")
+            .start_at_min("2022-09-12T07:20:50.52Z")
             .build()
             .await;
 
@@ -931,7 +928,7 @@ mod test_bookings {
         let actual = ListTeamMemberBookingsProfileBuilder::new()
             .bookable_only()
             .limit(10)
-            .location_id("L1JC53TYHS40Z".to_string())
+            .location_id("L1JC53TYHS40Z")
             .build()
             .await;
 

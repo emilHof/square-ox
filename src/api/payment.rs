@@ -11,7 +11,7 @@ use crate::response::SquareResponse;
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::builder::{Builder, ParentBuilder, Validate};
+use crate::builder::{Builder, ParentBuilder, Validate, Buildable};
 use crate::objects::enums::SortOrder;
 
 impl SquareClient {
@@ -607,7 +607,6 @@ mod test_payments {
         let mut actual = Builder::from(UpdatePaymentBody::default())
             .amount_money(Money { amount: Some(30), currency: Currency::USD })
             .build()
-            .await
             .unwrap();
 
         assert!(actual.idempotency_key.is_some());

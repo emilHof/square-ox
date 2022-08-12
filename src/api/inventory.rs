@@ -12,7 +12,8 @@ use crate::objects::enums::{InventoryChangeType, InventoryState};
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::builder::{AddField, Builder, ParentBuilder, Validate};
+use square_ox_derive::Builder;
+use crate::builder::{AddField, Builder, ParentBuilder, Validate, Buildable};
 
 
 impl SquareClient {
@@ -134,31 +135,13 @@ impl<'a> Inventory<'a> {
 // -------------------------------------------------------------------------------------------------
 // InventoryChangeBody builder implementation
 // -------------------------------------------------------------------------------------------------
-#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, Default, Builder)]
 pub struct InventoryChangeBody {
+    #[builder_rand("uuid")]
     idempotency_key: Option<String>,
+    #[builder_validate("len")]
     changes: Vec<InventoryChange>,
     ignore_unchanged_counts: Option<bool>,
-}
-
-impl Validate for InventoryChangeBody {
-    fn validate(mut self) -> Result<Self, ValidationError> where Self: Sized {
-        if self.changes.len() > 0 {
-            self.idempotency_key = Some(Uuid::new_v4().to_string());
-
-            Ok(self)
-        } else {
-            Err(ValidationError)
-        }
-    }
-}
-
-impl<T: ParentBuilder> Builder<InventoryChangeBody, T> {
-    pub fn change(mut self, change: InventoryChange) -> Self {
-        self.body.changes.push(change);
-
-        self
-    }
 }
 
 impl AddField<InventoryChange> for InventoryChangeBody {
@@ -270,23 +253,17 @@ mod test_inventory {
         let mut actual = Builder::from(InventoryChangeBody::default())
             .sub_builder_from(InventoryChange::default())
             .change_type(InventoryChangeType::PhysicalCount)
-            .physical_count(InventoryPhysicalCount {
-                id: None,
-                catalog_object_id: "".to_string(),
-                catalog_object_type: None,
-                created_at: None,
-                location_id: "L1JC53TYHS40Z".to_string(),
-                occurred_at: "2022-07-09T12:25:34Z".to_string(),
-                quantity: "30".to_string(),
-                reference_id: None,
-                source: None,
-                state: InventoryState::InStock,
-                team_member_id: None
-            })
-            .into_parent_builder()
+            .sub_builder_from(InventoryPhysicalCount::default())
+            .catalog_object_id("".to_string())
+            .location_id("L1JC53TYHS40Z".to_string())
+            .occurred_at("2022-07-09T12:25:34Z".to_string())
+            .quantity("30".to_string())
+            .state(InventoryState::InStock)
+            .build()
             .unwrap()
             .build()
-            .await
+            .unwrap()
+            .build()
             .unwrap();
 
         assert!(actual.idempotency_key.is_some());

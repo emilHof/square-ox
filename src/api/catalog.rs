@@ -9,7 +9,7 @@ use crate::objects::{CatalogItem, CatalogObject, CatalogObjectVariation, Catalog
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::builder::{Builder, Nil, ParentBuilder, Validate};
+use crate::builder::{Builder, Nil, ParentBuilder, Validate, Buildable};
 use crate::objects::enums::{CatalogItemProductType, CatalogObjectType, SearchCatalogItemsRequestStockLevel, SortOrder};
 
 impl SquareClient {
@@ -708,7 +708,6 @@ mod test_catalog {
                 version: None
             })
             .build()
-            .await
             .unwrap();
 
         assert!(actual.idempotency_key.is_some());
@@ -916,7 +915,6 @@ mod test_catalog {
             .add_object_type(CatalogObjectType::Item)
             .add_object_type(CatalogObjectType::ItemVariation)
             .build()
-            .await
             .unwrap();
 
         assert_eq!(format!("{:?}",expected), format!("{:?}",actual));
@@ -980,7 +978,6 @@ mod test_catalog {
 
         let actual = Builder::from(SearchCatalogItemsBody::default())
             .build()
-            .await
             .unwrap();
 
         assert_eq!(format!("{:?}",expected), format!("{:?}",actual));

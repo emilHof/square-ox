@@ -8,8 +8,9 @@ use crate::errors::{SquareError, ValidationError};
 use crate::response::SquareResponse;
 
 use serde::{Deserialize, Serialize};
+use square_ox_derive::Builder;
 use uuid::Uuid;
-use crate::builder::{AddField, Builder, ParentBuilder, Validate};
+use crate::builder::{AddField, Builder, ParentBuilder, Validate, Buildable};
 use crate::objects::{self, Address, ChargeRequestAdditionalRecipient, CheckoutOptions,
                      CreateOrderRequest, Order, PaymentLink, PrePopulatedData,
                      QuickPay};
@@ -133,8 +134,9 @@ impl<'a> Checkout<'a> {
     }
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default, Builder)]
 pub struct CreateOrderRequestWrapper {
+    #[builder_rand("uuid")]
     idempotency_key: Option<String>,
     order: CreateOrderRequest,
     ask_for_shipping_address: Option<bool>,
@@ -146,69 +148,9 @@ pub struct CreateOrderRequestWrapper {
     note: Option<String>,
 }
 
-impl Default for CreateOrderRequestWrapper {
-    fn default() -> Self {
-        CreateOrderRequestWrapper {
-            idempotency_key: None,
-            order: CreateOrderRequest { idempotency_key: Uuid::new_v4().to_string(), order: Default::default() },
-            ask_for_shipping_address: None,
-            merchant_support_email: None,
-            pre_populate_buyer_email: None,
-            pre_populate_shipping_address: None,
-            redirect_url: None,
-            additional_recipients: None,
-            note: None
-        }
-    }
-}
-
-impl Validate for CreateOrderRequestWrapper {
-    fn validate(mut self) -> Result<Self, ValidationError> where Self: Sized {
-        if self.order.order.location_id.is_some() {
-            self.idempotency_key = Some(Uuid::new_v4().to_string());
-
-            Ok(self)
-        } else {
-            Err(ValidationError)
-        }
-    }
-}
-
-impl<T: ParentBuilder> Builder<CreateOrderRequestWrapper, T> {
-    pub fn order(mut self, order: Order) -> Self {
-        self.body.order.order = order;
-
-        self
-    }
-
-    pub fn ask_for_shipping_address(mut self) -> Self {
-        self.body.ask_for_shipping_address = Some(true);
-
-        self
-    }
-
-    pub fn merchant_support_email(mut self, merchant_support_email: String) -> Self {
-        self.body.merchant_support_email = Some(merchant_support_email);
-
-        self
-    }
-
-    pub fn redirect_url(mut self, redirect_url: String) -> Self {
-        self.body.redirect_url = Some(redirect_url);
-
-        self
-    }
-
-    pub fn pre_populate_buyer_email(mut self) -> Self {
-        self.body.pre_populate_buyer_email = Some(true);
-
-        self
-    }
-}
-
-impl AddField<Order> for CreateOrderRequestWrapper {
-    fn add_field(&mut self, field: Order) {
-        self.order.order = field;
+impl AddField<CreateOrderRequest> for CreateOrderRequestWrapper {
+    fn add_field(&mut self, field: CreateOrderRequest) {
+        self.order = field;
     }
 }
 
@@ -336,52 +278,14 @@ impl AddField<Order> for CreatePaymentLinkWrapper {
     }
 }
 
-#[derive(Clone, Serialize, Debug)]
+#[derive(Clone, Serialize, Debug, Default, Builder)]
 pub struct UpdatePaymentLinkWrapper {
     payment_link: PaymentLink,
 }
 
-impl Default for UpdatePaymentLinkWrapper {
-    fn default() -> Self {
-        UpdatePaymentLinkWrapper {
-            payment_link: PaymentLink {
-                id: None,
-                version: 1,
-                checkout_options: None,
-                created_at: None,
-                description: None,
-                order_id: None,
-                payment_note: None,
-                pre_populated_data: None,
-                updated_at: None,
-                url: None
-            }
-        }
-    }
-}
-
-impl Validate for UpdatePaymentLinkWrapper {
-    fn validate(self) -> Result<Self, ValidationError> where Self: Sized {
-        if self.payment_link.version > 1 {
-            Ok(self)
-        } else {
-            Err(ValidationError)
-        }
-
-    }
-}
-
-impl<T: ParentBuilder> Builder<UpdatePaymentLinkWrapper, T> {
-    pub fn set_updated_payment_link(mut self, payment_link: PaymentLink) -> Self {
-        self.body.payment_link = payment_link;
-
-        self
-    }
-
-    pub fn version(mut self, version: i32) -> Self {
-        self.body.payment_link.version = version;
-
-        self
+impl AddField<PaymentLink> for UpdatePaymentLinkWrapper {
+    fn add_field(&mut self, field: PaymentLink) {
+        self.payment_link = field;
     }
 }
 
@@ -395,7 +299,7 @@ mod test_checkout {
     async fn test_create_order_request_builder() {
         let expected = CreateOrderRequestWrapper {
             idempotency_key: None,
-            order: CreateOrderRequest { idempotency_key: "".to_string(), order: Order {
+            order: CreateOrderRequest { idempotency_key: None, order: Order {
                 id: None,
                 location_id: Some("L1JC53TYHS40Z".to_string()),
                 close_at: None,
@@ -489,67 +393,42 @@ mod test_checkout {
         };
 
         let mut actual = Builder::from(CreateOrderRequestWrapper::default())
+            .sub_builder_from(CreateOrderRequest::default())
             .sub_builder_from(Order::default())
-            .add_order_item(OrderLineItem {
-                quantity: "1".to_string(),
-                applied_discounts: None,
-                applied_taxes: None,
-                base_price_money: Some(Money {
-                    amount: Some(5),
-                    currency: Currency::USD
-                }),
-                catalog_object_id: Some("BSOL4BB6RCMX6SH4KQIFWZDP".to_string()),
-                catalog_version: Some(1655427266071),
-                gross_sales_money: None,
-                item_type: Some(OrderLineItemItemType::Item),
-                metadata: None,
-                modifiers: None,
-                name: None,
-                note: None,
-                pricing_blocklists: None,
-                quantity_unit: None,
-                total_discount_money: None,
-                total_money: None,
-                total_tax_money: None,
-                uid: None,
-                variation_name: None,
-                variation_total_price_money: None,
-                api_reference_ids: None
+            .sub_builder_from(OrderLineItem::default())
+            .quantity("1")
+            .base_price_money( Money {
+                amount: Some(5),
+                currency: Currency::USD
             })
-            .add_order_item(OrderLineItem {
-                quantity: "2".to_string(),
-                applied_discounts: None,
-                applied_taxes: None,
-                base_price_money: Some(Money {
-                    amount: Some(5),
-                    currency: Currency::USD
-                }),
-                catalog_object_id: Some("BSOL4BB6RCMX6SH4KQIFWZDP".to_string()),
-                catalog_version: Some(1655427266071),
-                gross_sales_money: None,
-                item_type: Some(OrderLineItemItemType::Item),
-                metadata: None,
-                modifiers: None,
-                name: None,
-                note: None,
-                pricing_blocklists: None,
-                quantity_unit: None,
-                total_discount_money: None,
-                total_money: None,
-                total_tax_money: None,
-                uid: None,
-                variation_name: None,
-                variation_total_price_money: None,
-                api_reference_ids: None
+            .catalog_object_id("BSOL4BB6RCMX6SH4KQIFWZDP")
+            .catalog_version(1655427266071)
+            .item_type(OrderLineItemItemType::Item)
+            .build()
+            .unwrap()
+            .sub_builder_from(OrderLineItem::default())
+            .quantity("2")
+            .base_price_money( Money {
+                amount: Some(5),
+                currency: Currency::USD
             })
+            .catalog_object_id("BSOL4BB6RCMX6SH4KQIFWZDP")
+            .catalog_version(1655427266071)
+            .item_type(OrderLineItemItemType::Item)
+            .build()
+            .unwrap()
             .location_id("L1JC53TYHS40Z".to_string())
-            .into_parent_builder()
+            .build()
             .unwrap()
             .build()
-            .await
+            .unwrap()
+            .build()
             .unwrap();
+        assert!(actual.idempotency_key.is_some());
+        assert!(actual.order.idempotency_key.is_some());
+
         actual.idempotency_key = None;
-        actual.order.idempotency_key = "".to_string();
+        actual.order.idempotency_key = None;
 
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
     }
@@ -565,7 +444,7 @@ mod test_checkout {
 
         let input = CreateOrderRequestWrapper {
             idempotency_key: Some(Uuid::new_v4().to_string()),
-            order: CreateOrderRequest { idempotency_key: Uuid::new_v4().to_string(), order: Order {
+            order: CreateOrderRequest { idempotency_key: Some(Uuid::new_v4().to_string()), order: Order {
                 id: None,
                 location_id: Some("L1JC53TYHS40Z".to_string()),
                 close_at: None,
@@ -723,7 +602,6 @@ mod test_checkout {
                 price_money: Money { amount: Some(10), currency: Currency::USD }
             })
             .build()
-            .await
             .unwrap();
 
         actual.idempotency_key = "".to_string();
@@ -797,6 +675,34 @@ mod test_checkout {
             .await;
 
         assert!(res.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_update_payment_link_wrapper_builder() {
+        let expected = UpdatePaymentLinkWrapper {
+            payment_link: objects::PaymentLink {
+                id: None,
+                version: 5,
+                checkout_options: None,
+                created_at: None,
+                description: None,
+                order_id: None,
+                payment_note: None,
+                pre_populated_data: None,
+                updated_at: None,
+                url: None
+            }
+        };
+
+        let actual = Builder::from(UpdatePaymentLinkWrapper::default())
+            .sub_builder_from(PaymentLink::default())
+            .version(5)
+            .build()
+            .unwrap()
+            .build()
+            .unwrap();
+
+        assert_eq!(format!("{:?}",expected), format!("{:?}",actual));
     }
 
     // #[tokio::test]

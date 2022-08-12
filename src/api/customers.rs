@@ -11,7 +11,7 @@ use crate::objects::{Address, Customer, enums::CustomerCreationSource, SearchQue
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::builder::{Builder, ParentBuilder, Validate};
+use crate::builder::{Builder, ParentBuilder, Validate, Buildable};
 
 impl SquareClient {
     pub fn customers(&self) -> Customers {
@@ -769,8 +769,7 @@ mod test_customers {
             .phone_number("123-456-7890".to_string())
             .phone_number("123-456-7890".to_string())
             .birthday("1996-11-02".to_string())
-            .build()
-            .await;
+            .build();
 
         assert!(actual.is_ok());
 
@@ -791,7 +790,7 @@ mod test_customers {
         let input = Builder::from(Customer::default())
             .given_name("Boyd".to_string())
             .nickname("the coolest".to_string())
-            .build().await.unwrap();
+            .build().unwrap();
 
         let result = sut.customers().create(input).await;
 
@@ -808,8 +807,7 @@ mod test_customers {
 
         let actual = Builder::from(CustomerDelete::default())
             .customer_id("dew212ewfd32123ca".to_string())
-            .build()
-            .await;
+            .build();
 
         assert!(actual.is_ok());
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual.unwrap()))
@@ -883,7 +881,7 @@ mod test_customers {
             .creation_source_value(CustomerCreationSource::Coupon)
             .creation_source_value(CustomerCreationSource::Appointments)
             .set_creation_source_exclude()
-            .build().await;
+            .build();
 
         assert!(actual.is_ok());
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual.unwrap()));

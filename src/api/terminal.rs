@@ -13,7 +13,7 @@ use crate::response::SquareResponse;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use crate::objects::TimeRange;
-use crate::builder::{AddField, Builder, ParentBuilder, Validate};
+use crate::builder::{AddField, Builder, ParentBuilder, Validate, Buildable};
 
 impl SquareClient {
     pub fn terminal(&self) -> Terminal {
@@ -411,10 +411,9 @@ mod test_terminals {
             .device_id("some_id".to_string())
             .collect_signature()
             .skip_receipt_screen()
-            .into_parent_builder()
+            .build()
             .unwrap()
             .build()
-            .await
             .unwrap();
 
         assert!(actual.idempotency_key.is_some());
@@ -446,10 +445,9 @@ mod test_terminals {
             .sub_builder_from(TerminalCheckoutQuery::default())
             .sort_ascending()
             .device_id("some_id".to_string())
-            .into_parent_builder()
+            .build()
             .unwrap()
             .build()
-            .await
             .unwrap();
 
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual))
@@ -517,7 +515,6 @@ mod test_terminals {
             .payment_id("some_id".to_string())
             .reason("some reason".to_string())
             .build()
-            .await
             .unwrap();
 
         actual.idempotency_key = None;
@@ -532,8 +529,7 @@ mod test_terminals {
             .payment_id("some_id".to_string())
             .device_id("some_id".to_string())
             .amount_money(Money { amount: Some(10), currency: Currency::USD })
-            .build()
-            .await;
+            .build();
 
         assert!(res.is_err())
     }
@@ -561,10 +557,9 @@ mod test_terminals {
             .device_id("some_id".to_string())
             .sort_descending()
             .cancel_requested()
-            .into_parent_builder()
+            .build()
             .unwrap()
             .build()
-            .await
             .unwrap();
 
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual))
