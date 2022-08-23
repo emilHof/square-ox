@@ -368,6 +368,7 @@ impl ListTeamMemberBookingsProfileBuilder {
 ///     objects::AppointmentSegment,
 ///     builder::Builder,
 ///     api::bookings::BookingsPost,
+///     builder::Buildable,
 /// };
 ///
 /// async {

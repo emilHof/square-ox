@@ -8,6 +8,7 @@ use crate::errors::{SquareError, ValidationError};
 use crate::objects::{Customer, Order, OrderReward, OrderServiceCharge, SearchOrdersQuery};
 use crate::response::SquareResponse;
 use crate::builder::{Builder, ParentBuilder, Validate, BackIntoBuilder, AddField, Buildable};
+use square_ox_derive::Builder;
 
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
@@ -100,67 +101,29 @@ impl<'a> Orders<'a> {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, Default, Builder)]
 pub struct CreateOrderBody {
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[builder_rand("uuid")]
+    #[builder_vis("private")]
     idempotency_key: Option<String>,
     order: Order,
 }
 
-impl Validate for CreateOrderBody {
-    fn validate(mut self) -> Result<Self, ValidationError> {
-        if self.order.location_id.is_some(){
-            self.idempotency_key = Some(Uuid::new_v4().to_string());
-            Ok(self)
-        } else {
-            Err(ValidationError)
-        }
+impl AddField<Order> for CreateOrderBody {
+    fn add_field(&mut self, field: Order) {
+        self.order = field;
     }
 }
 
-impl<T: ParentBuilder> Builder<CreateOrderBody, T> {
-    pub fn location_id(mut self, location_id: String) -> Self {
-        self.body.order.location_id = Some(location_id);
-
-        self
-    }
-
-    pub fn customer_id(mut self, customer_id: String) -> Self {
-        self.body.order.customer_id = Some(customer_id);
-
-        self
-    }
-
-    pub fn add_service_charge(mut self, service_charge: OrderServiceCharge) -> Self {
-        if let Some(services_charges) = self.body.order.service_charges.as_mut() {
-            services_charges.push(service_charge)
-        } else {
-            self.body.order.service_charges = Some(vec![service_charge])
-        }
-
-        self
-    }
-}
-
-// implements the necessary traits to release an OrderServiceCharge builder from a CreateOrderBody
-// builder
-impl AddField<OrderServiceCharge> for CreateOrderBody {
-    fn add_field(&mut self, field: OrderServiceCharge) {
-        if let Some(service_charges) = self.order.service_charges.as_mut() {
-            service_charges.push(field);
-        } else {
-            self.order.service_charges = Some(vec![field]);
-        }
-    }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, Builder)]
 pub struct SearchOrderBody {
     #[serde(skip_serializing_if = "Option::is_none")]
     cursor: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     limit: Option<i32>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     location_ids: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     query: Option<SearchOrdersQuery>,
@@ -168,52 +131,15 @@ pub struct SearchOrderBody {
     return_entries: Option<bool>
 }
 
-impl Validate for SearchOrderBody {
-    fn validate(mut self) -> Result<Self, ValidationError> {
-        self.return_entries = Some(true);
-
-        Ok(self)
-    }
-}
-
-impl<T: ParentBuilder> Builder<SearchOrderBody, T> {
-    pub fn add_location_id(mut self, id: String) -> Self {
-        match self.body.location_ids.as_mut() {
-            Some(ids) => ids.push(id),
-            None => self.body.location_ids = Some(vec![id]),
+impl Default for SearchOrderBody {
+    fn default() -> Self {
+        SearchOrderBody {
+            cursor: None,
+            limit: None,
+            location_ids: None,
+            query: None,
+            return_entries: Some(true)
         }
-
-        self
-    }
-
-    pub fn location_ids(mut self, ids: Vec<String>) -> Self {
-        self.body.location_ids = Some(ids);
-
-        self
-    }
-
-    pub fn cursor(mut self, cursor: String) -> Self {
-        self.body.cursor = Some(cursor);
-
-        self
-    }
-
-    pub fn limit(mut self, limit: i32) -> Self {
-        self.body.limit = Some(limit);
-
-        self
-    }
-
-    pub fn no_return_entries(mut self) -> Self {
-        self.body.return_entries = Some(false);
-
-        self
-    }
-
-    pub fn query(mut self, query: SearchOrdersQuery) -> Self {
-        self.body.query = Some(query);
-
-        self
     }
 }
 
@@ -372,65 +298,68 @@ mod test_orders {
         let expected = CreateOrderBody {
             idempotency_key: None,
             order: Order {
-            id: None,
-            location_id: Some("location_id".to_string()),
-            close_at: None,
-            created_at: None,
-            customer_id: Some("customer_id".to_string()),
-            discounts: None,
-            fulfillments: None,
-            line_items: None,
-            metadata: None,
-            net_amounts: None,
-            pricing_options: None,
-            reference_id: None,
-            refunds: None,
-            return_amounts: None,
-            returns: None,
-            rewards: None,
-            rounding_adjustment: None,
-            service_charges: Some(vec![OrderServiceCharge {
-            amount_money: Some(Money{ amount: Some(10), currency: Currency::USD }),
-            applied_money: None,
-            applied_taxes: None,
-            calculation_phase: Some(OrderServiceChargeCalculationPhase::TotalPhase),
-            catalog_object_id: None,
-            catalog_version: None,
-            metadata: None,
-            name: Some("some name".to_string()),
-            percentage: None,
-            taxable: None,
-            total_money: None,
-            total_tax_money: None,
-            service_charge_type: None,
-            uid: None
-            }]),
-            source: None,
-            state: None,
-            taxes: None,
-            tenders: None,
-            ticket_name: None,
-            total_discount_money: None,
-            total_money: None,
-            total_service_charge_money: None,
-            total_tax_money: None,
-            total_tip_money: None,
-            updated_at: None,
-            version: None
+                id: None,
+                location_id: Some("location_id".to_string()),
+                close_at: None,
+                created_at: None,
+                customer_id: Some("customer_id".to_string()),
+                discounts: None,
+                fulfillments: None,
+                line_items: None,
+                metadata: None,
+                net_amounts: None,
+                pricing_options: None,
+                reference_id: None,
+                refunds: None,
+                return_amounts: None,
+                returns: None,
+                rewards: None,
+                rounding_adjustment: None,
+                service_charges: Some(vec![OrderServiceCharge {
+                    amount_money: Some(Money{ amount: Some(10), currency: Currency::USD }),
+                    applied_money: None,
+                    applied_taxes: None,
+                    calculation_phase: Some(OrderServiceChargeCalculationPhase::TotalPhase),
+                    catalog_object_id: None,
+                    catalog_version: None,
+                    metadata: None,
+                    name: Some("some name".to_string()),
+                    percentage: None,
+                    taxable: None,
+                    total_money: None,
+                    total_tax_money: None,
+                    service_charge_type: None,
+                    uid: None
+                }]),
+                source: None,
+                state: None,
+                taxes: None,
+                tenders: None,
+                ticket_name: None,
+                total_discount_money: None,
+                total_money: None,
+                total_service_charge_money: None,
+                total_tax_money: None,
+                total_tip_money: None,
+                updated_at: None,
+                version: None
             }
             };
 
             let mut actual = Builder::from(CreateOrderBody::default())
-            .location_id("location_id".to_string())
-            .customer_id("customer_id".to_string())
-            .sub_builder_from(OrderServiceCharge::default())
-            .amount_money(Money { amount: Some(10), currency: Currency::USD })
-            .name("some name".to_string())
-            .total_phase()
-            .build()
-            .unwrap()
-            .build()
-            .unwrap();
+                .sub_builder_from(Order::default())
+                .location_id("location_id")
+                .customer_id("customer_id".to_string())
+                .sub_builder_from(OrderServiceCharge::default())
+                .amount_money(Money { amount: Some(10), currency: Currency::USD })
+                .name("some name")
+                .calculation_phase(OrderServiceChargeCalculationPhase::TotalPhase)
+                .build()
+                .unwrap()
+                .build()
+                .unwrap()
+                .build()
+                .unwrap();
 
         assert!(actual.idempotency_key.is_some());
 
@@ -442,11 +371,12 @@ mod test_orders {
     #[tokio::test]
     async fn test_create_order_body_builder_fail() {
         let actual = Builder::from(CreateOrderBody::default())
+            .sub_builder_from(Order::default())
             .location_id("location_id".to_string())
             .customer_id("customer_id".to_string())
             .sub_builder_from(OrderServiceCharge::default())
             .amount_money(Money { amount: Some(10), currency: Currency::USD })
-            .total_phase()
+            .calculation_phase(OrderServiceChargeCalculationPhase::TotalPhase)
             .build();
 
         assert!(actual.is_err());
@@ -536,15 +466,18 @@ mod test_orders {
         };
 
         let actual = Builder::from(SearchOrderBody::default())
-            .add_location_id("e23icos".to_string())
-            .add_location_id("daiooaa".to_string())
-            .add_location_id("pßasmxaskm".to_string())
+            .location_ids(
+                vec![
+                    "e23icos".to_string(),
+                    "daiooaa".to_string(),
+                    "pßasmxaskm".to_string(),
+                ]
+            )
             .limit(10)
             .sub_builder_from(SearchOrdersQuery::default())
             .sort_ascending()
             .build()
             .unwrap()
-            .no_return_entries()
             .build()
             .unwrap();
 

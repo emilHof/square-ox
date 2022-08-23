@@ -3,64 +3,6 @@ use crate::objects::{TimeRange, DeviceCheckoutOptions, Money, Order, OrderLineIt
 use crate::objects::enums::{InventoryChangeType, OrderServiceChargeCalculationPhase, SearchOrdersSortField, SortOrder, TerminalCheckoutStatus};
 
 // -------------------------------------------------------------------------------------------------
-// OrderServiceCharge builder implementation
-// -------------------------------------------------------------------------------------------------
-impl Validate for OrderServiceCharge {
-    fn validate(self) -> Result<Self, ValidationError> {
-        println!("{:?}", &self);
-        if self.amount_money.is_some() &&
-            self.name.is_some() &&
-            self.calculation_phase.is_some() {
-            println!("no error");
-            Ok(self)
-        } else {
-            println!("error");
-            Err(ValidationError)
-        }
-    }
-}
-
-impl<T: ParentBuilder> Builder<OrderServiceCharge, T> {
-    pub fn amount_money(mut self, amount: Money) -> Self {
-        self.body.amount_money = Some(amount);
-
-        self
-    }
-
-    pub fn total_phase(mut self)
-        -> Self {
-        self.body.calculation_phase = Some(OrderServiceChargeCalculationPhase::TotalPhase);
-
-        self
-    }
-
-    pub fn subtotal_phase(mut self)
-        -> Self {
-        self.body.calculation_phase = Some(OrderServiceChargeCalculationPhase::SubtotalPhase);
-
-        self
-    }
-
-    pub fn not_taxable(mut self)-> Self {
-        self.body.taxable = Some(false);
-
-        self
-    }
-
-    pub fn taxable(mut self) -> Self {
-        self.body.taxable = Some(true);
-
-        self
-    }
-
-    pub fn name(mut self, name: String) -> Self {
-        self.body.name = Some(name);
-
-        self
-    }
-}
-
-// -------------------------------------------------------------------------------------------------
 // SearchOrdersQuery builder implementation
 // -------------------------------------------------------------------------------------------------
 impl Validate for SearchOrdersQuery {

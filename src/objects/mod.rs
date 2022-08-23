@@ -1302,6 +1302,17 @@ impl AddField<OrderLineItem> for Order {
     }
 }
 
+impl AddField<OrderServiceCharge> for Order {
+    fn add_field(&mut self, field: OrderServiceCharge) {
+        if let Some(line_items) = self.service_charges.as_mut() {
+            line_items.push(field);
+        } else {
+            self.service_charges = Some(vec![field]);
+        }
+    }
+}
+
+
 #[derive(Clone, Serialize, Debug, Deserialize)]
 pub struct ChargeRequestAdditionalRecipient {
 
@@ -1793,7 +1804,7 @@ pub struct OrderReward {
     pub reward_tier_id: String
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize, Default)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default, Builder)]
 pub struct OrderServiceCharge {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub amount_money: Option<Money>,
@@ -1804,14 +1815,18 @@ pub struct OrderServiceCharge {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub calculation_phase: Option<OrderServiceChargeCalculationPhase>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub catalog_object_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub catalog_version: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub metadata: Option<HashMap<String, String>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
+    #[builder_validate("is_some")]
     pub name: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub percentage: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub taxable: Option<bool>,
