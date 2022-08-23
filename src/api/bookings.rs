@@ -10,7 +10,8 @@ use crate::objects::{AppointmentSegment, Booking, FilterValue, enums::BusinessAp
 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::builder::{Builder, ParentBuilder, Validate, Buildable};
+use crate::builder::{AddField, Builder, ParentBuilder, Validate, Buildable, BackIntoBuilder};
+use square_ox_derive::Builder;
 
 impl SquareClient {
     pub fn bookings(&self) -> Bookings {
@@ -381,102 +382,16 @@ impl ListTeamMemberBookingsProfileBuilder {
 ///     .await;
 /// };
 /// ```
-#[derive(Serialize, Debug, Deserialize, Default)]
+#[derive(Serialize, Debug, Deserialize, Default, Builder)]
 pub struct BookingsPost {
+    #[builder_rand("uuid")]
     idempotency_key: Option<String>,
     booking: Booking,
 }
 
-impl Validate for BookingsPost {
-    fn validate(mut self) -> Result<Self, ValidationError> where Self: Sized {
-        if self.booking.customer_id.is_some()
-            && self.booking.location_id.is_some()
-            && self.booking.appointment_segments.as_ref().unwrap().len() > 0
-            && self.booking.start_at.is_some() {
-            self.idempotency_key = Some(Uuid::new_v4().to_string());
-
-            Ok(self)
-        } else {
-            Err(ValidationError)
-        }
-    }
-}
-
-impl<T: ParentBuilder> Builder<BookingsPost, T> {
-    /// Add a customer_id
-    ///
-    /// # Arguments:
-    /// * `customer_id` - The id of your booking customer.
-    ///
-    /// # Example: Set the customer id
-    /// ```
-    ///  use square_ox::{
-    ///     api::bookings::BookingsPost,
-    ///     builder::Builder,
-    ///  };
-    ///
-    ///  let builder = Builder::from(BookingsPost::default())
-    ///  .customer_id("some_id".to_string());
-    /// ```
-    pub fn customer_id<S: Into<String>>(mut self, customer_id: S) -> Self {
-        self.body.booking.customer_id = Some(customer_id.into());
-
-        self
-    }
-
-    // Add a location_id
-    ///
-    /// # Arguments:
-    /// * `location_id` - The id of the booking location.
-    ///
-    /// # Example: Set the customer id
-    /// ```
-    /// use square_ox::{
-    ///     builder::Builder,
-    ///     api::bookings::BookingsPost,
-    /// };
-    ///
-    /// let builder = Builder::from(BookingsPost::default())
-    /// .location_id("some_id".to_string());
-    /// ```
-    pub fn location_id<S: Into<String>>(mut self, location_id: S) -> Self {
-        self.body.booking.location_id = Some(location_id.into());
-
-        self
-    }
-
-    pub fn location_type(mut self, location_type: BusinessAppointmentSettingsBookingLocationType) -> Self {
-        self.body.booking.location_type = Some(location_type);
-
-        self
-    }
-
-    pub fn start_at<S: Into<String>>(mut self, start_at_date_time: S) -> Self {
-        self.body.booking.start_at = Some(start_at_date_time.into());
-
-        self
-    }
-
-    pub fn add_appointment_segment(mut self, appointment_segment: AppointmentSegment) -> Self {
-        if let Some(segments) = self.body.booking.appointment_segments.as_mut() {
-            segments.push(appointment_segment);
-        } else {
-            self.body.booking.appointment_segments = Some(vec![appointment_segment])
-        }
-
-        self
-    }
-
-    pub fn seller_note<S: Into<String>>(mut self, seller_note: S) -> Self {
-        self.body.booking.seller_note = Some(seller_note.into());
-
-        self
-    }
-
-    pub fn customer_note<S: Into<String>>(mut self, customer_note: S) -> Self {
-        self.body.booking.customer_note = Some(customer_note.into());
-
-        self
+impl AddField<Booking> for BookingsPost {
+    fn add_field(&mut self, field: Booking) {
+        self.booking = field;
     }
 }
 
@@ -651,18 +566,19 @@ mod test_bookings {
     #[tokio::test]
     async fn test_booking_post_builder() {
         let actual = Builder::from(BookingsPost::default())
+            .sub_builder_from(Booking::default())
             .start_at("2022-10-11T16:30:00Z")
             .location_id("L1JC53TYHS40Z")
             .customer_id("7PB8P9553RYA3F672D15369VK4")
-            .add_appointment_segment(AppointmentSegment {
-                duration_minutes: 60.00,
-                team_member_id: "TMKFnToW8ByXrcm6".to_string(),
-                any_team_member_id: None,
-                intermission_minutes: None,
-                resource_ids: None,
-                service_variation_id: "BSOL4BB6RCMX6SH4KQIFWZDP".to_string(),
-                service_variation_version:  1655427266071,
-            })
+            .sub_builder_from(AppointmentSegment::default())
+            .duration_minutes(60.00)
+            .team_member_id("TMKFnToW8ByXrcm6")
+            .service_variation_id("BSOL4BB6RCMX6SH4KQIFWZDP")
+            .service_variation_version(1655427266071)
+            .build()
+            .unwrap()
+            .build()
+            .unwrap()
             .build();
 
         let expected = Booking {
@@ -699,17 +615,16 @@ mod test_bookings {
     #[tokio::test]
     async fn test_booking_post_builder_fail() {
         let res = Builder::from(BookingsPost::default())
+            .sub_builder_from(Booking::default())
             .start_at("2022-10-11T16:30:00Z")
             .customer_id("7PB8P9553RYA3F672D15369VK4")
-            .add_appointment_segment(AppointmentSegment {
-                duration_minutes: 60.00,
-                team_member_id: "TMKFnToW8ByXrcm6".to_string(),
-                any_team_member_id: None,
-                intermission_minutes: None,
-                resource_ids: None,
-                service_variation_id: "BSOL4BB6RCMX6SH4KQIFWZDP".to_string(),
-                service_variation_version:  1655427266071,
-            })
+            .sub_builder_from(AppointmentSegment::default())
+            .duration_minutes(60.00)
+            .team_member_id("TMKFnToW8ByXrcm6")
+            .service_variation_id("BSOL4BB6RCMX6SH4KQIFWZDP")
+            .service_variation_version(1655427266071)
+            .build()
+            .unwrap()
             .build();
 
         assert!(res.is_err());

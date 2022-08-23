@@ -206,13 +206,17 @@ pub struct Availability {
 #[derive(Clone, Debug, Serialize, Deserialize, Default, Builder)]
 pub struct AppointmentSegment {
     pub duration_minutes: f64,
+    #[builder_into]
     pub team_member_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub any_team_member_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub intermission_minutes: Option<i32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub resource_ids: Option<String>,
+    #[builder_into]
     pub service_variation_id: String,
     pub service_variation_version: i64,
 }
@@ -236,8 +240,8 @@ mod test_appointment_segment {
 
         let actual = Builder::from(AppointmentSegment::default())
             .duration_minutes(30.0)
-            .team_member_id("some_id".into())
-            .service_variation_id("some_id".into())
+            .team_member_id("some_id")
+            .service_variation_id("some_id")
             .service_variation_version(1232941981)
             .build()
             .unwrap();
@@ -1086,8 +1090,9 @@ pub struct CatalogTimePeriod {
     pub event: Option<String>,
 }
 
-#[derive(Clone, Serialize, Debug, Deserialize, Default)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default, Builder)]
 pub struct Booking {
+    #[builder_vis("private")]
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1099,27 +1104,47 @@ pub struct Booking {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub booking_creator_details: Option<BookingCreatorDetails>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
+    #[builder_validate("is_some")]
     pub customer_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub customer_note: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
+    #[builder_validate("is_some")]
     pub location_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub location_type: Option<BusinessAppointmentSettingsBookingLocationType>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub seller_note: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub source: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub start_at: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub status: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub transition_time_minutes: Option<i32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_into]
     pub updated_at: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub version: Option<i32>
+}
+
+impl AddField<AppointmentSegment> for Booking {
+    fn add_field(&mut self, field: AppointmentSegment) {
+        if let Some(segments) = self.appointment_segments.as_mut() {
+            segments.push(field);
+        } else {
+            self.appointment_segments = Some(vec![field])
+        }
+    }
 }
 
 #[derive(Clone, Serialize, Debug, Deserialize)]

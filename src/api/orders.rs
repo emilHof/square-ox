@@ -151,37 +151,13 @@ impl AddField<SearchOrdersQuery> for SearchOrderBody {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Default)]
+#[derive(Clone, Debug, Serialize, Default, Builder)]
 pub struct OrderUpdateBody {
     fields_to_clear: Option<Vec<String>>,
+    #[builder_rand("uuid")]
     idempotency_key: Option<String>,
+    #[builder_validate("is_some")]
     order: Option<Order>,
-}
-
-impl Validate for OrderUpdateBody {
-    fn validate(mut self) -> Result<Self, ValidationError> where Self: Sized {
-        if self.order.is_none() {
-            Err(ValidationError)
-        } else {
-            self.idempotency_key = Some(Uuid::new_v4().to_string());
-
-            Ok(self)
-        }
-    }
-}
-
-impl<T: ParentBuilder> Builder<OrderUpdateBody, T> {
-    pub fn fields_to_clear(mut self, fields: Vec<String>) -> Self {
-        self.body.fields_to_clear = Some(fields);
-
-        self
-    }
-
-    pub fn order(mut self, order: Order) -> Self {
-        self.body.order = Some(order);
-
-        self
-    }
 }
 
 // implements the necessary traits to release an Order builder from a OrderUpdateBody
@@ -192,78 +168,26 @@ impl AddField<Order> for OrderUpdateBody {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Default)]
+#[derive(Clone, Debug, Serialize, Default, Builder)]
 pub struct PayOrderBody {
+    #[builder_rand("uuid")]
     #[serde(skip_serializing_if = "Option::is_none")]
     idempotency_key: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[builder_validate("is_some")]
     order_version: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[builder_validate("is_some")]
     payment_ids: Option<Vec<String>>,
 }
 
-impl Validate for PayOrderBody {
-    fn validate(mut self) -> Result<Self, ValidationError> where Self: Sized {
-        self.idempotency_key = Some(Uuid::new_v4().to_string());
-
-        if self.order_version.is_some() &&
-            self.payment_ids.is_some() {
-            Ok(self)
-        } else {
-            Err(ValidationError)
-        }
-
-
-    }
-}
-
-impl<T: ParentBuilder> Builder<PayOrderBody, T> {
-    fn oder_version(mut self, version: i64) -> Self {
-        self.body.order_version = Some(version);
-
-        self
-    }
-
-    fn payment_ids(mut self, ids: Vec<String>) -> Self {
-        self.body.payment_ids = Some(ids);
-
-        self
-    }
-}
-
-#[derive(Clone, Debug, Serialize, Default)]
+#[derive(Clone, Debug, Serialize, Default, Builder)]
 pub struct OrderCalculateBody {
+    #[builder_validate("is_some")]
     #[serde(skip_serializing_if = "Option::is_none")]
     order: Option<Order>,
     #[serde(skip_serializing_if = "Option::is_none")]
     proposed_rewards: Option<Vec<OrderReward>>,
-}
-
-impl Validate for OrderCalculateBody {
-    fn validate(mut self) -> Result<Self, ValidationError> where Self: Sized {
-        if self.order.is_some() {
-            Ok(self)
-        } else {
-            Err(ValidationError)
-        }
-    }
-}
-
-impl<T: ParentBuilder> Builder<OrderCalculateBody, T> {
-    fn order(mut self, order: Order) -> Self {
-        self.body.order = Some(order);
-
-        self
-    }
-
-    fn add_proposed_reward(mut self, reward: OrderReward) -> Self {
-        match self.body.proposed_rewards.as_mut() {
-            Some(rewards) => rewards.push(reward),
-            None => self.body.proposed_rewards = Some(vec![reward])
-        }
-
-        self
-    }
 }
 
 // implements the necessary traits to release an Order builder from a OrderCalculateBody
@@ -610,7 +534,7 @@ mod test_orders {
         };
 
         let mut actual = Builder::from(PayOrderBody::default())
-            .oder_version(3)
+            .order_version(3)
             .payment_ids(vec!["some_id".to_string()])
             .build()
             .unwrap();
@@ -622,82 +546,82 @@ mod test_orders {
         assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
     }
 
-    // #[tokio::test]
-    // async fn test_order_calculate_body_builder() {
-    //
-    //     let expected = OrderCalculateBody {
-    //         order: Some(Order {
-    //             id: None,
-    //             location_id: Some("location_id".to_string()),
-    //             close_at: None,
-    //             created_at: None,
-    //             customer_id: None,
-    //             discounts: None,
-    //             fulfillments: None,
-    //             line_items: None,
-    //             metadata: None,
-    //             net_amounts: None,
-    //             pricing_options: None,
-    //             reference_id: None,
-    //             refunds: None,
-    //             return_amounts: None,
-    //             returns: None,
-    //             rewards: None,
-    //             rounding_adjustment: None,
-    //             service_charges: Some(vec![
-    //                 OrderServiceCharge {
-    //                     amount_money: Some(Money {
-    //                         amount: Some(20),
-    //                         currency: Currency::USD
-    //                     }),
-    //                     applied_money: None,
-    //                     applied_taxes: None,
-    //                     calculation_phase: Some(OrderServiceChargeCalculationPhase::TotalPhase),
-    //                     catalog_object_id: None,
-    //                     catalog_version: None,
-    //                     metadata: None,
-    //                     name: Some("some name".to_string()),
-    //                     percentage: None,
-    //                     taxable: None,
-    //                     total_money: None,
-    //                     total_tax_money: None,
-    //                     service_charge_type: None,
-    //                     uid: None
-    //                 }
-    //             ]),
-    //             source: None,
-    //             state: None,
-    //             taxes: None,
-    //             tenders: None,
-    //             ticket_name: None,
-    //             total_discount_money: None,
-    //             total_money: None,
-    //             total_service_charge_money: None,
-    //             total_tax_money: None,
-    //             total_tip_money: None,
-    //             updated_at: None,
-    //             version: Some(3)
-    //         }),
-    //         proposed_rewards: None
-    //     };
-    //
-    //     let mut actual = Builder::from(OrderCalculateBody::default())
-    //         .sub_builder_from(Order::default())
-    //         .location_id("location_id".to_string())
-    //         .sub_builder_from(OrderServiceCharge::default())
-    //         .amount_money(Money { amount: Some(20), currency: Currency::USD })
-    //         .name("some name".to_string())
-    //         .total_phase()
-    //         .build()
-    //         .unwrap()
-    //         .version(3)
-    //         .build()
-    //         .unwrap()
-    //         .build()
-    //         .unwrap();
-    //
-    //     assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
-    // }
+    #[tokio::test]
+    async fn test_order_calculate_body_builder() {
+
+        let expected = OrderCalculateBody {
+            order: Some(Order {
+                id: None,
+                location_id: Some("location_id".to_string()),
+                close_at: None,
+                created_at: None,
+                customer_id: None,
+                discounts: None,
+                fulfillments: None,
+                line_items: None,
+                metadata: None,
+                net_amounts: None,
+                pricing_options: None,
+                reference_id: None,
+                refunds: None,
+                return_amounts: None,
+                returns: None,
+                rewards: None,
+                rounding_adjustment: None,
+                service_charges: Some(vec![
+                    OrderServiceCharge {
+                        amount_money: Some(Money {
+                            amount: Some(20),
+                            currency: Currency::USD
+                        }),
+                        applied_money: None,
+                        applied_taxes: None,
+                        calculation_phase: Some(OrderServiceChargeCalculationPhase::TotalPhase),
+                        catalog_object_id: None,
+                        catalog_version: None,
+                        metadata: None,
+                        name: Some("some name".to_string()),
+                        percentage: None,
+                        taxable: None,
+                        total_money: None,
+                        total_tax_money: None,
+                        service_charge_type: None,
+                        uid: None
+                    }
+                ]),
+                source: None,
+                state: None,
+                taxes: None,
+                tenders: None,
+                ticket_name: None,
+                total_discount_money: None,
+                total_money: None,
+                total_service_charge_money: None,
+                total_tax_money: None,
+                total_tip_money: None,
+                updated_at: None,
+                version: Some(3)
+            }),
+            proposed_rewards: None
+        };
+
+        let mut actual = Builder::from(OrderCalculateBody::default())
+            .sub_builder_from(Order::default())
+            .location_id("location_id".to_string())
+            .sub_builder_from(OrderServiceCharge::default())
+            .amount_money(Money { amount: Some(20), currency: Currency::USD })
+            .name("some name".to_string())
+            .calculation_phase(OrderServiceChargeCalculationPhase::TotalPhase)
+            .build()
+            .unwrap()
+            .version(3)
+            .build()
+            .unwrap()
+            .build()
+            .unwrap();
+
+        assert_eq!(format!("{:?}", expected), format!("{:?}", actual));
+    }
 
     #[tokio::test]
     async fn test_calculate_order() {
