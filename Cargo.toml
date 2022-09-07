@@ -1,6 +1,6 @@
 [package]
 name = "square-ox"
-version = "0.1.2"
+version = "0.2.0"
 authors = ["Emil Hofstetter <emil.k.hofstetter@gmail.com>"]
 edition = "2018"
 readme = "README.md"
