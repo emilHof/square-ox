@@ -14,6 +14,7 @@ use crate::objects::{
 };
 
 use serde::{Deserialize, Serialize};
+use square_ox_derive::Builder;
 use crate::builder::{Builder, ParentBuilder, Validate, Buildable};
 
 impl SquareClient {

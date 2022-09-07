@@ -98,9 +98,10 @@ pub enum CheckoutEnum {
     TerminalCheckout(TerminalCheckout),
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, Default)]
+#[derive(Clone, Debug, Serialize, Deserialize, Default, Builder)]
 pub struct Location {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_vis("private")]
     pub id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
@@ -121,6 +122,7 @@ pub struct Location {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub country: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[builder_vis("private")]
     pub created_at: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub currency: Option<Currency>,
